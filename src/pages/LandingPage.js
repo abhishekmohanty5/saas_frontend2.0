@@ -39,116 +39,161 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="landing-page-new">
+    <div className="landing-page-premium">
       {/* Navigation */}
-      <nav className="navbar-new">
-        <div className="nav-container">
-          <div className="logo-section">
-            <div className="logo-icon">S</div>
-            <span className="logo-text">SubHub</span>
+      <nav className="navbar-premium">
+        <div className="nav-container-premium">
+          <div className="logo-section-premium">
+            <div className="logo-icon-premium">S</div>
+            <span className="logo-text-premium">SubHub</span>
           </div>
-          <div className="nav-links">
+          <div className="nav-links-premium">
             <a href="#home">Home</a>
             <a href="#features">Features</a>
             <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }}>Pricing</a>
-            <button className="nav-login-btn" onClick={() => navigate('/login')}>Login</button>
-            <button className="nav-signup-btn" onClick={() => navigate('/pricing')}>Start Free Trial</button>
+            <button className="nav-login-btn-premium" onClick={() => navigate('/login')}>
+              Login
+            </button>
+            <button className="nav-signup-btn-premium" onClick={() => navigate('/pricing')}>
+              Start Free Trial
+            </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="hero-new">
-        <div className="hero-content-new">
-          <div className="hero-text">
-            <h1 className="hero-title-new">
-              Elevate Your <span className="gradient-text">Subscription</span><br />
+      {/* Hero Section with Dashboard */}
+      <section className="hero-premium">
+        <div className="hero-glow"></div>
+        <div className="hero-content-premium">
+          <div className="hero-text-premium">
+            <div className="hero-badge">✨ #1 Subscription Management Platform</div>
+            <h1 className="hero-title-premium">
+              Elevate Your <span className="gradient-text-premium">Subscription</span><br />
               Management with SubHub
             </h1>
-            <p className="hero-subtitle-new">
-              Streamline, Optimize, and Scale Your Subscription Management with Our Powerful SaaS Solution
+            <p className="hero-subtitle-premium">
+              Streamline, Optimize, and Scale Your Subscription Management with Our Powerful SaaS Solution. Join 1000+ companies managing their subscriptions effortlessly.
             </p>
-            <div className="hero-buttons">
-              <button className="btn-primary-new" onClick={() => navigate('/pricing')}>
-                14 Days Free Trial
+            <div className="hero-buttons-premium">
+              <button className="btn-primary-premium" onClick={() => navigate('/pricing')}>
+                <span>14 Days Free Trial</span>
+                <span className="btn-arrow">→</span>
               </button>
-              <button className="btn-secondary-new" onClick={() => navigate('/login')}>
+              <button className="btn-secondary-premium" onClick={() => navigate('/login')}>
                 Login
               </button>
             </div>
-            <div className="hero-stats">
-              <div className="stat-item">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Active Users</span>
+            <div className="hero-stats-premium">
+              <div className="stat-item-premium">
+                <span className="stat-number-premium">1000+</span>
+                <span className="stat-label-premium">Active Users</span>
               </div>
-              <div className="stat-item">
-                <span className="stat-number">500K+</span>
-                <span className="stat-label">Subscriptions Managed</span>
+              <div className="stat-divider"></div>
+              <div className="stat-item-premium">
+                <span className="stat-number-premium">500K+</span>
+                <span className="stat-label-premium">Subscriptions</span>
               </div>
-              <div className="stat-item">
-                <span className="stat-number">99.9%</span>
-                <span className="stat-label">Uptime</span>
+              <div className="stat-divider"></div>
+              <div className="stat-item-premium">
+                <span className="stat-number-premium">99.9%</span>
+                <span className="stat-label-premium">Uptime</span>
               </div>
             </div>
           </div>
 
-          {/* Dashboard Mockup */}
-          <div className="dashboard-preview">
-            <div className="dashboard-window">
-              <div className="window-header">
-                <div className="window-dots">
-                  <span className="dot dot-red"></span>
-                  <span className="dot dot-yellow"></span>
-                  <span className="dot dot-green"></span>
+          {/* Premium Dashboard Mockup */}
+          <div className="dashboard-mockup-premium">
+            <div className="mockup-glow"></div>
+            <div className="dashboard-window-premium">
+              <div className="window-titlebar">
+                <div className="titlebar-buttons">
+                  <span className="btn-close"></span>
+                  <span className="btn-minimize"></span>
+                  <span className="btn-maximize"></span>
                 </div>
-                <div className="window-title">SubHub Dashboard</div>
+                <span className="window-title-text">SubHub Dashboard</span>
               </div>
-              <div className="dashboard-content">
-                <div className="dashboard-sidebar">
-                  <div className="sidebar-item active">
-                    <span className="sidebar-icon">📊</span>
-                    <span className="sidebar-text">Dashboard</span>
-                  </div>
-                  <div className="sidebar-item">
-                    <span className="sidebar-icon">📦</span>
-                    <span className="sidebar-text">Subscriptions</span>
-                  </div>
-                  <div className="sidebar-item">
-                    <span className="sidebar-icon">💳</span>
-                    <span className="sidebar-text">Billing</span>
-                  </div>
-                  <div className="sidebar-item">
-                    <span className="sidebar-icon">⚙️</span>
-                    <span className="sidebar-text">Settings</span>
+              
+              <div className="dashboard-layout">
+                <div className="dashboard-sidebar-premium">
+                  <div className="sidebar-section">
+                    <div className="sidebar-item-premium active">
+                      <span className="item-icon">📊</span>
+                      <span className="item-text">Overview</span>
+                    </div>
+                    <div className="sidebar-item-premium">
+                      <span className="item-icon">📦</span>
+                      <span className="item-text">Subscriptions</span>
+                    </div>
+                    <div className="sidebar-item-premium">
+                      <span className="item-icon">💳</span>
+                      <span className="item-text">Billing</span>
+                    </div>
+                    <div className="sidebar-item-premium">
+                      <span className="item-icon">📈</span>
+                      <span className="item-text">Analytics</span>
+                    </div>
+                    <div className="sidebar-item-premium">
+                      <span className="item-icon">⚙️</span>
+                      <span className="item-text">Settings</span>
+                    </div>
                   </div>
                 </div>
-                <div className="dashboard-main">
-                  <div className="dashboard-header-section">
-                    <h2>Welcome back, User</h2>
-                    <p>Subscription management shouldn't be complicated. It should be automated.</p>
-                  </div>
-                  <div className="dashboard-cards">
-                    <div className="metric-card">
-                      <div className="metric-label">Active Plan</div>
-                      <div className="metric-value">PRO</div>
-                    </div>
-                    <div className="metric-card">
-                      <div className="metric-label">Subscriptions</div>
-                      <div className="metric-value">24</div>
-                    </div>
-                    <div className="metric-card">
-                      <div className="metric-label">This Month</div>
-                      <div className="metric-value">$1,247</div>
+
+                <div className="dashboard-main-premium">
+                  <div className="dashboard-header-premium">
+                    <div>
+                      <h2 className="dashboard-welcome">Welcome back, Abhishek</h2>
+                      <p className="dashboard-subtitle">Here's what's happening with your subscriptions today.</p>
                     </div>
                   </div>
-                  <div className="chart-placeholder">
-                    <div className="chart-bars">
-                      <div className="bar" style={{height: '60%'}}></div>
-                      <div className="bar" style={{height: '80%'}}></div>
-                      <div className="bar" style={{height: '45%'}}></div>
-                      <div className="bar" style={{height: '90%'}}></div>
-                      <div className="bar" style={{height: '70%'}}></div>
-                      <div className="bar" style={{height: '85%'}}></div>
+
+                  <div className="metrics-grid-premium">
+                    <div className="metric-card-premium">
+                      <div className="metric-header">
+                        <span className="metric-icon">📦</span>
+                        <span className="metric-trend positive">+12%</span>
+                      </div>
+                      <div className="metric-value-premium">$12,426</div>
+                      <div className="metric-label-premium">Monthly Revenue</div>
+                    </div>
+                    <div className="metric-card-premium">
+                      <div className="metric-header">
+                        <span className="metric-icon">👥</span>
+                        <span className="metric-trend positive">+8%</span>
+                      </div>
+                      <div className="metric-value-premium">1,247</div>
+                      <div className="metric-label-premium">Active Users</div>
+                    </div>
+                    <div className="metric-card-premium">
+                      <div className="metric-header">
+                        <span className="metric-icon">⚡</span>
+                        <span className="metric-trend negative">-3%</span>
+                      </div>
+                      <div className="metric-value-premium">89</div>
+                      <div className="metric-label-premium">Churn Rate</div>
+                    </div>
+                  </div>
+
+                  <div className="chart-section-premium">
+                    <div className="chart-header">
+                      <h3>Revenue Overview</h3>
+                      <div className="chart-tabs">
+                        <span className="tab active">Week</span>
+                        <span className="tab">Month</span>
+                        <span className="tab">Year</span>
+                      </div>
+                    </div>
+                    <div className="chart-container-premium">
+                      <div className="chart-bars-premium">
+                        <div className="bar-premium" style={{height: '45%'}}></div>
+                        <div className="bar-premium" style={{height: '65%'}}></div>
+                        <div className="bar-premium" style={{height: '55%'}}></div>
+                        <div className="bar-premium" style={{height: '80%'}}></div>
+                        <div className="bar-premium" style={{height: '70%'}}></div>
+                        <div className="bar-premium" style={{height: '90%'}}></div>
+                        <div className="bar-premium" style={{height: '75%'}}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -159,17 +204,20 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="features-new">
-        <div className="features-container">
-          <h2 className="section-title-new">Why Choose SubHub?</h2>
-          <p className="section-subtitle">Everything you need to manage subscriptions effortlessly</p>
+      <section className="features-premium" id="features">
+        <div className="features-container-premium">
+          <div className="section-header-premium">
+            <span className="section-badge">FEATURES</span>
+            <h2 className="section-title-premium">Why Choose SubHub?</h2>
+            <p className="section-description">Everything you need to manage subscriptions effortlessly</p>
+          </div>
           
-          <div className="features-grid-new">
+          <div className="features-grid-premium">
             {features.map((feature, index) => (
-              <div key={index} className="feature-card-new">
-                <div className="feature-icon-new">{feature.icon}</div>
-                <h3 className="feature-title-new">{feature.title}</h3>
-                <p className="feature-desc-new">{feature.description}</p>
+              <div key={index} className="feature-card-premium">
+                <div className="feature-icon-premium">{feature.icon}</div>
+                <h3 className="feature-title-premium">{feature.title}</h3>
+                <p className="feature-desc-premium">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -177,46 +225,70 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="cta-new">
-        <div className="cta-content">
-          <h2>Ready to Transform Your Subscription Management?</h2>
-          <p>Join thousands of satisfied customers today</p>
-          <button className="cta-btn" onClick={() => navigate('/pricing')}>
+      <section className="cta-premium">
+        <div className="cta-glow"></div>
+        <div className="cta-content-premium">
+          <h2 className="cta-title">Ready to Transform Your Subscription Management?</h2>
+          <p className="cta-subtitle">Join thousands of satisfied customers today</p>
+          <button className="cta-button-premium" onClick={() => navigate('/pricing')}>
             Start Your Free Trial
+            <span className="btn-arrow">→</span>
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer-new">
-        <div className="footer-content">
-          <div className="footer-section">
-            <div className="footer-logo">
-              <div className="logo-icon">S</div>
-              <span className="logo-text">SubHub</span>
+      {/* Premium Footer */}
+      <footer className="footer-premium">
+        <div className="footer-container-premium">
+          <div className="footer-grid">
+            <div className="footer-brand">
+              <div className="footer-logo">
+                <div className="logo-icon-premium">S</div>
+                <span className="logo-text-premium">SubHub</span>
+              </div>
+              <p className="footer-description">
+                Streamline your subscription management with SubHub. The all-in-one platform trusted by thousands.
+              </p>
+              <div className="footer-social">
+                <a href="#" className="social-link">𝕏</a>
+                <a href="#" className="social-link">in</a>
+                <a href="#" className="social-link">f</a>
+                <a href="#" className="social-link">ig</a>
+              </div>
             </div>
-            <p className="footer-desc">Streamline your subscription management with SubHub</p>
+
+            <div className="footer-links-group">
+              <h4 className="footer-heading">Product</h4>
+              <a href="#features" className="footer-link">Features</a>
+              <a href="#pricing" onClick={(e) => { e.preventDefault(); navigate('/pricing'); }} className="footer-link">Pricing</a>
+              <a href="#" className="footer-link">Documentation</a>
+              <a href="#" className="footer-link">API Reference</a>
+            </div>
+
+            <div className="footer-links-group">
+              <h4 className="footer-heading">Company</h4>
+              <a href="#" className="footer-link">About</a>
+              <a href="#" className="footer-link">Contact</a>
+              <a href="#" className="footer-link">Careers</a>
+              <a href="#" className="footer-link">Blog</a>
+            </div>
+
+            <div className="footer-links-group">
+              <h4 className="footer-heading">Legal</h4>
+              <a href="#" className="footer-link">Privacy</a>
+              <a href="#" className="footer-link">Terms</a>
+              <a href="#" className="footer-link">Security</a>
+              <a href="#" className="footer-link">Cookies</a>
+            </div>
           </div>
-          <div className="footer-section">
-            <h4>Product</h4>
-            <a href="#features">Features</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#docs">Documentation</a>
+
+          <div className="footer-bottom-premium">
+            <p className="footer-copyright">© 2024 SubHub. All rights reserved.</p>
+            <div className="footer-badges">
+              <span className="badge-premium">🔒 Enterprise Security</span>
+              <span className="badge-premium">✓ SOC 2 Certified</span>
+            </div>
           </div>
-          <div className="footer-section">
-            <h4>Company</h4>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-            <a href="#careers">Careers</a>
-          </div>
-          <div className="footer-section">
-            <h4>Legal</h4>
-            <a href="#privacy">Privacy</a>
-            <a href="#terms">Terms</a>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2024 SubHub. All rights reserved.</p>
         </div>
       </footer>
     </div>
