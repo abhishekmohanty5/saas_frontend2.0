@@ -39,6 +39,39 @@ const PricingPage = () => {
     } catch (err) {
       console.error('Error fetching plans:', err);
       setError(err.response?.data?.message || 'Failed to load plans. Please try again.');
+      // Fallback to static plans if API fails (e.g. server offline or 401)
+      const staticPlans = [
+        {
+          id: 'basic',
+          name: 'Basic',
+          price: 499,
+          durationInDays: 30,
+          active: true,
+          features: ['JWT authentication', 'Automated renewals', 'Email reminders']
+        },
+        {
+          id: 'premium',
+          name: 'Premium',
+          price: 999,
+          durationInDays: 30,
+          active: true,
+          features: ['JWT authentication', 'Automated renewals', 'Email reminders', 'Admin dashboard']
+        },
+        {
+          id: 'enterprise',
+          name: 'Enterprise',
+          price: 2499,
+          durationInDays: 30,
+          active: true,
+          features: ['JWT authentication', 'Automated renewals', 'Email reminders', 'Admin dashboard', 'Priority support']
+        }
+      ];
+      setPlans(staticPlans);
+
+      // Since we have a public endpoint now, any error is unexpected, but we still fallback gracefully
+      if (err.response?.status !== 401) {
+        console.warn('Using standard pricing plans due to API error');
+      }
     } finally {
       setLoading(false);
     }
@@ -280,7 +313,7 @@ const PlanCard = ({ plan, isPopular, onSubscribe, subscribing, featureIcons }) =
         ) : (
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
             <span style={{ fontSize: '48px', fontWeight: 700, color: '#1a1a1a', lineHeight: 1 }}>
-              ${plan.price}
+              ₹{plan.price}
             </span>
             <span style={{ fontSize: '16px', color: '#999' }}>Per Month</span>
           </div>

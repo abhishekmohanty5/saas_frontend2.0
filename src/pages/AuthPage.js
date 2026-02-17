@@ -255,6 +255,36 @@ const AuthPage = () => {
             )}
           </p>
 
+          {/* Back Button */}
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            style={{
+              position: 'absolute',
+              top: '24px',
+              left: '24px',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#666',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '14px',
+              fontWeight: 500,
+              padding: '8px',
+              borderRadius: '8px',
+              transition: 'background 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#f0f0f0'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Home
+          </button>
+
           {/* Success Message */}
           {successMessage && (
             <div style={{

@@ -39,14 +39,22 @@ api.interceptors.response.use(
   }
 );
 
+// Create public axios instance (no auth interceptors)
+const publicApi = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // ==================== AUTH ENDPOINTS ====================
 export const authAPI = {
   // Register new user
   register: (userData) => api.post('/auth/reg', userData),
-  
+
   // Login user
   login: (credentials) => api.post('/auth/log', credentials),
-  
+
   // Logout (client-side only - clear tokens)
   logout: () => {
     localStorage.removeItem('token');
@@ -57,20 +65,20 @@ export const authAPI = {
 // ==================== PUBLIC ENDPOINTS ====================
 export const publicAPI = {
   // Get all plans (no auth required)
-  getAllPlans: () => api.get('/admin/plan'),
+  getAllPlans: () => publicApi.get('/public'),
 };
 
 // ==================== SUBSCRIPTION ENDPOINTS (Plan-based) ====================
 export const subscriptionAPI = {
   // Subscribe to a plan
   subscribe: (planId) => api.post(`/subscriptions/subscribe/${planId}`),
-  
+
   // Get user's current subscription
   getUserSubscription: () => api.get('/subscriptions'),
-  
+
   // Cancel subscription
   cancelSubscription: () => api.put('/subscriptions/cancel'),
-  
+
   // Get all plans
   getAllPlans: () => api.get('/admin/plan'),
 };
@@ -78,43 +86,43 @@ export const subscriptionAPI = {
 // ==================== USER SUBSCRIPTION ENDPOINTS (Personal tracking) ====================
 export const userSubscriptionAPI = {
   // Create new subscription
-  createSubscription: (subscriptionDto) => 
+  createSubscription: (subscriptionDto) =>
     api.post('/user-Subscriptions', subscriptionDto),
-  
+
   // Get all user subscriptions
-  getAllSubscriptions: () => 
+  getAllSubscriptions: () =>
     api.get('/user-Subscriptions'),
-  
+
   // Get active subscriptions only
-  getActiveSubscriptions: () => 
+  getActiveSubscriptions: () =>
     api.get('/user-Subscriptions/active'),
-  
+
   // Get subscriptions by category
-  getSubscriptionsByCategory: (categoryId) => 
+  getSubscriptionsByCategory: (categoryId) =>
     api.get(`/user-Subscriptions/category/${categoryId}`),
-  
+
   // Update subscription
-  updateSubscription: (id, subscriptionDto) => 
+  updateSubscription: (id, subscriptionDto) =>
     api.put(`/user-Subscriptions/update/${id}`, subscriptionDto),
-  
+
   // Cancel subscription
-  cancelSubscription: (id) => 
+  cancelSubscription: (id) =>
     api.put(`/user-Subscriptions/cancel/${id}`),
-  
+
   // Get upcoming renewals (default 7 days)
-  getUpcomingRenewals: (days = 7) => 
+  getUpcomingRenewals: (days = 7) =>
     api.get(`/user-Subscriptions/upcoming?days=${days}`),
-  
+
   // Get subscription statistics
-  getStats: () => 
+  getStats: () =>
     api.get('/user-Subscriptions/stats'),
-  
+
   // Get smart insights
-  getInsights: () => 
+  getInsights: () =>
     api.get('/user-Subscriptions/insights'),
-  
+
   // Get subscription categories
-  getCategories: () => 
+  getCategories: () =>
     api.get('/categories'), // You'll need to add this endpoint in backend
 };
 
@@ -126,16 +134,16 @@ export const adminAPI = {
     price: planData.price,
     durationInDays: planData.duration
   }),
-  
+
   // Activate plan
   activatePlan: (planId) => api.put(`/admin/plan/${planId}/activate`),
-  
+
   // Deactivate plan
   deactivatePlan: (planId) => api.put(`/admin/plan/${planId}/deactivate`),
-  
+
   // Delete plan
   deletePlan: (planId) => api.delete(`/admin/plan/${planId}`),
-  
+
   // Get all users (you'll need to add this endpoint)
   getAllUsers: () => api.get('/admin/users'),
 };
