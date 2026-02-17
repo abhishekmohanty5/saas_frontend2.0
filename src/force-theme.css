@@ -1,0 +1,10 @@
+/* FORCE LIGHT THEME */
+body,
+#root,
+.App,
+.landing-page {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #0f172a !important;
+}

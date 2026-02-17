@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
-import './AuthPage.css';
 
 const AuthPage = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -16,7 +18,7 @@ const AuthPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(''); // ADD THIS
+  const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
   const { login, register } = useAuth();
@@ -27,11 +29,9 @@ const AuthPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
-    // Clear success message when user starts typing
     if (successMessage) {
       setSuccessMessage('');
     }
@@ -40,7 +40,6 @@ const AuthPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Name validation (only for register)
     if (!isLogin) {
       if (!formData.name) {
         newErrors.name = 'Name is required';
@@ -49,7 +48,6 @@ const AuthPage = () => {
       }
     }
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
       newErrors.email = 'Email is required';
@@ -57,7 +55,6 @@ const AuthPage = () => {
       newErrors.email = 'Please enter a valid email';
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 2) {
@@ -72,7 +69,6 @@ const AuthPage = () => {
       newErrors.password = 'Password must contain at least one special character (@$!%*?&)';
     }
 
-    // Confirm password validation (only for register)
     if (!isLogin) {
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = 'Please confirm your password';
@@ -87,7 +83,7 @@ const AuthPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -96,28 +92,23 @@ const AuthPage = () => {
 
     try {
       if (isLogin) {
-        // LOGIN FLOW
         const result = await login(formData.email, formData.password);
-        
+
         if (result.success) {
-          navigate('/dashboard'); // Redirect to dashboard on success
+          navigate(redirectTo);
         } else {
-          // Show backend error
           setErrors({ submit: result.error });
         }
       } else {
-        // REGISTRATION FLOW
         const result = await register({
           userName: formData.name,
           email: formData.email,
           password: formData.password
         });
-        
+
         if (result.success) {
-          // Show success message and switch to login
           setSuccessMessage(result.message || 'Registration successful! Please login.');
-          setIsLogin(true); // Switch to login tab
-          // Clear form
+          setIsLogin(true);
           setFormData({
             name: '',
             email: '',
@@ -126,7 +117,6 @@ const AuthPage = () => {
             rememberMe: false
           });
         } else {
-          // Show backend error
           setErrors({ submit: result.error });
         }
       }
@@ -137,290 +127,584 @@ const AuthPage = () => {
     }
   };
 
-  const handleSocialLogin = (provider) => {
-    console.log(`Login with ${provider}`);
-    // Implement social login logic here
-  };
-
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      rememberMe: false
-    });
-    setErrors({});
-    setSuccessMessage(''); // Clear success message when switching
-  };
-
   return (
-    <div className="auth-page">
-      <div className="auth-background">
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-2"></div>
-        <div className="floating-shape shape-3"></div>
-      </div>
+    <div style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '45% 55%' }}>
+      {/* Left Side - Premium Dark Side */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1A1714 0%, #2D2620 50%, #1A1714 100%)',
+        padding: '80px 70px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Animated gradient orbs */}
+        <div style={{
+          position: 'absolute',
+          top: '-150px',
+          right: '-150px',
+          width: '500px',
+          height: '500px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)',
+          animation: 'float1 8s ease-in-out infinite'
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-100px',
+          left: '-100px',
+          width: '400px',
+          height: '400px',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%)',
+          animation: 'float2 10s ease-in-out infinite'
+        }} />
 
-      <div className="auth-container">
         {/* Logo */}
-        <div className="auth-logo">
-          <div className="logo-box">
-            <div className="logo-icon">S</div>
-            <div className="logo-text">SubHub</div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '80px',
+            cursor: 'pointer'
+          }}
+            onClick={() => navigate('/')}
+          >
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(201,168,76,0.3)'
+            }}>
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                <path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z" fill="#1A1714" />
+              </svg>
+            </div>
+            <span style={{ fontSize: '24px', fontWeight: 700, color: 'white', fontFamily: 'var(--ff-sans)', letterSpacing: '-0.5px' }}>
+              SubSphere
+            </span>
           </div>
+
+          <h2 style={{
+            fontFamily: 'var(--ff-serif)',
+            fontSize: '52px',
+            color: 'white',
+            lineHeight: 1.1,
+            letterSpacing: '-1px',
+            fontWeight: 400,
+            marginBottom: '28px'
+          }}>
+            Subscription<br />billing made<br /><em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>effortless</em>
+          </h2>
+
+          <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: '440px' }}>
+            Join thousands of developers using SubSphere to manage subscription lifecycles, automated renewals, and seamless billing infrastructure.
+          </p>
         </div>
 
-        {/* Auth Card */}
-        <div className="auth-card">
-          <div className="auth-header">
-            <h1>{isLogin ? 'Welcome Back' : 'Create Account'}</h1>
-            <p>
-              {isLogin 
-                ? 'Sign in to access your dashboard' 
-                : 'Join 1000+ companies managing subscriptions'}
-            </p>
-          </div>
+        {/* Premium Features */}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <FeatureItem icon={<ShieldIcon />} text="JWT-secured authentication" />
+          <FeatureItem icon={<BoltIcon />} text="Automated renewal reminders" />
+          <FeatureItem icon={<ChartIcon />} text="Real-time admin dashboard" />
+          <FeatureItem icon={<RefreshIcon />} text="Complete lifecycle management" />
+        </div>
+      </div>
 
-          {/* Tab Switcher */}
-          <div className="auth-tabs">
-            <button 
-              className={`auth-tab ${isLogin ? 'active' : ''}`}
-              onClick={() => setIsLogin(true)}
-            >
-              Sign In
-            </button>
-            <button 
-              className={`auth-tab ${!isLogin ? 'active' : ''}`}
-              onClick={() => setIsLogin(false)}
-            >
-              Register
-            </button>
-          </div>
+      {/* Right Side - Premium Auth Card */}
+      <div style={{
+        background: 'linear-gradient(135deg, #F8F8F8 0%, #E8E8E8 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 50px'
+      }}>
+        <div style={{
+          background: 'white',
+          borderRadius: '28px',
+          padding: '52px 44px',
+          maxWidth: '480px',
+          width: '100%',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.05)'
+        }}>
+          {/* Header */}
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 700,
+            color: '#1a1a1a',
+            marginBottom: '10px',
+            letterSpacing: '-0.5px'
+          }}>
+            {isLogin ? 'Sign in' : 'Create an account'}
+          </h1>
+          <p style={{
+            fontSize: '15px',
+            color: '#666',
+            marginBottom: '32px'
+          }}>
+            {isLogin ? (
+              <>New user? <button onClick={() => setIsLogin(false)} style={{ background: 'none', border: 'none', color: '#4A90E2', cursor: 'pointer', padding: 0, textDecoration: 'none', fontWeight: 600 }}>Create an account</button></>
+            ) : (
+              <>Already have an account? <button onClick={() => setIsLogin(true)} style={{ background: 'none', border: 'none', color: '#4A90E2', cursor: 'pointer', padding: 0, textDecoration: 'none', fontWeight: 600 }}>Sign in</button></>
+            )}
+          </p>
 
-          {/* Social Login */}
-          <div className="social-login">
-            <button 
-              className="social-btn" 
-              onClick={() => handleSocialLogin('google')}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20">
-                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
-                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
-                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
-                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
-              </svg>
-              Google
-            </button>
-            <button 
-              className="social-btn" 
-              onClick={() => handleSocialLogin('github')}
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd"/>
-              </svg>
-              GitHub
-            </button>
-          </div>
+          {/* Success Message */}
+          {successMessage && (
+            <div style={{
+              background: 'linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%)',
+              border: '1px solid #81C784',
+              color: '#2E7D32',
+              padding: '14px 18px',
+              borderRadius: '14px',
+              marginBottom: '24px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {successMessage}
+            </div>
+          )}
 
-          <div className="divider">
-            <span>or {isLogin ? 'sign in' : 'register'} with email</span>
-          </div>
+          {/* Error Message */}
+          {errors.submit && (
+            <div style={{
+              background: 'linear-gradient(135deg, #FFEBEE 0%, #FCE4EC 100%)',
+              border: '1px solid #EF5350',
+              color: '#C62828',
+              padding: '14px 18px',
+              borderRadius: '14px',
+              marginBottom: '24px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {errors.submit}
+            </div>
+          )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="auth-form">
-            {/* SUCCESS MESSAGE */}
-            {successMessage && (
-              <div className="success-message">
-                {successMessage}
-              </div>
-            )}
-
-            {/* ERROR MESSAGE */}
-            {errors.submit && (
-              <div className="error-message global-error">
-                {errors.submit}
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit}>
             {/* Name Field (Register only) */}
             {!isLogin && (
-              <div className="form-group">
-                <label htmlFor="name">Full Name</label>
-                <div className="input-wrapper">
-                  <span className="input-icon">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
-                    </svg>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F8F9FA',
+                  borderRadius: '14px',
+                  border: errors.name ? '2px solid #F44336' : '2px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = errors.name ? '#F44336' : '#4A90E2'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <span style={{ padding: '0 18px', color: '#999' }}>
+                    <UserIcon />
                   </span>
                   <input
                     type="text"
-                    id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="John Doe"
-                    className={errors.name ? 'error' : ''}
+                    placeholder="Full Name"
+                    style={{
+                      flex: 1,
+                      padding: '16px 18px 16px 0',
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      fontSize: '15px',
+                      color: '#1a1a1a',
+                      fontWeight: 500
+                    }}
                   />
                 </div>
-                {errors.name && <span className="error-message">{errors.name}</span>}
+                {errors.name && <span style={{ fontSize: '13px', color: '#F44336', marginTop: '6px', display: 'block', marginLeft: '4px' }}>{errors.name}</span>}
               </div>
             )}
 
             {/* Email Field */}
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <div className="input-wrapper">
-                <span className="input-icon">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                  </svg>
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                background: '#F8F9FA',
+                borderRadius: '14px',
+                border: errors.email ? '2px solid #F44336' : '2px solid transparent',
+                transition: 'all 0.2s'
+              }}
+                onFocus={(e) => e.currentTarget.style.borderColor = errors.email ? '#F44336' : '#4A90E2'}
+                onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                <span style={{ padding: '0 18px', color: '#999' }}>
+                  <MailIcon />
                 </span>
                 <input
                   type="email"
-                  id="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="you@example.com"
-                  className={errors.email ? 'error' : ''}
+                  placeholder="Email Address"
+                  style={{
+                    flex: 1,
+                    padding: '16px 18px 16px 0',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '15px',
+                    color: '#1a1a1a',
+                    fontWeight: 500
+                  }}
                 />
               </div>
-              {errors.email && <span className="error-message">{errors.email}</span>}
+              {errors.email && <span style={{ fontSize: '13px', color: '#F44336', marginTop: '6px', display: 'block', marginLeft: '4px' }}>{errors.email}</span>}
             </div>
 
             {/* Password Field */}
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <div className="input-wrapper">
-                <span className="input-icon">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
-                  </svg>
+            <div style={{ marginBottom: isLogin ? '16px' : '20px' }}>
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                background: '#F8F9FA',
+                borderRadius: '14px',
+                border: errors.password ? '2px solid #F44336' : '2px solid transparent',
+                transition: 'all 0.2s'
+              }}
+                onFocus={(e) => e.currentTarget.style.borderColor = errors.password ? '#F44336' : '#4A90E2'}
+                onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
+              >
+                <span style={{ padding: '0 18px', color: '#999' }}>
+                  <LockIcon />
                 </span>
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
-                  className={errors.password ? 'error' : ''}
+                  placeholder="Password"
+                  style={{
+                    flex: 1,
+                    padding: '16px 0',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '15px',
+                    color: '#1a1a1a',
+                    fontWeight: 500
+                  }}
                 />
                 <button
                   type="button"
-                  className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '0 18px',
+                    color: '#999',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
                 >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd"/>
-                      <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
-              {errors.password && <span className="error-message">{errors.password}</span>}
+              {errors.password && <span style={{ fontSize: '13px', color: '#F44336', marginTop: '6px', display: 'block', marginLeft: '4px' }}>{errors.password}</span>}
             </div>
 
-            {/* Confirm Password Field (Register only) */}
+            {/* Confirm Password (Register only) */}
             {!isLogin && (
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <div className="input-wrapper">
-                  <span className="input-icon">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
-                    </svg>
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F8F9FA',
+                  borderRadius: '14px',
+                  border: errors.confirmPassword ? '2px solid #F44336' : '2px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+                  onFocus={(e) => e.currentTarget.style.borderColor = errors.confirmPassword ? '#F44336' : '#4A90E2'}
+                  onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <span style={{ padding: '0 18px', color: '#999' }}>
+                    <LockIcon />
                   </span>
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="••••••••"
-                    className={errors.confirmPassword ? 'error' : ''}
+                    placeholder="Confirm Password"
+                    style={{
+                      flex: 1,
+                      padding: '16px 0',
+                      background: 'transparent',
+                      border: 'none',
+                      outline: 'none',
+                      fontSize: '15px',
+                      color: '#1a1a1a',
+                      fontWeight: 500
+                    }}
                   />
                   <button
                     type="button"
-                    className="password-toggle"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0 18px',
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
                   >
-                    {showConfirmPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd"/>
-                        <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z"/>
-                      </svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                      </svg>
-                    )}
+                    {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
                   </button>
                 </div>
-                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+                {errors.confirmPassword && <span style={{ fontSize: '13px', color: '#F44336', marginTop: '6px', display: 'block', marginLeft: '4px' }}>{errors.confirmPassword}</span>}
               </div>
             )}
 
-            {/* Remember Me / Forgot Password (Login only) */}
+            {/* Forgot Password (Login only) */}
             {isLogin && (
-              <div className="form-options">
-                <div className="remember-me">
-                  <input
-                    type="checkbox"
-                    id="rememberMe"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="rememberMe">Remember me</label>
-                </div>
-                <a href="#" className="forgot-password">Forgot password?</a>
+              <div style={{ textAlign: 'right', marginBottom: '28px' }}>
+                <a href="#" style={{ fontSize: '14px', color: '#4A90E2', textDecoration: 'none', fontWeight: 600 }}>
+                  Forgot password?
+                </a>
               </div>
             )}
 
             {/* Submit Button */}
-            <button type="submit" className="btn-submit" disabled={loading}>
-              {loading ? (
-                <span className="loading-spinner"></span>
-              ) : (
-                isLogin ? 'Sign In' : 'Create Account'
-              )}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                padding: '17px',
+                borderRadius: '14px',
+                border: 'none',
+                background: loading ? '#999' : 'linear-gradient(135deg, #000 0%, #1a1a1a 100%)',
+                color: 'white',
+                fontSize: '16px',
+                fontWeight: 700,
+                cursor: loading ? 'not-allowed' : 'pointer',
+                marginBottom: '28px',
+                boxShadow: loading ? 'none' : '0 4px 14px rgba(0,0,0,0.25)',
+                transition: 'all 0.2s',
+                letterSpacing: '0.3px'
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.target.style.transform = 'translateY(-1px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading) {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(0,0,0,0.25)';
+                }
+              }}
+            >
+              {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}
             </button>
-          </form>
 
-          {/* Toggle Auth Mode */}
-          <div className="auth-footer">
-            <p>
-              {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
-              <button onClick={toggleMode} className="link-button">
-                {isLogin ? 'Sign Up' : 'Sign In'}
-              </button>
+            {/* Divider */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginBottom: '28px'
+            }}>
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E0E0E0 50%, transparent 100%)' }} />
+              <span style={{ fontSize: '13px', color: '#999', fontWeight: 600 }}>or</span>
+              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, transparent 0%, #E0E0E0 50%, transparent 100%)' }} />
+            </div>
+
+            {/* Social Login */}
+            <p style={{ fontSize: '13px', color: '#666', textAlign: 'center', marginBottom: '20px', fontWeight: 500 }}>
+              Join With Your Favorite Social Media Account
             </p>
-          </div>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '28px' }}>
+              <SocialButton>
+                <GoogleIcon />
+              </SocialButton>
+              <SocialButton>
+                <FacebookIcon />
+              </SocialButton>
+              <SocialButton>
+                <TwitterIcon />
+              </SocialButton>
+              <SocialButton>
+                <AppleIcon />
+              </SocialButton>
+            </div>
 
-        {/* Back to Home */}
-        <div className="back-home">
-          <a href="/">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path fillRule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-            </svg>
-            Back to Home
-          </a>
+            {/* Terms */}
+            <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', lineHeight: 1.6 }}>
+              By signing in with an account, you agree to our{' '}
+              <a href="#" style={{ color: '#4A90E2', textDecoration: 'none', fontWeight: 600 }}>Terms of Service</a>
+              {' '}and{' '}
+              <a href="#" style={{ color: '#4A90E2', textDecoration: 'none', fontWeight: 600 }}>Privacy Policy</a>.
+            </p>
+          </form>
         </div>
       </div>
     </div>
   );
 };
+
+// Premium Feature Item Component
+const FeatureItem = ({ icon, text }) => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '14px',
+    background: 'rgba(255,255,255,0.05)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '12px',
+    padding: '16px 20px',
+    transition: 'all 0.3s'
+  }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+      e.currentTarget.style.borderColor = 'rgba(201,168,76,0.3)';
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+    }}
+  >
+    <div style={{ color: 'var(--gold)' }}>{icon}</div>
+    <span style={{ fontSize: '15px', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{text}</span>
+  </div>
+);
+
+// Premium Social Button with Glow Effect
+const SocialButton = ({ children }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <button
+      type="button"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        width: '52px',
+        height: '52px',
+        borderRadius: '50%',
+        border: '2px solid #E8E8E8',
+        background: 'white',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.3s',
+        boxShadow: isHovered ? '0 8px 25px rgba(74, 144, 226, 0.25)' : '0 2px 8px rgba(0,0,0,0.08)',
+        transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
+        borderColor: isHovered ? '#4A90E2' : '#E8E8E8'
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+// SVG Icons
+const UserIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M10 10a4 4 0 100-8 4 4 0 000 8zM3 18a7 7 0 1114 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const MailIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M2 7l8 5 8-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <rect x="4" y="9" width="12" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M7 9V6a3 3 0 016 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M10 5C5.5 5 2 10 2 10s3.5 5 8 5 8-5 8-5-3.5-5-8-5z" stroke="currentColor" strokeWidth="1.5" />
+    <circle cx="10" cy="10" r="2" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
+
+const EyeOffIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+    <path d="M3 3l14 14M10 7a3 3 0 013 3M7 10a3 3 0 003 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M5 5.5C3.5 6.5 2 10 2 10s3.5 5 8 5c1.5 0 2.8-.5 4-1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const ShieldIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const BoltIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M3 3v18h18M7 16l4-4 4 4 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const GoogleIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2" />
+  </svg>
+);
+
+const TwitterIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#000" />
+  </svg>
+);
+
+const AppleIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" fill="#000" />
+  </svg>
+);
 
 export default AuthPage;

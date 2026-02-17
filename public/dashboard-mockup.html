@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubSphere Dashboard - Glassmorphic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Liquid wave background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(123, 57, 252, 0.1) 0%, transparent 70%);
+            animation: wave 15s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(50px, 50px) rotate(180deg); }
+        }
+
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(123, 57, 252, 0.3);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        /* Glassmorphic cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(123, 57, 252, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(123, 57, 252, 0.5);
+            box-shadow: 
+                0 12px 48px rgba(123, 57, 252, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(123, 57, 252, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .metric-change {
+            font-size: 12px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .table-container {
+            margin-top: 24px;
+        }
+
+        .table-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        thead th {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
+        }
+
+        tbody tr {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(123, 57, 252, 0.2);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(123, 57, 252, 0.4);
+        }
+
+        tbody td {
+            padding: 16px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        tbody td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        tbody td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-trial {
+            background: rgba(123, 57, 252, 0.2);
+            color: #7b39fc;
+            border: 1px solid rgba(123, 57, 252, 0.3);
+        }
+
+        .plan-name {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .mrr {
+            font-weight: 600;
+            color: #7b39fc;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>Subscription Overview</h1>
+            <p>Manage and monitor your SaaS subscriptions</p>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Active Subscriptions</div>
+                <div class="metric-value">1,284</div>
+                <div class="metric-change">↑ 12.5% from last month</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Monthly Revenue</div>
+                <div class="metric-value">$48.2K</div>
+                <div class="metric-change">↑ 8.3% from last month</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Total Customers</div>
+                <div class="metric-value">892</div>
+                <div class="metric-change">↑ 15.2% from last month</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Churn Rate</div>
+                <div class="metric-value">2.1%</div>
+                <div class="metric-change">↓ 0.5% from last month</div>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="table-container">
+                <div class="table-header">Recent Activity</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Plan Name</th>
+                            <th>Status</th>
+                            <th>Users</th>
+                            <th>MRR</th>
+                            <th>Next Billing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="plan-name">Enterprise Pro</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>245</td>
+                            <td><span class="mrr">$12,450</span></td>
+                            <td>Feb 28, 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="plan-name">Professional</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>128</td>
+                            <td><span class="mrr">$6,400</span></td>
+                            <td>Mar 05, 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="plan-name">Starter Plus</span></td>
+                            <td><span class="status-badge status-trial">Trial</span></td>
+                            <td>64</td>
+                            <td><span class="mrr">$1,920</span></td>
+                            <td>Feb 25, 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="plan-name">Business</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>189</td>
+                            <td><span class="mrr">$9,450</span></td>
+                            <td>Mar 12, 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="plan-name">Enterprise</span></td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>312</td>
+                            <td><span class="mrr">$18,720</span></td>
+                            <td>Mar 01, 2026</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

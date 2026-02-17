@@ -9,6 +9,7 @@ import AuthPage from './pages/AuthPage';
 import PricingPage from './pages/PricingPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import MySubscriptionsPage from './pages/MySubscriptionsPage'; // NEW IMPORT
 
 import './App.css';
 
@@ -29,6 +30,16 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+
+            {/* NEW ROUTE - My Subscriptions Page */}
+            <Route 
+              path="/my-subscriptions" 
+              element={
+                <ProtectedRoute>
+                  <MySubscriptionsPage />
                 </ProtectedRoute>
               } 
             />
