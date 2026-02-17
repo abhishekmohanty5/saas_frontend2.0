@@ -58,7 +58,7 @@ const PricingSubSphereStatic = () => {
     };
 
     return (
-        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal pricing-section">
+        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="pricing-section">
             <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
                 Pricing
             </div>
