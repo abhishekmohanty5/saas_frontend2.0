@@ -1,102 +1,115 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import { publicAPI, subscriptionAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PlanCard from '../components/pricing/PlanCard';
+import { BILLING_INTERVALS, DEFAULT_PLANS, normalizePlanFromBackend } from '../components/pricing/pricingData';
 
 const PricingPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const selectedPlanParam = searchParams.get('plan'); // can be id or name
+  const selectedPlanNameParam = searchParams.get('planName'); // name
+  const billingParam = searchParams.get('billing'); // monthly | annual
+
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [subscribingPlanId, setSubscribingPlanId] = useState(null);
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const [billingInterval, setBillingInterval] = useState(
+    billingParam === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.ANNUAL : BILLING_INTERVALS.MONTHLY
+  );
 
   useEffect(() => {
+    if (billingParam === BILLING_INTERVALS.ANNUAL || billingParam === BILLING_INTERVALS.MONTHLY) {
+      setBillingInterval(billingParam);
+    }
+  }, [billingParam]);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await publicAPI.getAllPlans();
+
+        if (response.data && response.data.data) {
+          const normalized = response.data.data.map((p) => normalizePlanFromBackend(p));
+          setPlans(normalized.length > 0 ? normalized : DEFAULT_PLANS);
+        } else {
+          setPlans(DEFAULT_PLANS);
+        }
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+        setError(err.response?.data?.message || 'Failed to load plans. Please try again.');
+        setPlans(DEFAULT_PLANS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchPlans();
   }, []);
 
-  const fetchPlans = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      const response = await publicAPI.getAllPlans();
+  useEffect(() => {
+    // Scroll to the chosen plan when coming from landing page
+    if (loading || plans.length === 0) return;
 
-      if (response.data && response.data.data) {
-        const backendPlans = response.data.data.map(plan => ({
-          id: plan.id,
-          name: plan.name,
-          price: parseFloat(plan.price),
-          durationInDays: plan.durationInDays,
-          active: plan.active,
-          features: plan.features || []
-        }));
-        setPlans(backendPlans);
-      } else {
-        setPlans([]);
-      }
-    } catch (err) {
-      console.error('Error fetching plans:', err);
-      setError(err.response?.data?.message || 'Failed to load plans. Please try again.');
-      // Fallback to static plans if API fails (e.g. server offline or 401)
-      const staticPlans = [
-        {
-          id: 'basic',
-          name: 'Basic',
-          price: 499,
-          durationInDays: 30,
-          active: true,
-          features: ['JWT authentication', 'Automated renewals', 'Email reminders']
-        },
-        {
-          id: 'premium',
-          name: 'Premium',
-          price: 999,
-          durationInDays: 30,
-          active: true,
-          features: ['JWT authentication', 'Automated renewals', 'Email reminders', 'Admin dashboard']
-        },
-        {
-          id: 'enterprise',
-          name: 'Enterprise',
-          price: 2499,
-          durationInDays: 30,
-          active: true,
-          features: ['JWT authentication', 'Automated renewals', 'Email reminders', 'Admin dashboard', 'Priority support']
-        }
-      ];
-      setPlans(staticPlans);
+    const byId = selectedPlanParam
+      ? plans.find((p) => String(p.id) === String(selectedPlanParam))
+      : null;
+    const byName = selectedPlanNameParam
+      ? plans.find((p) => String(p.name || '').toLowerCase() === String(selectedPlanNameParam).toLowerCase())
+      : null;
+    const byNameFallback = selectedPlanParam
+      ? plans.find((p) => String(p.name || '').toLowerCase() === String(selectedPlanParam).toLowerCase())
+      : null;
 
-      // Since we have a public endpoint now, any error is unexpected, but we still fallback gracefully
-      if (err.response?.status !== 401) {
-        console.warn('Using standard pricing plans due to API error');
-      }
-    } finally {
-      setLoading(false);
+    const chosen = byId || byName || byNameFallback;
+    if (chosen?.id) {
+      const el = document.getElementById(`plan-${chosen.id}`);
+      el?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
     }
-  };
+  }, [loading, plans, selectedPlanNameParam, selectedPlanParam]);
 
-  const handleSubscribe = async (planId, planName) => {
+  const handleSubscribe = async (plan) => {
+    if (!plan?.id) return;
+
     if (!user) {
-      setError('Please login first to subscribe to a plan. Click here to login.');
-      // Scroll to top to show error message
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Send user to login and return back to this pricing page with their selection.
+      const redirect = `/pricing?plan=${encodeURIComponent(String(plan.id))}&planName=${encodeURIComponent(String(plan.name || ''))}&billing=${encodeURIComponent(billingInterval)}`;
+      navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
     try {
-      setSubscribingPlanId(planId);
+      setSubscribingPlanId(plan.id);
       setError('');
-
-      const response = await subscriptionAPI.subscribe(planId);
-      alert(response.data?.message || `Successfully subscribed to ${planName} plan!`);
-      navigate('/dashboard');
+      const response = await subscriptionAPI.subscribe(plan.id);
+      // alert(response.data?.message || `Successfully subscribed to ${plan.name} plan!`);
+      navigate('/dashboard', { state: { successMessage: response.data?.message || `Successfully subscribed to ${plan.name} plan!` } });
     } catch (err) {
       console.error('Subscription error:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to subscribe. Please try again.';
-      alert(errorMessage);
+
+      let errorMessage = err.response?.data?.message || 'Failed to subscribe.';
+      const status = err.response?.status;
+
+      if (status === 401 || status === 403) {
+        errorMessage = 'Your session has expired. Please login again to subscribe.';
+      } else if (status === 500) {
+        // Often a 500 indicates a backend issue with the user context
+        errorMessage = 'Subscription failed. Please try logging in again to refresh your session.';
+      } else if (!errorMessage || errorMessage === 'Failed to subscribe.') {
+        errorMessage = 'Failed to subscribe. Please try logging in again or contact support.';
+      }
+
       setError(errorMessage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSubscribingPlanId(null);
     }
@@ -104,112 +117,150 @@ const PricingPage = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#E8E8E8' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--white)' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
             width: '48px',
             height: '48px',
-            border: '3px solid #ddd',
-            borderTopColor: '#666',
+            border: '3px solid var(--sand)',
+            borderTopColor: 'var(--ink)',
             borderRadius: '50%',
             margin: '0 auto 16px',
             animation: 'spin 1s linear infinite'
           }} />
-          <div style={{ fontSize: '16px', color: '#666', fontWeight: 500 }}>Loading plans...</div>
+          <div style={{ fontSize: '16px', color: 'var(--muted)', fontWeight: 500 }}>Loading plans...</div>
         </div>
       </div>
     );
   }
 
-  // Define feature icons mapping
-  const featureIcons = {
-    'Advanced reporting': '📊',
-    'Call recording': '🎙️',
-    'Business phone services': '📞',
-    'Video meeting': '📹',
-    'Screen share & file share': '💬',
-    'Advanced data privacy': '🛡️',
-    'Download across multiple devices': '📱'
-  };
-
   return (
-    <div style={{ minHeight: '100vh', background: '#E8E8E8' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--white)' }}>
       <Navbar />
 
-      {/* Hero Section */}
-      <div style={{ padding: '140px 48px 60px', maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
+      {/* Hero */}
+      <div style={{ padding: '140px 48px 60px', maxWidth: '1280px', margin: '0 auto' }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
+          Pricing
+        </div>
         <h1 style={{
           fontFamily: 'var(--ff-serif)',
-          fontSize: 'clamp(36px, 5vw, 56px)',
+          fontSize: 'clamp(32px, 4vw, 52px)',
           lineHeight: 1.1,
-          letterSpacing: '-1px',
-          color: '#1a1a1a',
+          letterSpacing: '-0.5px',
+          color: 'var(--ink)',
           fontWeight: 400,
+          maxWidth: '680px',
           marginBottom: '20px'
         }}>
-          Which plan is better?
+          Simple, transparent <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>pricing</em>
         </h1>
+        <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
+          All plans include the full API, JWT auth, automated scheduler, and admin dashboard.
+        </p>
+
+        {/* Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '32px', fontSize: '14px', color: 'var(--muted)' }}>
+          <span>Monthly</span>
+          <button
+            type="button"
+            onClick={() => setBillingInterval((v) => (v === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.MONTHLY : BILLING_INTERVALS.ANNUAL))}
+            style={{
+              width: '44px',
+              height: '24px',
+              borderRadius: '12px',
+              background: billingInterval === BILLING_INTERVALS.ANNUAL ? 'var(--ink)' : 'var(--sand)',
+              cursor: 'pointer',
+              position: 'relative',
+              transition: 'background 0.2s',
+              flexShrink: 0,
+              border: 'none'
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '3px',
+              left: billingInterval === BILLING_INTERVALS.ANNUAL ? '23px' : '3px',
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              background: 'white',
+              transition: 'left 0.2s',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+            }} />
+          </button>
+          <span>Annual <span style={{
+            display: 'inline-block',
+            background: 'rgba(64,145,108,0.1)',
+            color: 'var(--emerald2)',
+            fontSize: '12px',
+            fontWeight: 600,
+            padding: '2px 8px',
+            borderRadius: '20px'
+          }}>Save 20%</span></span>
+        </div>
 
         {error && (
           <div
             onClick={() => {
-              if (error.includes('login')) {
-                navigate('/login');
+              if (error.toLowerCase().includes('login')) {
+                const currentPath = location.pathname + location.search;
+                navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
               }
             }}
             style={{
-              background: '#FFEBEE',
-              border: '1px solid #F44336',
-              color: '#C62828',
-              padding: '14px 20px',
-              borderRadius: '12px',
-              marginTop: '24px',
-              fontSize: '14px',
+              background: 'rgba(255, 59, 48, 0.08)',
+              border: '1px solid rgba(255, 59, 48, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              color: '#FF3B30',
+              padding: '16px 24px',
+              borderRadius: '16px',
+              marginTop: '32px',
+              fontSize: '15px',
               fontWeight: 500,
-              maxWidth: '560px',
-              margin: '24px auto 0',
-              cursor: error.includes('login') ? 'pointer' : 'default',
-              transition: 'all 0.2s'
+              maxWidth: '500px',
+              margin: '32px auto 0',
+              cursor: error.toLowerCase().includes('login') ? 'pointer' : 'default',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              boxShadow: '0 8px 32px rgba(255, 59, 48, 0.12)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
             onMouseEnter={(e) => {
-              if (error.includes('login')) {
-                e.currentTarget.style.background = '#FFCDD2';
+              if (error.toLowerCase().includes('login')) {
+                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.12)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
               }
             }}
             onMouseLeave={(e) => {
-              if (error.includes('login')) {
-                e.currentTarget.style.background = '#FFEBEE';
+              if (error.toLowerCase().includes('login')) {
+                e.currentTarget.style.background = 'rgba(255, 59, 48, 0.08)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
           >
+            <span style={{ fontSize: '18px' }}>⚠️</span>
             {error}
           </div>
         )}
       </div>
 
-      {/* Pricing Cards */}
+      {/* Cards */}
       <div style={{ padding: '0 48px 100px', maxWidth: '1280px', margin: '0 auto' }}>
-        {plans.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
-            No plans available at the moment.
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', maxWidth: '1100px', margin: '0 auto' }}>
-            {plans.map((plan) => {
-              const isPopular = plan.name === 'PREMIUM';
-              return (
-                <PlanCard
-                  key={plan.id}
-                  plan={plan}
-                  isPopular={isPopular}
-                  onSubscribe={handleSubscribe}
-                  subscribing={subscribingPlanId === plan.id}
-                  featureIcons={featureIcons}
-                />
-              );
-            })}
-          </div>
-        )}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '48px', alignItems: 'start' }}>
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              billingInterval={billingInterval}
+              subscribing={subscribingPlanId === plan.id}
+              onAction={handleSubscribe}
+            />
+          ))}
+        </div>
       </div>
 
       <Footer />
@@ -219,179 +270,6 @@ const PricingPage = () => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
-  );
-};
-
-// Plan Card Component - Matching Reference Design
-const PlanCard = ({ plan, isPopular, onSubscribe, subscribing, featureIcons }) => {
-  const isFree = plan.price === 0;
-
-  // Default features if none provided
-  const defaultFeatures = [
-    'Advanced reporting',
-    'Call recording',
-    'Business phone services',
-    'Video meeting',
-    'Screen share & file share',
-    'Advanced data privacy',
-    'Download across multiple devices'
-  ];
-
-  const displayFeatures = plan.features.length > 0 ? plan.features : defaultFeatures;
-
-  return (
-    <div style={{
-      background: 'white',
-      borderRadius: '24px',
-      padding: '32px 28px',
-      position: 'relative',
-      boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-      transition: 'transform 0.2s, box-shadow 0.2s'
-    }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.08)';
-      }}
-    >
-      {/* Popular Badge */}
-      {isPopular && (
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          background: '#E8E8FF',
-          color: '#5B5BD6',
-          fontSize: '11px',
-          fontWeight: 700,
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
-          padding: '6px 12px',
-          borderRadius: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px'
-        }}>
-          ⭐ Popular
-        </div>
-      )}
-
-      {/* Plan Name */}
-      <div style={{
-        fontSize: '20px',
-        fontWeight: 600,
-        color: isPopular ? '#8B5CF6' : '#666',
-        marginBottom: '4px'
-      }}>
-        {plan.name}
-      </div>
-
-      {/* Subtitle */}
-      <div style={{
-        fontSize: '13px',
-        color: '#999',
-        marginBottom: '20px'
-      }}>
-        personal productivity
-      </div>
-
-      {/* Price */}
-      <div style={{ marginBottom: '20px' }}>
-        {isFree ? (
-          <div style={{
-            fontSize: '48px',
-            fontWeight: 700,
-            color: '#1a1a1a',
-            lineHeight: 1
-          }}>
-            Free
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-            <span style={{ fontSize: '48px', fontWeight: 700, color: '#1a1a1a', lineHeight: 1 }}>
-              ₹{plan.price}
-            </span>
-            <span style={{ fontSize: '16px', color: '#999' }}>Per Month</span>
-          </div>
-        )}
-      </div>
-
-      {/* Description */}
-      <p style={{
-        fontSize: '14px',
-        color: '#666',
-        lineHeight: 1.6,
-        marginBottom: '24px'
-      }}>
-        Level up productivity and creativity with expanded access
-      </p>
-
-      {/* CTA Button */}
-      <button
-        onClick={() => onSubscribe(plan.id, plan.name)}
-        disabled={!plan.active || subscribing}
-        style={{
-          width: '100%',
-          padding: '16px',
-          borderRadius: '12px',
-          border: 'none',
-          background: subscribing ? '#999' : '#000',
-          color: 'white',
-          fontSize: '15px',
-          fontWeight: 600,
-          cursor: plan.active && !subscribing ? 'pointer' : 'not-allowed',
-          marginBottom: '28px',
-          opacity: !plan.active || subscribing ? 0.5 : 1,
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => {
-          if (plan.active && !subscribing) {
-            e.target.style.background = '#333';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (plan.active && !subscribing) {
-            e.target.style.background = '#000';
-          }
-        }}
-      >
-        {subscribing ? 'Processing...' : isFree ? 'Get Started Free' : `Upgrade to ${plan.name}`}
-      </button>
-
-      {/* Features List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {displayFeatures.map((feature, index) => {
-          const icon = featureIcons[feature] || '✓';
-          return (
-            <div key={index} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              fontSize: '14px',
-              color: '#666'
-            }}>
-              <div style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '6px',
-                background: '#F5F5F5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                fontSize: '14px'
-              }}>
-                {icon}
-              </div>
-              <span>{feature}</span>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 };
