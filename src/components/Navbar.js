@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../utils/AuthContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const { isAuthenticated, user, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
     return (
         <nav style={{
@@ -65,61 +72,133 @@ const Navbar = () => {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '12px'
             }}>
-                <button
-                    onClick={() => navigate('/login')}
-                    style={{
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        padding: '8px 18px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        border: 'none',
-                        background: 'none',
-                        color: 'var(--muted)',
-                        transition: 'all 0.15s',
-                        fontFamily: 'var(--ff-sans)'
-                    }}
-                    onMouseEnter={(e) => {
-                        e.target.style.color = 'var(--ink)';
-                        e.target.style.background = 'var(--cream)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.color = 'var(--muted)';
-                        e.target.style.background = 'none';
-                    }}
-                >
-                    Sign in
-                </button>
-                <button
-                    onClick={() => navigate('/pricing')}
-                    style={{
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        padding: '8px 18px',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        border: 'none',
-                        background: 'var(--ink)',
-                        color: 'var(--white)',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
-                        transition: 'all 0.15s',
-                        fontFamily: 'var(--ff-sans)'
-                    }}
-                    onMouseEnter={(e) => {
-                        e.target.style.background = 'var(--ink2)';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.target.style.background = 'var(--ink)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
-                    }}
-                >
-                    Start free trial →
-                </button>
+                {isAuthenticated ? (
+                    <>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end',
+                            marginRight: '8px'
+                        }}>
+                            <span style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: 'var(--ink)',
+                                fontFamily: 'var(--ff-sans)'
+                            }}>
+                                {user?.email?.split('@')[0]}
+                            </span>
+                            <span style={{
+                                fontSize: '10px',
+                                color: 'var(--muted)',
+                                fontFamily: 'var(--ff-sans)'
+                            }}>
+                                Logged in
+                            </span>
+                        </div>
+                        <button
+                            onClick={handleLogout}
+                            style={{
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                border: '1px solid var(--sand)',
+                                background: 'var(--white)',
+                                color: 'var(--ink)',
+                                transition: 'all 0.15s',
+                                fontFamily: 'var(--ff-sans)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'var(--cream)';
+                                e.target.style.borderColor = 'var(--stone)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'var(--white)';
+                                e.target.style.borderColor = 'var(--sand)';
+                            }}
+                        >
+                            Log out
+                        </button>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            style={{
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                padding: '8px 16px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'var(--ink)',
+                                color: 'var(--white)',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                                transition: 'all 0.15s',
+                                fontFamily: 'var(--ff-sans)'
+                            }}
+                        >
+                            Go to App
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            onClick={() => navigate('/login')}
+                            style={{
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                padding: '8px 18px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'none',
+                                color: 'var(--muted)',
+                                transition: 'all 0.15s',
+                                fontFamily: 'var(--ff-sans)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.color = 'var(--ink)';
+                                e.target.style.background = 'var(--cream)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.color = 'var(--muted)';
+                                e.target.style.background = 'none';
+                            }}
+                        >
+                            Sign in
+                        </button>
+                        <button
+                            onClick={() => navigate('/pricing')}
+                            style={{
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                padding: '8px 18px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'var(--ink)',
+                                color: 'var(--white)',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
+                                transition: 'all 0.15s',
+                                fontFamily: 'var(--ff-sans)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'var(--ink2)';
+                                e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'var(--ink)';
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
+                            }}
+                        >
+                            Start free trial →
+                        </button>
+                    </>
+                )}
             </div>
         </nav>
     );
