@@ -145,6 +145,17 @@ code {
   }
 }
 
+@keyframes floatSubtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;

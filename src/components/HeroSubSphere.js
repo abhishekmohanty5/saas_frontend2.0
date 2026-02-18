@@ -249,15 +249,16 @@ const DashboardMockup = () => (
     }}>
         <div style={{
             background: 'var(--white)',
-            border: '1px solid var(--sand)',
-            borderRadius: 'var(--r3)',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.08), 0 32px 64px rgba(0,0,0,0.06)',
-            overflow: 'hidden'
+            border: 'none',
+            borderRadius: '24px',
+            boxShadow: '0 32px 64px -12px rgba(0,0,0,0.14)',
+            overflow: 'hidden',
+            animation: 'floatSubtle 6s ease-in-out infinite'
         }}>
             {/* Header */}
             <div style={{
-                background: 'var(--cream)',
-                borderBottom: '1px solid var(--sand)',
+                background: 'var(--ink)',
+                borderBottom: '1px solid var(--ink)',
                 padding: '14px 20px',
                 display: 'flex',
                 alignItems: 'center',
@@ -266,13 +267,13 @@ const DashboardMockup = () => (
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ff5f57' }} />
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ffbd2e' }} />
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#28ca41' }} />
-                <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--muted)', fontFamily: 'var(--ff-mono)' }}>
-                    subsphere — admin dashboard
+                <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--white)', fontWeight: 700, letterSpacing: '-0.02em', fontFamily: 'var(--ff-sans)' }}>
+                    SubSphere
                 </span>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--sand)' }}>
+            <div style={{ display: 'flex', gap: 0, background: 'var(--ink)', borderBottom: '1px solid var(--ink)' }}>
                 <Tab active>Overview</Tab>
                 <Tab>Subscriptions</Tab>
                 <Tab>Plans</Tab>
@@ -281,34 +282,19 @@ const DashboardMockup = () => (
 
             {/* Body */}
             <div style={{ padding: '24px' }}>
-                {/* Metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                    <MetricBox label="MRR" value="$8,402" delta="↑ 12.4%" positive />
-                    <MetricBox label="Active" value="342" delta="↑ 8 today" positive />
-                    <MetricBox label="Churn" value="2.1%" delta="↓ 0.3%" negative />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+                    <MetricBox label="MRR" value="₹8,402" delta="↑ 12.4%" positive graph="mrr" bg="#F4F2EC" />
+                    <MetricBox label="Active" value="342" delta="↑ 8 today" positive graph="active" bg="#F0F5F2" />
+                    <MetricBox label="Churn" value="2.1%" delta="↓ 0.3%" negative graph="churn" bg="#FDF2F2" />
                 </div>
 
-                {/* Mini Chart */}
-                <div style={{ height: '80px', display: 'flex', alignItems: 'flex-end', gap: '5px', marginBottom: '20px' }}>
-                    <ChartBar height="35%" />
-                    <ChartBar height="50%" />
-                    <ChartBar height="42%" />
-                    <ChartBar height="60%" />
-                    <ChartBar height="55%" highlight />
-                    <ChartBar height="70%" />
-                    <ChartBar height="88%" gold />
-                    <ChartBar height="75%" />
-                    <ChartBar height="92%" />
-                    <ChartBar height="100%" highlight />
-                    <ChartBar height="82%" />
-                    <ChartBar height="78%" />
-                </div>
+
 
                 {/* Subscription List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <SubItem name="Arjun Kumar" plan="Pro · expires Mar 17" amount="$29.99" status="Active" gradient="linear-gradient(135deg,#7c6cf4,#38bdf8)" />
-                    <SubItem name="Priya Rao" plan="Basic · expires Feb 28" amount="$9.99" status="Trial" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-                    <SubItem name="Manish Shah" plan="Enterprise · expires Apr 1" amount="$79.00" status="Active" gradient="linear-gradient(135deg,#2D6A4F,#40916C)" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <SubItem name="Arjun Kumar" plan="Pro · expires Mar 17" amount="₹29.99" status="Active" gradient="#5887FF" />
+                    <SubItem name="Priya Rao" plan="Basic · expires Feb 28" amount="₹9.99" status="Trial" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
+                    <SubItem name="Manish Shah" plan="Enterprise · expires Apr 1" amount="₹79.00" status="Active" gradient="#5887FF" />
                 </div>
             </div>
         </div>
@@ -325,8 +311,8 @@ const Tab = ({ children, active }) => (
         padding: '12px 20px',
         fontSize: '13px',
         fontWeight: 500,
-        color: active ? 'var(--ink)' : 'var(--muted)',
-        borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent',
+        color: active ? 'var(--white)' : 'var(--stone)',
+        borderBottom: active ? '2px solid var(--white)' : '2px solid transparent',
         transition: 'all 0.15s',
         cursor: 'pointer'
     }}>
@@ -334,20 +320,75 @@ const Tab = ({ children, active }) => (
     </div>
 );
 
-const MetricBox = ({ label, value, delta, positive, negative }) => (
+const MetricBox = ({ label, value, delta, positive, negative, graph, bg }) => (
     <div style={{
-        background: 'var(--cream)',
-        borderRadius: 'var(--r)',
-        padding: '14px 16px'
+        background: bg || 'var(--cream)',
+        borderRadius: '16px',
+        padding: '20px 16px 16px', // Increased top padding
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: '120px',
+        display: 'flex',
+        flexDirection: 'column'
     }}>
-        <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--stone)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {label}
+        <div style={{ position: 'relative', zIndex: 2 }}>
+            <div style={{ fontSize: '13px', fontWeight: 900, color: '#C4BAA8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {label}
+            </div>
+            <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '32px', color: '#1A1714', marginTop: '6px', fontWeight: 400 }}>
+                {value}
+            </div>
+            <div style={{ fontSize: '12px', color: positive ? '#40916C' : negative ? '#B5463A' : '#7A7368', fontWeight: 700, marginTop: '4px' }}>
+                {delta}
+            </div>
         </div>
-        <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '24px', color: 'var(--ink)', marginTop: '4px' }}>
-            {value}
-        </div>
-        <div style={{ fontSize: '11px', color: positive ? 'var(--emerald2)' : negative ? 'var(--rose)' : 'var(--muted)', fontWeight: 600, marginTop: '2px' }}>
-            {delta}
+
+        {/* Graph Background */}
+        <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '45%',
+            opacity: 0.9,
+            zIndex: 1
+        }}>
+            {graph === 'mrr' && (
+                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="gradMrr" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#C9A84C" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M0,35 Q20,32 30,25 T60,20 T80,10 L100,5 V40 H0 Z" fill="url(#gradMrr)" />
+                    <path d="M0,35 Q20,32 30,25 T60,20 T80,10 L100,5" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+            )}
+            {graph === 'active' && (
+                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="gradActive" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#40916C" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#40916C" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M0,30 Q25,35 40,25 T75,15 L100,8 V40 H0 Z" fill="url(#gradActive)" />
+                    <path d="M0,30 Q25,35 40,25 T75,15 L100,8" fill="none" stroke="#40916C" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+            )}
+            {graph === 'churn' && (
+                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
+                    <defs>
+                        <linearGradient id="gradChurn" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#B5463A" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#B5463A" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M0,25 Q30,20 50,28 T80,32 L100,35 V40 H0 Z" fill="url(#gradChurn)" />
+                    <path d="M0,25 Q30,20 50,28 T80,32 L100,35" fill="none" stroke="#B5463A" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+            )}
         </div>
     </div>
 );
@@ -412,8 +453,8 @@ const FloatingCard1 = () => (
         position: 'absolute',
         top: '-28px',
         right: '-28px',
-        background: 'var(--white)',
-        border: '1px solid var(--sand)',
+        background: 'var(--cream)',
+        border: 'none',
         borderRadius: 'var(--r2)',
         padding: '14px 18px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
@@ -424,7 +465,7 @@ const FloatingCard1 = () => (
             Monthly Revenue
         </div>
         <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '28px', color: 'var(--ink)', marginTop: '2px' }}>
-            $8,402
+            ₹8,402
         </div>
         <div style={{ fontSize: '12px', color: 'var(--emerald2)', fontWeight: 600, marginTop: '2px' }}>
             ↑ 12.4% vs last month
@@ -438,31 +479,32 @@ const FloatingCard1 = () => (
 const FloatingCard2 = () => (
     <div style={{
         position: 'absolute',
-        bottom: '40px',
-        left: '-32px',
+        bottom: '24px',
+        left: '-48px',
         background: 'var(--white)',
-        border: '1px solid var(--sand)',
-        borderRadius: 'var(--r2)',
-        padding: '14px 18px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        minWidth: '180px',
-        animation: 'float2 4.5s ease-in-out infinite'
+        border: 'none',
+        borderRadius: '20px',
+        padding: '20px 24px',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+        minWidth: '220px',
+        animation: 'float2 5.5s ease-in-out infinite'
     }}>
-        <div style={{ fontSize: '11px', color: 'var(--stone)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <div style={{ fontSize: '11px', color: '#9B9186', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Renewal Reminder
         </div>
-        <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '6px', lineHeight: 1.5 }}>
-            📧 <strong style={{ color: 'var(--ink)' }}>14 users</strong> notified<br />expiring in 3 days
+        <div style={{ fontSize: '14px', color: '#1A1714', marginTop: '8px', lineHeight: 1.5 }}>
+            📧   <strong style={{ fontWeight: 700 }}>14 users</strong> notified<br />
+            <span style={{ color: '#7A7368', fontSize: '13px' }}>expiring in 3 days</span>
         </div>
         <div style={{
-            marginTop: '8px',
+            marginTop: '12px',
             fontSize: '11px',
-            padding: '3px 8px',
-            borderRadius: '4px',
-            background: 'rgba(64,145,108,0.1)',
-            color: 'var(--emerald2)',
+            padding: '4px 10px',
+            borderRadius: '6px',
+            background: '#E3F1E8',
+            color: '#40916C',
             display: 'inline-block',
-            fontWeight: 600
+            fontWeight: 700
         }}>
             Sent at 9:00 AM
         </div>
