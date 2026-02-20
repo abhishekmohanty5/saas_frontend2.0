@@ -267,13 +267,13 @@ const DashboardMockup = () => (
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ff5f57' }} />
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ffbd2e' }} />
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#28ca41' }} />
-                <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--white)', fontWeight: 700, letterSpacing: '-0.02em', fontFamily: 'var(--ff-sans)' }}>
-                    SubSphere
+                <span style={{ marginLeft: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, letterSpacing: '0', fontFamily: 'var(--ff-sans)' }}>
+                    SubSphere — admin dashboard
                 </span>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, background: 'var(--ink)', borderBottom: '1px solid var(--ink)' }}>
+            <div style={{ display: 'flex', gap: 0, background: 'var(--white)', borderBottom: '1px solid var(--sand)' }}>
                 <Tab active>Overview</Tab>
                 <Tab>Subscriptions</Tab>
                 <Tab>Plans</Tab>
@@ -288,8 +288,28 @@ const DashboardMockup = () => (
                     <MetricBox label="Churn" value="2.1%" delta="↓ 0.3%" negative graph="churn" bg="#FDF2F2" />
                 </div>
 
-
-
+                {/* Bar Chart */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '10px',
+                    height: '80px',
+                    marginBottom: '32px',
+                    padding: '0 8px'
+                }}>
+                    <ChartBar height="30%" />
+                    <ChartBar height="45%" />
+                    <ChartBar height="35%" />
+                    <ChartBar height="50%" />
+                    <ChartBar height="70%" highlight />
+                    <ChartBar height="60%" />
+                    <ChartBar height="80%" gold />
+                    <ChartBar height="55%" />
+                    <ChartBar height="65%" />
+                    <ChartBar height="85%" highlight />
+                    <ChartBar height="60%" />
+                    <ChartBar height="50%" />
+                </div>
                 {/* Subscription List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <SubItem name="Arjun Kumar" plan="Pro · expires Mar 17" amount="₹29.99" status="Active" gradient="#5887FF" />
@@ -311,8 +331,8 @@ const Tab = ({ children, active }) => (
         padding: '12px 20px',
         fontSize: '13px',
         fontWeight: 500,
-        color: active ? 'var(--white)' : 'var(--stone)',
-        borderBottom: active ? '2px solid var(--white)' : '2px solid transparent',
+        color: active ? 'var(--ink)' : 'var(--stone)',
+        borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent',
         transition: 'all 0.15s',
         cursor: 'pointer'
     }}>
