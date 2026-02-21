@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Backend base URL
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 // Create axios instance
 const api = axios.create({
@@ -30,10 +30,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const currentPath = window.location.pathname;
+      const isAuthPage = currentPath === '/login' || currentPath === '/register' || currentPath === '/auth';
+      // Only auto-redirect to login if not already on an auth page
+      if (!isAuthPage) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -49,11 +53,11 @@ const publicApi = axios.create({
 
 // ==================== AUTH ENDPOINTS ====================
 export const authAPI = {
-  // Register new user
-  register: (userData) => api.post('/auth/reg', userData),
+  // Register new user - uses publicApi (no token needed, avoids 401 interceptor)
+  register: (userData) => publicApi.post('/auth/reg', userData),
 
-  // Login user
-  login: (credentials) => api.post('/auth/log', credentials),
+  // Login user - uses publicApi (no token needed, avoids 401 interceptor causing redirect loop)
+  login: (credentials) => publicApi.post('/auth/log', credentials),
 
   // Logout (client-side only - clear tokens)
   logout: () => {

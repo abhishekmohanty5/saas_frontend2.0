@@ -12,75 +12,78 @@ export const titleCasePlanName = (name) => {
 export const getDefaultFeaturesForPlan = (planName) => {
   const key = String(planName || '').trim().toLowerCase();
 
-  // These 5 features are the canonical list used in UI.
-  if (key === 'premium') {
+  if (key === 'free trial' || key === 'free') {
     return [
-      { text: 'JWT authentication', included: true },
-      { text: 'Automated renewals', included: true },
-      { text: 'Email reminders', included: true },
-      { text: 'Admin dashboard', included: true },
+      { text: 'JWT authentication & multi-tenancy', included: true },
+      { text: 'Developer Console (/api/dashboard)', included: true },
+      { text: 'Auto Client ID & Secret generation', included: true },
+      { text: 'API usage tracking (live)', included: true },
+      { text: 'Email renewal reminders', included: false },
+      { text: 'Priority support', included: false },
+    ];
+  }
+
+  if (key === 'pro') {
+    return [
+      { text: 'JWT authentication & multi-tenancy', included: true },
+      { text: 'Developer Console (/api/dashboard)', included: true },
+      { text: 'Auto Client ID & Secret generation', included: true },
+      { text: 'API usage tracking (live)', included: true },
+      { text: 'Email renewal reminders (9 AM daily)', included: true },
       { text: 'Priority support', included: false },
     ];
   }
 
   if (key === 'enterprise') {
     return [
-      { text: 'JWT authentication', included: true },
-      { text: 'Automated renewals', included: true },
-      { text: 'Email reminders', included: true },
-      { text: 'Admin dashboard', included: true },
+      { text: 'JWT authentication & multi-tenancy', included: true },
+      { text: 'Developer Console (/api/dashboard)', included: true },
+      { text: 'Auto Client ID & Secret generation', included: true },
+      { text: 'API usage tracking (live)', included: true },
+      { text: 'Email renewal reminders (9 AM daily)', included: true },
       { text: 'Priority support', included: true },
     ];
   }
 
-  if (key === 'free') {
-    return [
-      { text: 'JWT authentication', included: true },
-      { text: 'Automated renewals', included: false },
-      { text: 'Email reminders', included: true },
-      { text: 'Admin dashboard', included: false },
-      { text: 'Priority support', included: false },
-    ];
-  }
-
-  // Default: Basic (and any unknown plan)
+  // Default
   return [
-    { text: 'JWT authentication', included: true },
-    { text: 'Automated renewals', included: true },
-    { text: 'Email reminders', included: true },
-    { text: 'Admin dashboard', included: false },
+    { text: 'JWT authentication & multi-tenancy', included: true },
+    { text: 'Developer Console (/api/dashboard)', included: true },
+    { text: 'Auto Client ID & Secret generation', included: true },
+    { text: 'API usage tracking (live)', included: true },
+    { text: 'Email renewal reminders', included: true },
     { text: 'Priority support', included: false },
   ];
 };
 
-// Single place to adjust landing/pricing default prices.
+// Real SubSphere plans matching /api/public
 export const DEFAULT_PLANS = [
   {
-    id: 'basic',
-    name: 'Basic',
-    price: 499,
-    durationInDays: 30,
+    id: 1,
+    name: 'Free Trial',
+    price: 0,
+    durationInDays: 14,
     active: true,
-    description: '30 days of full access to all features.',
-    features: getDefaultFeaturesForPlan('basic'),
+    description: '14 days to explore the full SubSphere engine — no credit card required.',
+    features: getDefaultFeaturesForPlan('free trial'),
   },
   {
-    id: 'premium',
-    name: 'Premium',
+    id: 2,
+    name: 'Pro',
     price: 999,
     durationInDays: 30,
     active: true,
-    description: '30 days of full access to all features.',
-    features: getDefaultFeaturesForPlan('premium'),
+    description: '30 days of full access including email reminders and live usage stats.',
+    features: getDefaultFeaturesForPlan('pro'),
     featured: true,
   },
   {
-    id: 'enterprise',
+    id: 3,
     name: 'Enterprise',
-    price: 2499,
+    price: 4999,
     durationInDays: 30,
     active: true,
-    description: '30 days of full access to all features.',
+    description: '30 days with priority support, full admin access, and all engine services.',
     features: getDefaultFeaturesForPlan('enterprise'),
   },
 ];
@@ -99,9 +102,7 @@ export const normalizePlanFromBackend = (plan) => {
     durationInDays: plan?.durationInDays,
     active: !!plan?.active,
     description: plan?.description || '30 days of full access to all features.',
-    featured: !!plan?.featured || String(name).toUpperCase() === 'PREMIUM',
-    // If backend doesn't provide features, we still show the canonical list.
+    featured: !!plan?.featured || String(name).toUpperCase() === 'PRO',
     features: formattedFeatures.length > 0 ? formattedFeatures : getDefaultFeaturesForPlan(name),
   };
 };
-

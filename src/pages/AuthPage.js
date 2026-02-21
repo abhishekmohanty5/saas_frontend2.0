@@ -6,7 +6,8 @@ const AuthPage = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const redirectTo = searchParams.get('redirect') || '/dashboard';
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(location.pathname !== '/register');
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 
@@ -9,6 +9,12 @@ const Navbar = () => {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const scrollToSection = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        else navigate('/');
     };
 
     return (
@@ -63,9 +69,10 @@ const Navbar = () => {
                 alignItems: 'center',
                 gap: '2px'
             }}>
-                <NavLink onClick={() => navigate('/')}>Product</NavLink>
+                <NavLink onClick={() => scrollToSection('features')}>Features</NavLink>
+                <NavLink onClick={() => scrollToSection('how-it-works')}>How It Works</NavLink>
                 <NavLink onClick={() => navigate('/pricing')}>Pricing</NavLink>
-                <NavLink onClick={() => navigate('/dashboard')}>Dashboard</NavLink>
+                <NavLink onClick={() => scrollToSection('api-docs')}>API Docs</NavLink>
             </div>
 
             {/* Right Actions */}
@@ -139,7 +146,7 @@ const Navbar = () => {
                                 fontFamily: 'var(--ff-sans)'
                             }}
                         >
-                            Go to App
+                            Developer Console →
                         </button>
                     </>
                 ) : (
@@ -167,10 +174,10 @@ const Navbar = () => {
                                 e.target.style.background = 'none';
                             }}
                         >
-                            Sign in
+                            Sign In
                         </button>
                         <button
-                            onClick={() => navigate('/pricing')}
+                            onClick={() => navigate('/register')}
                             style={{
                                 fontSize: '14px',
                                 fontWeight: 500,
@@ -195,7 +202,7 @@ const Navbar = () => {
                                 e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
                             }}
                         >
-                            Start free trial →
+                            Start Free Trial →
                         </button>
                     </>
                 )}

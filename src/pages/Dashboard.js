@@ -1,415 +1,528 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { subscriptionAPI, userSubscriptionAPI } from '../services/api';
-import { useAuth } from '../utils/AuthContext';
-import './Dashboard.css';
+import ConsoleSidebar from '../components/ConsoleSidebar';
 
+/* ─────────────────────────────────────────────────────────
+   DEVELOPER CONSOLE  –  /dashboard
+   GET /api/dashboard  →  tenant engine status & API keys
+───────────────────────────────────────────────────────── */
 const Dashboard = () => {
-  const [planSubscription, setPlanSubscription] = useState(null);
-  const [personalSubscriptions, setPersonalSubscriptions] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [insights, setInsights] = useState([]);
-  const [upcomingRenewals, setUpcomingRenewals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
-
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+  const [copiedId, setCopiedId] = useState('');
+
+  const handleUnauth = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  }, [navigate]);
 
   useEffect(() => {
-    fetchAllData();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) { handleUnauth(); return; }
 
-  const fetchAllData = async () => {
-    try {
-      setLoading(true);
-      const results = await Promise.allSettled([
-        subscriptionAPI.getUserSubscription(),
-        userSubscriptionAPI.getStats(),
-        userSubscriptionAPI.getAllSubscriptions(),
-        userSubscriptionAPI.getInsights(),
-        userSubscriptionAPI.getUpcomingRenewals(7)
-      ]);
-
-      // Plan subscription
-      if (results[0].status === 'fulfilled') {
-        setPlanSubscription(results[0].value.data?.data);
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+        const res = await fetch(`${API_BASE_URL}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.status === 401) { handleUnauth(); return; }
+        const json = await res.json();
+        setData(json.data || json);
+      } catch (err) {
+        setError('Failed to load dashboard. Please check your connection.');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // Personal subscription stats
-      if (results[1].status === 'fulfilled') {
-        setStats(results[1].value.data?.data);
-      }
+    fetchDashboard();
+  }, [handleUnauth]);
 
-      // Personal subscriptions
-      if (results[2].status === 'fulfilled') {
-        const subs = results[2].value.data?.data || [];
-        setPersonalSubscriptions(subs.slice(0, 5)); // Show only first 5
-      }
-
-      // Insights
-      if (results[3].status === 'fulfilled') {
-        setInsights(results[3].value.data?.data || []);
-      }
-
-      // Upcoming renewals
-      if (results[4].status === 'fulfilled') {
-        setUpcomingRenewals(results[4].value.data?.data || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancelPlanSubscription = async () => {
-    if (!window.confirm('Are you sure you want to cancel your plan subscription?')) {
-      return;
-    }
-
-    try {
-      await subscriptionAPI.cancelSubscription();
-      alert('Plan subscription cancelled successfully');
-      fetchAllData();
-    } catch (err) {
-      alert('Failed to cancel subscription');
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+  const copyToClipboard = (text, key) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(key);
+      setTimeout(() => setCopiedId(''), 2000);
     });
   };
 
-  const formatCurrency = (amount) => {
-    return `₹${parseFloat(amount || 0).toLocaleString('en-IN')}`;
+  /* ── helpers ── */
+  const planColor = (plan) => {
+    const p = (plan || '').toLowerCase();
+    if (p.includes('enterprise')) return '#A259FF';
+    if (p.includes('pro')) return 'var(--gold)';
+    return 'var(--emerald2)';
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+  const daysColor = (days) => {
+    if (days <= 2) return 'var(--rose)';
+    if (days <= 6) return '#E89A3C';
+    return 'var(--emerald2)';
   };
 
+  const METRIC_CARDS = data ? [
+    { label: 'Total API Calls', value: data.apiCallCount ?? 0, icon: '⚡', color: 'var(--gold)' },
+    { label: 'Days Remaining', value: `${data.daysRemaining ?? 0}d`, icon: '📅', color: daysColor(data.daysRemaining ?? 0) },
+    { label: 'Total Subscriptions', value: data.totalUserSubscriptions ?? 0, icon: '📋', color: 'var(--sky)' },
+    { label: 'Active Subscriptions', value: data.activeUserSubscriptions ?? 0, icon: '✅', color: 'var(--emerald2)' },
+  ] : [];
+
+  /* Plan progress */
+  const totalDays = data?.planDuration ?? 30;
+  const daysUsed = totalDays - (data?.daysRemaining ?? totalDays);
+  const progressPct = Math.min(100, Math.round((daysUsed / totalDays) * 100));
+
+  /* ── Loading state ── */
   if (loading) {
     return (
-      <div className="dashboard-premium">
-        <div className="loading-state">
-          <div className="loading-spinner"></div>
-          <p>Loading your dashboard...</p>
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--cream)', fontFamily: 'var(--ff-sans)' }}>
+        <ConsoleSidebar />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={spinnerStyle} />
+            <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '16px' }}>Loading your console…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Error state ── */
+  if (error) {
+    return (
+      <div style={{ display: 'flex', height: '100vh', background: 'var(--cream)', fontFamily: 'var(--ff-sans)' }}>
+        <ConsoleSidebar />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', maxWidth: '380px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚠️</div>
+            <p style={{ color: 'var(--ink)', fontWeight: 600, marginBottom: '8px' }}>Connection Error</p>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>{error}</p>
+            <button onClick={() => window.location.reload()} style={outlineBtn}>Retry</button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-premium">
-      {/* Navigation Bar */}
-      <nav className="dashboard-nav">
-        <div className="nav-content">
-          <div className="nav-brand">
-            <div className="brand-icon">S</div>
-            <span className="brand-text">SubHub</span>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'var(--ff-sans)' }}>
+      <ConsoleSidebar />
+
+      {/* ── Main layout ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--cream)', overflow: 'auto' }}>
+
+        {/* ── TOP HEADER ── */}
+        <header style={styles.header}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={styles.headerTitle}>Developer Console</span>
           </div>
-
-          <div className="nav-actions">
-            <button className="nav-btn" onClick={() => navigate('/my-subscriptions')}>
-              <span className="btn-icon">📦</span>
-              All Subscriptions
-            </button>
-            
-            {user?.role === 'ADMIN' && (
-              <button className="nav-btn" onClick={() => navigate('/admin')}>
-                <span className="btn-icon">⚙️</span>
-                Admin Panel
-              </button>
-            )}
-
-            <div className="notification-container">
-              <button 
-                className="nav-btn icon-btn"
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <span className="btn-icon">🔔</span>
-                {upcomingRenewals.length > 0 && (
-                  <span className="notification-badge">{upcomingRenewals.length}</span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <div className="notification-dropdown">
-                  <div className="dropdown-header">
-                    <h4>Notifications</h4>
-                    <button onClick={() => setShowNotifications(false)}>✕</button>
-                  </div>
-                  <div className="dropdown-content">
-                    {upcomingRenewals.length > 0 ? (
-                      upcomingRenewals.map((renewal, idx) => (
-                        <div key={idx} className="notification-item">
-                          <span className="notif-icon">🔔</span>
-                          <div className="notif-content">
-                            <p className="notif-title">{renewal.subscriptionName}</p>
-                            <p className="notif-desc">
-                              Renews on {formatDate(renewal.nextBillingDate)} - {formatCurrency(renewal.amount)}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="no-notifications">No upcoming renewals</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <button className="nav-btn logout-btn" onClick={() => { logout(); navigate('/'); }}>
-              <span className="btn-icon">🚪</span>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-      
-      {/* Main Content */}
-      <div className="dashboard-container">
-        {/* Header */}
-        <header className="dashboard-header-premium">
-          <div className="header-text">
-            <h1 className="header-title">
-              {getGreeting()}, <span className="user-name">{user?.email?.split('@')[0] || 'User'}</span>! 👋
-            </h1>
-            <p className="header-subtitle">Here's an overview of your subscriptions and spending</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+              {data?.tenantName || 'My Startup'}
+            </span>
+            <span style={{
+              ...styles.planBadge,
+              background: planColor(data?.currentPlan),
+              color: '#fff',
+            }}>
+              {data?.currentPlan || 'Free Trial'}
+            </span>
+            <div style={styles.statusDot} title="Active" />
           </div>
         </header>
 
-        {/* Stats Grid */}
-        <div className="stats-grid-premium">
-          <div className="stat-card-premium">
-            <div className="stat-icon-wrapper purple">
-              <span className="stat-icon">💎</span>
+        {/* ── CONTENT ── */}
+        <div style={styles.content}>
+
+          {/* Greeting */}
+          <div style={{ marginBottom: '28px' }}>
+            <h1 style={styles.greeting}>
+              Good day, <em style={{ color: 'var(--gold)', fontStyle: 'italic' }}>{data?.tenantName || 'Founder'}</em> 👋
+            </h1>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '4px' }}>
+              Here's your engine status and API credentials.
+            </p>
+          </div>
+
+          {/* ── SECTION A: Metric Cards ── */}
+          <div style={styles.grid4}>
+            {METRIC_CARDS.map((card) => (
+              <div key={card.label} style={styles.metricCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '22px' }}>{card.icon}</span>
+                  <span style={{ ...styles.valueChip, color: card.color }}>{card.value}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{card.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── BOTTOM GRID: Plan Info + API Credentials ── */}
+          <div style={styles.grid2}>
+
+            {/* ── SECTION B: Plan Information ── */}
+            <div style={styles.section}>
+              <SectionTitle icon="📋" title="Plan Information" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <InfoRow label="Current Plan" value={<PlanPill plan={data?.currentPlan} />} />
+                <InfoRow label="Plan Price" value={data?.planPrice != null ? `₹${data.planPrice}` : '₹0'} />
+                <InfoRow label="Member Since" value={formatDate(data?.memberSince)} />
+                <InfoRow label="Plan Expires" value={formatDate(data?.planExpiry)} />
+                <InfoRow label="Status" value={
+                  <span style={{
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    background: 'rgba(45,106,79,0.1)',
+                    color: 'var(--emerald)',
+                  }}>
+                    {data?.status || 'ACTIVE'}
+                  </span>
+                } />
+                <InfoRow label="Days Left" value={
+                  <span style={{ fontWeight: 700, color: daysColor(data?.daysRemaining ?? 0), fontFamily: 'var(--ff-serif)', fontSize: '16px' }}>
+                    {data?.daysRemaining ?? 0} days
+                  </span>
+                } />
+              </div>
+              {/* Progress bar */}
+              <div style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: 'var(--muted)' }}>
+                  <span>Plan usage</span>
+                  <span>{progressPct}% used</span>
+                </div>
+                <div style={{ height: '6px', background: 'var(--sand)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${progressPct}%`,
+                    background: progressPct > 80 ? 'var(--rose)' : 'var(--gold)',
+                    borderRadius: '3px',
+                    transition: 'width 0.6s ease',
+                  }} />
+                </div>
+              </div>
             </div>
-            <div className="stat-content">
-              <p className="stat-label">Current Plan</p>
-              <h3 className="stat-value">
-                {planSubscription?.plan?.name || 'FREE'}
-              </h3>
-              <p className="stat-meta">
-                {planSubscription ? `Until ${formatDate(planSubscription.endDate)}` : 'No active plan'}
+
+            {/* ── SECTION C: API Credentials ── */}
+            <div id="credentials" style={styles.section}>
+              <SectionTitle icon="🔑" title="API Credentials" />
+              <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '20px', lineHeight: 1.5 }}>
+                Use these credentials to identify your tenant when making API calls to SubSphere engine.
               </p>
-            </div>
-          </div>
 
-          <div className="stat-card-premium">
-            <div className="stat-icon-wrapper green">
-              <span className="stat-icon">💰</span>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Monthly Cost</p>
-              <h3 className="stat-value">
-                {formatCurrency(stats?.totalMonthlyCost || 0)}
-              </h3>
-              <p className="stat-meta">From personal subscriptions</p>
-            </div>
-          </div>
-
-          <div className="stat-card-premium">
-            <div className="stat-icon-wrapper blue">
-              <span className="stat-icon">📊</span>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Active Subscriptions</p>
-              <h3 className="stat-value">{stats?.activeCount || 0}</h3>
-              <p className="stat-meta">Currently being tracked</p>
-            </div>
-          </div>
-
-          <div className="stat-card-premium">
-            <div className="stat-icon-wrapper orange">
-              <span className="stat-icon">🔔</span>
-            </div>
-            <div className="stat-content">
-              <p className="stat-label">Renewals This Week</p>
-              <h3 className="stat-value">{upcomingRenewals.length}</h3>
-              <p className="stat-meta">Due in next 7 days</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Grid */}
-        <div className="content-grid-premium">
-          {/* Left Column */}
-          <div className="left-column">
-            {/* Plan Card */}
-            <div className="plan-card-premium">
-              <div className="card-header-premium">
-                <h2 className="card-title">Your Plan</h2>
-                <span className={`plan-badge ${planSubscription?.status?.toLowerCase() || 'inactive'}`}>
-                  {planSubscription?.status || 'No Plan'}
-                </span>
+              {/* Client ID */}
+              <div style={styles.credGroup}>
+                <label style={styles.credLabel}>Client ID</label>
+                <div style={styles.credRow}>
+                  <code style={styles.credValue}>{data?.clientId || '—'}</code>
+                  <CopyBtn
+                    text={data?.clientId || ''}
+                    id="clientId"
+                    copied={copiedId === 'clientId'}
+                    onCopy={() => copyToClipboard(data?.clientId || '', 'clientId')}
+                  />
+                </div>
               </div>
 
-              {planSubscription ? (
-                <div className="plan-details">
-                  <div className="plan-info-row">
-                    <div className="plan-info-item">
-                      <span className="info-label">Plan Name</span>
-                      <span className="info-value">{planSubscription.plan?.name}</span>
-                    </div>
-                    <div className="plan-info-item">
-                      <span className="info-label">Price</span>
-                      <span className="info-value">{formatCurrency(planSubscription.plan?.price)}</span>
-                    </div>
-                  </div>
-
-                  <div className="plan-info-row">
-                    <div className="plan-info-item">
-                      <span className="info-label">Start Date</span>
-                      <span className="info-value">{formatDate(planSubscription.startDate)}</span>
-                    </div>
-                    <div className="plan-info-item">
-                      <span className="info-label">End Date</span>
-                      <span className="info-value">{formatDate(planSubscription.endDate)}</span>
-                    </div>
-                  </div>
-
-                  <div className="plan-actions">
-                    <button className="btn-upgrade" onClick={() => navigate('/pricing')}>
-                      ⬆️ Upgrade Plan
-                    </button>
-                    {planSubscription.status === 'ACTIVE' && (
-                      <button className="btn-cancel" onClick={handleCancelPlanSubscription}>
-                        ❌ Cancel Plan
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="no-plan">
-                  <p>You don't have an active plan subscription</p>
-                  <button className="btn-get-plan" onClick={() => navigate('/pricing')}>
-                    View Plans
+              {/* Client Secret */}
+              <div style={styles.credGroup}>
+                <label style={styles.credLabel}>Client Secret</label>
+                <div style={styles.credRow}>
+                  <code style={{ ...styles.credValue, letterSpacing: showSecret ? '0' : '2px' }}>
+                    {showSecret ? (data?.clientSecret || '—') : '••••••••••••••••••••••'}
+                  </code>
+                  <button
+                    onClick={() => setShowSecret((v) => !v)}
+                    style={styles.iconBtn}
+                    title={showSecret ? 'Hide' : 'Show'}
+                  >
+                    {showSecret ? '🙈' : '👁️'}
                   </button>
+                  <CopyBtn
+                    text={data?.clientSecret || ''}
+                    id="clientSecret"
+                    copied={copiedId === 'clientSecret'}
+                    onCopy={() => copyToClipboard(data?.clientSecret || '', 'clientSecret')}
+                  />
                 </div>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="quick-actions-card">
-              <h3 className="card-title">Quick Actions</h3>
-              <div className="action-buttons">
-                <button className="action-btn" onClick={() => navigate('/my-subscriptions')}>
-                  <span className="action-icon">➕</span>
-                  <div className="action-text">
-                    <span className="action-title">Add Subscription</span>
-                    <span className="action-desc">Track new subscription</span>
-                  </div>
-                </button>
-                
-                <button className="action-btn" onClick={() => navigate('/pricing')}>
-                  <span className="action-icon">💳</span>
-                  <div className="action-text">
-                    <span className="action-title">Upgrade Plan</span>
-                    <span className="action-desc">Get premium features</span>
-                  </div>
-                </button>
-
-                <button className="action-btn" onClick={() => navigate('/my-subscriptions')}>
-                  <span className="action-icon">📊</span>
-                  <div className="action-text">
-                    <span className="action-title">View Analytics</span>
-                    <span className="action-desc">Spending insights</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="right-column">
-            {/* Recent Subscriptions */}
-            <div className="subscriptions-card-premium">
-              <div className="card-header-premium">
-                <h2 className="card-title">Recent Subscriptions</h2>
-                <button className="view-all-btn" onClick={() => navigate('/my-subscriptions')}>
-                  View All →
-                </button>
               </div>
 
-              {personalSubscriptions.length > 0 ? (
-                <div className="subscriptions-list-premium">
-                  {personalSubscriptions.map((sub) => (
-                    <div key={sub.id} className="subscription-item-premium">
-                      <div className="sub-icon">{sub.subscriptionCategory?.name?.[0] || '📦'}</div>
-                      <div className="sub-info">
-                        <h4 className="sub-name">{sub.subscriptionName}</h4>
-                        <p className="sub-category">{sub.subscriptionCategory?.name || 'Other'}</p>
-                      </div>
-                      <div className="sub-amount">
-                        <span className="amount">{formatCurrency(sub.amount)}</span>
-                        <span className="cycle">/{sub.billingCycle?.toLowerCase()}</span>
-                      </div>
-                    </div>
-                  ))}
+              {/* ── SECTION D: Enabled Services ── */}
+              <div style={{ marginTop: '24px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '12px' }}>
+                  Enabled Services
                 </div>
-              ) : (
-                <div className="no-subscriptions">
-                  <p>No subscriptions tracked yet</p>
-                  <button className="btn-add-first" onClick={() => navigate('/my-subscriptions')}>
-                    Add Your First Subscription
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Insights */}
-            {insights.length > 0 && (
-              <div className="insights-card-premium">
-                <h3 className="card-title">💡 Smart Insights</h3>
-                <div className="insights-list-premium">
-                  {insights.map((insight, idx) => (
-                    <div key={idx} className="insight-item">
-                      <span className="insight-bullet">•</span>
-                      <p>{insight}</p>
-                    </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {[
+                    '✅ Auth Service',
+                    '✅ Subscription Service',
+                    '✅ Email Notifications',
+                    '✅ Automated Scheduler',
+                  ].map((s) => (
+                    <div key={s} style={styles.serviceBadge}>{s}</div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Upcoming Renewals Section */}
-        {upcomingRenewals.length > 0 && (
-          <div className="renewals-section-premium">
-            <h2 className="section-title">⏰ Upcoming Renewals</h2>
-            <div className="renewals-grid">
-              {upcomingRenewals.map((renewal) => (
-                <div key={renewal.id} className="renewal-card-premium">
-                  <div className="renewal-header">
-                    <h4>{renewal.subscriptionName}</h4>
-                    <span className="renewal-amount">{formatCurrency(renewal.amount)}</span>
-                  </div>
-                  <p className="renewal-date">
-                    Due on {formatDate(renewal.nextBillingDate)}
-                  </p>
-                  <div className="renewal-category">
-                    {renewal.subscriptionCategory?.name || 'Other'}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
-        )}
-      </div>
+
+          {/* ── SECTION E: Quick Actions ── */}
+          <div style={styles.section}>
+            <SectionTitle icon="🚀" title="Quick Actions" />
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <ActionBtn
+                label="Manage My Subscriptions →"
+                onClick={() => navigate('/subscriptions')}
+                primary
+              />
+              <ActionBtn
+                label="View Upcoming Renewals →"
+                onClick={() => navigate('/subscriptions?tab=upcoming')}
+              />
+              <ActionBtn
+                label="View Spending Stats →"
+                onClick={() => navigate('/subscriptions?tab=stats')}
+              />
+            </div>
+          </div>
+
+        </div>{/* /content */}
+      </div>{/* /main */}
+
+      {/* Spinner keyframe */}
+      <style>{`
+        @keyframes dashSpin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
+};
+
+/* ── Helper components ── */
+const SectionTitle = ({ icon, title }) => (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+    <span style={{ fontSize: '16px' }}>{icon}</span>
+    <span style={{ fontFamily: 'var(--ff-sans)', fontWeight: 700, fontSize: '14px', color: 'var(--ink)', letterSpacing: '-0.2px' }}>{title}</span>
+  </div>
+);
+
+const InfoRow = ({ label, value }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '10px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+    <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{label}</span>
+    <span style={{ fontSize: '13px', color: 'var(--ink)', fontWeight: 600 }}>{value}</span>
+  </div>
+);
+
+const PlanPill = ({ plan }) => {
+  const p = (plan || '').toLowerCase();
+  const bg = p.includes('enterprise') ? 'rgba(162,89,255,0.1)' : p.includes('pro') ? 'rgba(201,168,76,0.1)' : 'rgba(45,106,79,0.1)';
+  const color = p.includes('enterprise') ? '#A259FF' : p.includes('pro') ? 'var(--gold)' : 'var(--emerald)';
+  return (
+    <span style={{ padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, background: bg, color }}>
+      {plan || 'Free Trial'}
+    </span>
+  );
+};
+
+const CopyBtn = ({ text, id, copied, onCopy }) => (
+  <button
+    onClick={onCopy}
+    style={{
+      ...styles.iconBtn,
+      color: copied ? 'var(--emerald2)' : 'var(--muted)',
+      transition: 'color 0.2s',
+    }}
+    title="Copy"
+  >
+    {copied ? '✅' : '📋'}
+  </button>
+);
+
+const ActionBtn = ({ label, onClick, primary }) => (
+  <button
+    onClick={onClick}
+    style={{
+      padding: '11px 20px',
+      borderRadius: '10px',
+      fontSize: '13px',
+      fontWeight: 600,
+      fontFamily: 'var(--ff-sans)',
+      cursor: 'pointer',
+      border: primary ? 'none' : '1px solid var(--sand)',
+      background: primary ? 'var(--ink)' : 'transparent',
+      color: primary ? 'var(--white)' : 'var(--ink)',
+      transition: 'all 0.15s',
+    }}
+    onMouseEnter={(e) => {
+      if (primary) e.currentTarget.style.background = 'var(--ink2)';
+      else e.currentTarget.style.background = 'var(--sand)';
+    }}
+    onMouseLeave={(e) => {
+      if (primary) e.currentTarget.style.background = 'var(--ink)';
+      else e.currentTarget.style.background = 'transparent';
+    }}
+  >
+    {label}
+  </button>
+);
+
+/* ── Utilities ── */
+const formatDate = (str) => {
+  if (!str) return '—';
+  try {
+    return new Date(str).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch { return str; }
+};
+
+/* ── Styles ── */
+const spinnerStyle = {
+  width: '36px',
+  height: '36px',
+  border: '3px solid var(--sand)',
+  borderTopColor: 'var(--gold)',
+  borderRadius: '50%',
+  margin: '0 auto',
+  animation: 'dashSpin 0.8s linear infinite',
+};
+
+const outlineBtn = {
+  padding: '10px 24px',
+  borderRadius: '10px',
+  border: '1px solid var(--sand)',
+  background: 'transparent',
+  cursor: 'pointer',
+  fontSize: '14px',
+  fontWeight: 600,
+  fontFamily: 'var(--ff-sans)',
+  color: 'var(--ink)',
+};
+
+const styles = {
+  header: {
+    height: '56px',
+    background: 'var(--ink)',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0 32px',
+    flexShrink: 0,
+  },
+  headerTitle: {
+    fontFamily: 'var(--ff-sans)',
+    fontSize: '14px',
+    fontWeight: 700,
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: '-0.2px',
+  },
+  planBadge: {
+    fontSize: '11px',
+    fontWeight: 700,
+    padding: '4px 10px',
+    borderRadius: '20px',
+    letterSpacing: '0.3px',
+  },
+  statusDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    background: 'var(--emerald2)',
+    boxShadow: '0 0 0 2px rgba(64,145,108,0.25)',
+  },
+  content: {
+    padding: '32px',
+    flex: 1,
+    maxWidth: '1100px',
+  },
+  greeting: {
+    fontFamily: 'var(--ff-serif)',
+    fontSize: '26px',
+    fontWeight: 400,
+    color: 'var(--ink)',
+    letterSpacing: '-0.5px',
+  },
+  grid4: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(4, 1fr)',
+    gap: '16px',
+    marginBottom: '24px',
+  },
+  metricCard: {
+    background: 'var(--white)',
+    border: '1px solid var(--sand)',
+    borderRadius: '14px',
+    padding: '20px',
+  },
+  valueChip: {
+    fontFamily: 'var(--ff-serif)',
+    fontSize: '24px',
+    fontWeight: 400,
+    letterSpacing: '-0.5px',
+  },
+  grid2: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '20px',
+    marginBottom: '20px',
+  },
+  section: {
+    background: 'var(--white)',
+    border: '1px solid var(--sand)',
+    borderRadius: '16px',
+    padding: '24px',
+  },
+  credGroup: {
+    marginBottom: '20px',
+  },
+  credLabel: {
+    display: 'block',
+    fontSize: '11px',
+    fontWeight: 600,
+    color: 'var(--muted)',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    marginBottom: '8px',
+  },
+  credRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    background: 'var(--cream)',
+    border: '1px solid var(--sand)',
+    borderRadius: '10px',
+    padding: '10px 14px',
+  },
+  credValue: {
+    flex: 1,
+    fontFamily: 'var(--ff-mono)',
+    fontSize: '12px',
+    color: 'var(--ink)',
+    wordBreak: 'break-all',
+    letterSpacing: '0.5px',
+  },
+  iconBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '16px',
+    padding: '2px 4px',
+    flexShrink: 0,
+    opacity: 0.7,
+  },
+  serviceBadge: {
+    padding: '8px 10px',
+    background: 'rgba(45,106,79,0.06)',
+    border: '1px solid rgba(45,106,79,0.15)',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: 'var(--emerald)',
+  },
 };
 
 export default Dashboard;

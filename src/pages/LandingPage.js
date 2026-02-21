@@ -4,6 +4,7 @@ import HeroSubSphere from '../components/HeroSubSphere';
 import TickerBar from '../components/TickerBar';
 import BentoFeatures from '../components/BentoFeatures';
 import HowItWorks from '../components/HowItWorks';
+import ApiDocsSection from '../components/ApiDocsSection';
 import PricingSubSphereStatic from '../components/PricingSubSphereStatic';
 import Testimonials from '../components/Testimonials';
 import CTASection from '../components/CTASection';
@@ -32,6 +33,7 @@ const LandingPage = () => {
       <TickerBar />
       <BentoFeatures />
       <HowItWorks />
+      <ApiDocsSection />
       <PricingSubSphereStatic />
       <Testimonials />
       <CTASection />

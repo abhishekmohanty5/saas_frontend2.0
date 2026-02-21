@@ -2,7 +2,7 @@ import React from 'react';
 
 const BentoFeatures = () => {
     return (
-        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal">
+        <div id="features" style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal">
             <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
                 Platform Features
             </div>
@@ -18,7 +18,7 @@ const BentoFeatures = () => {
                 Built for the full subscription <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>lifecycle</em>
             </h2>
             <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
-                Everything from first signup to renewal reminders, plan changes, and admin oversight — no duct tape required.
+                Real backend architecture — JWT auth, multi-tenancy, automated scheduling, and a reference module that proves engine integration.
             </p>
 
             {/* Bento Grid */}
@@ -34,29 +34,32 @@ const BentoFeatures = () => {
                         🔐
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Authentication
+                        Authentication Engine
                     </div>
                     <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--white)', lineHeight: 1.3, fontWeight: 400 }}>
                         JWT-secured with HS256 signing
                     </h3>
                     <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Every protected route verifies a 30-minute Bearer token. Invalid credentials return a clean 401 via global exception handling.
+                        Every request carries a Bearer token. The JWT payload includes <code style={{ fontFamily: 'var(--ff-mono)', color: 'var(--gold2)' }}>tenantId</code> — so every API call is automatically isolated to the correct startup. Tokens expire per config and return clean 401 responses.
                     </p>
                     <JWTVisual />
                 </BentoCard>
 
-                {/* Card 2 - Plans (5 cols) */}
+                {/* Card 2 - Multi-Tenancy (5 cols) */}
                 <BentoCard span={5} goldBg>
                     <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        📋
+                        🏢
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Plan Management
+                        Multi-Tenant Architecture
                     </div>
                     <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--white)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Flexible plans, admin-controlled
+                        Complete data isolation per startup
                     </h3>
-                    <MiniPlans />
+                    <MiniTenants />
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '12px' }}>
+                        Each startup gets unique Client ID & Secret. All engine services filter by tenantId — startups can never see each other's data.
+                    </p>
                 </BentoCard>
 
                 {/* Card 3 - Scheduler (4 cols) */}
@@ -65,40 +68,40 @@ const BentoFeatures = () => {
                         ⏰
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Scheduler
+                        Automated Lifecycle
                     </div>
                     <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Auto-expire at 2 AM
+                        Auto-expire at 2 AM · Remind at 9 AM
                     </h3>
                     <SchedulerTimeline />
                 </BentoCard>
 
-                {/* Card 4 - Lifecycle (4 cols) */}
+                {/* Card 4 - Reference Module (4 cols) */}
                 <BentoCard span={4}>
                     <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(64,145,108,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
                         🔄
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Lifecycle
+                        Reference Module
                     </div>
                     <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Cancel & renew in one call
+                        Subscription management — proof it works
                     </h3>
                     <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Users cancel anytime and keep access until period end. Renew extends from today.
+                        A real working subscription manager is built using SubSphere APIs — add, cancel, update, filter by category, view upcoming renewals. This proves engine integration.
                     </p>
                 </BentoCard>
 
-                {/* Card 5 - Admin Stats (4 cols) */}
+                {/* Card 5 - API Usage (4 cols) */}
                 <BentoCard span={4} dark>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Admin Overview
+                        API Usage Tracking
                     </div>
                     <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '64px', color: 'var(--white)', lineHeight: 1, letterSpacing: '-2px', marginTop: '16px' }}>
-                        342<span style={{ color: 'var(--gold)' }}>+</span>
+                        ∞<span style={{ color: 'var(--gold)' }}>+</span>
                     </div>
                     <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Active subscribers across all plans. Real-time via <code style={{ fontFamily: 'var(--ff-mono)', color: 'var(--gold2)' }}>/api/admin/dashboard</code>
+                        Every non-auth API call is counted per tenant in real-time via Spring interceptor. See your usage live in the Developer Console at <code style={{ fontFamily: 'var(--ff-mono)', color: 'var(--gold2)' }}>/api/dashboard</code>
                     </p>
                 </BentoCard>
 
@@ -122,13 +125,13 @@ const BentoFeatures = () => {
                         🛡️
                     </div>
                     <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Access Control
+                        Role-Based Access
                     </div>
                     <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Role-based guard rails
+                        USER and ADMIN roles enforced
                     </h3>
                     <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginTop: '10px' }}>
-                        USER and ADMIN roles enforced on every route. Unauthorized calls get 403 Forbidden instantly.
+                        Admin endpoints (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/admin/plan</code>) are locked to ADMIN role. Developer Console (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/dashboard</code>) requires any authenticated user. Public plans (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/public</code>) need no auth.
                     </p>
                 </BentoCard>
             </div>
@@ -172,7 +175,7 @@ const JWTVisual = () => (
     <div style={{ marginTop: '20px', fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--ink2)', borderRadius: 'var(--r)', padding: '16px', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#56B4F5', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Header</span>
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Header · HS256</span>
         </div>
         <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', paddingLeft: '16px', wordBreak: 'break-all' }}>
             eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
@@ -181,8 +184,8 @@ const JWTVisual = () => (
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#9DE070', flexShrink: 0 }} />
             <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Payload</span>
         </div>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', paddingLeft: '16px', wordBreak: 'break-all' }}>
-            eyJzdWIiOiJ1c2VyQGV4YW1wbGUuY29tIiwiZXhwIjoxNzE2Nzk2NTYxfQ
+        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginBottom: '8px', paddingLeft: '16px' }}>
+            {`{ "tenantId": 1, "sub": "founder@startup.com" }`}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C9A84C', flexShrink: 0 }} />
@@ -191,15 +194,15 @@ const JWTVisual = () => (
     </div>
 );
 
-const MiniPlans = () => (
+const MiniTenants = () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-        <MiniPlan name="Basic" price="$9.99/mo" />
-        <MiniPlan name="Pro" price="$29.99/mo" popular />
-        <MiniPlan name="Enterprise" price="$79.00/mo" />
+        <MiniTenant label="Tenant A" secret="sb_a1b2c3..." />
+        <MiniTenant label="Tenant B" secret="sb_x9y8z7..." />
+        <MiniTenant label="Tenant C" secret="sb_p3q2r1..." />
     </div>
 );
 
-const MiniPlan = ({ name, price, popular }) => (
+const MiniTenant = ({ label, secret }) => (
     <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -209,21 +212,8 @@ const MiniPlan = ({ name, price, popular }) => (
         borderRadius: 'var(--r)',
         padding: '10px 14px'
     }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--white)' }}>{name}</span>
-        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '13px', color: 'var(--gold2)' }}>{price}</span>
-        {popular && (
-            <span style={{
-                fontSize: '10px',
-                fontWeight: 700,
-                padding: '2px 8px',
-                borderRadius: '20px',
-                background: 'rgba(201,168,76,0.15)',
-                color: 'var(--gold2)',
-                letterSpacing: '0.5px'
-            }}>
-                POPULAR
-            </span>
-        )}
+        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--white)' }}>{label}</span>
+        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', color: 'var(--gold2)' }}>{secret}</span>
     </div>
 );
 
@@ -270,13 +260,12 @@ const SchedItem = ({ time, title, sub, bg }) => (
 
 const APIResponse = () => (
     <div style={{ marginTop: '16px', background: 'var(--ink)', borderRadius: 'var(--r)', padding: '16px', fontFamily: 'var(--ff-mono)', fontSize: '12px', lineHeight: 1.8, overflowX: 'auto' }}>
-        <span style={{ color: 'rgba(255,255,255,0.3)' }}>// AppResponse&lt;T&gt;</span><br />
+        <span style={{ color: 'rgba(255,255,255,0.3)' }}>{'// AppResponse<T>'}</span><br />
         <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{'}</span><br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"status"</span>: <span style={{ color: '#9DE070' }}>"success"</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"message"</span>: <span style={{ color: '#9DE070' }}>"Subscription created"</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"statusCode"</span>: <span style={{ color: '#F0B070' }}>201</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"timestamp"</span>: <span style={{ color: '#9DE070' }}>"2026-02-17T09:30:00"</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"data"</span>: <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{ ... }'}</span><br />
+        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"message"</span>: <span style={{ color: '#9DE070' }}>"Success"</span>,<br />
+        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"data"</span>: <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{ ... }'}</span>,<br />
+        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"status"</span>: <span style={{ color: '#F0B070' }}>201</span>,<br />
+        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"timestamp"</span>: <span style={{ color: '#9DE070' }}>"2026-02-20T09:30:00"</span><br />
         <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'}'}</span>
     </div>
 );

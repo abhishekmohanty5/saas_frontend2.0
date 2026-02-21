@@ -44,7 +44,7 @@ const Footer = () => {
                             SubSphere
                         </div>
                         <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.65, marginTop: '12px', maxWidth: '260px' }}>
-                            Subscription infrastructure for modern SaaS products. Built on Spring Boot, secured with JWT.
+                            SaaS subscription infrastructure. Authentication + Lifecycle + Multi-Tenancy.
                         </p>
                         <div style={{
                             display: 'flex',
@@ -71,11 +71,10 @@ const Footer = () => {
                             Product
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <FooterLink to="/">Features</FooterLink>
+                            <FooterLink to="/#features">Features</FooterLink>
                             <FooterLink to="/pricing">Pricing</FooterLink>
-                            <FooterLink to="/">Changelog</FooterLink>
-                            <FooterLink to="/">Roadmap</FooterLink>
-                            <FooterLink to="/">Status</FooterLink>
+                            <FooterLink to="/#api-docs">API Docs</FooterLink>
+                            <FooterLink to="/dashboard">Developer Console</FooterLink>
                         </div>
                     </div>
 
@@ -85,25 +84,23 @@ const Footer = () => {
                             Developers
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <FooterLink to="/">API Reference</FooterLink>
-                            <FooterLink to="/">Authentication</FooterLink>
-                            <FooterLink to="/">Webhooks</FooterLink>
-                            <FooterLink to="/">SDKs</FooterLink>
-                            <FooterLink to="/">Postman</FooterLink>
+                            <FooterLink to="/#api-docs">API Reference</FooterLink>
+                            <FooterLink to="/#features">Authentication</FooterLink>
+                            <FooterLink to="/#how-it-works">Integration Guide</FooterLink>
+                            <FooterLink to="/dashboard">Dashboard</FooterLink>
                         </div>
                     </div>
 
-                    {/* Company Column */}
+                    {/* Account Column */}
                     <div>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', marginBottom: '16px', letterSpacing: '0.3px' }}>
-                            Company
+                            Account
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <FooterLink to="/">About</FooterLink>
-                            <FooterLink to="/">Blog</FooterLink>
-                            <FooterLink to="/">Careers</FooterLink>
-                            <FooterLink to="/">Contact</FooterLink>
-                            <FooterLink to="/">Security</FooterLink>
+                            <FooterLink to="/login">Sign In</FooterLink>
+                            <FooterLink to="/register">Start Free Trial</FooterLink>
+                            <FooterLink to="/pricing">View Plans</FooterLink>
+                            <FooterLink to="/dashboard">Developer Console</FooterLink>
                         </div>
                     </div>
                 </div>
@@ -120,12 +117,10 @@ const Footer = () => {
                     flexWrap: 'wrap',
                     gap: '12px'
                 }}>
-                    <div>© 2026 SubSphere. All rights reserved.</div>
+                    <div>© 2026 SubSphere. All rights reserved. Built on Spring Boot · Secured with JWT.</div>
                     <div style={{ display: 'flex', gap: '24px' }}>
                         <FooterLink to="/">Privacy</FooterLink>
                         <FooterLink to="/">Terms</FooterLink>
-                        <FooterLink to="/">Cookies</FooterLink>
-                        <FooterLink to="/">GDPR</FooterLink>
                     </div>
                 </div>
             </div>

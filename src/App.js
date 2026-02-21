@@ -5,11 +5,12 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
-import AuthPage from './pages/AuthPage';
+import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage';
 import PricingPage from './pages/PricingPage';
 import Dashboard from './pages/Dashboard';
+import SubscriptionsPage from './pages/SubscriptionsPage';
 import AdminDashboard from './pages/AdminDashboard';
-import MySubscriptionsPage from './pages/MySubscriptionsPage'; // NEW IMPORT
 
 import './App.css';
 
@@ -19,42 +20,51 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            {/* Public Routes */}
+            {/* ── Public Routes ── */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<AuthPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/pricing" element={<PricingPage />} />
 
-            {/* Protected Routes */}
-            <Route 
-              path="/dashboard" 
+            {/* ── Protected Routes ── */}
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-
-            {/* NEW ROUTE - My Subscriptions Page */}
-            <Route 
-              path="/my-subscriptions" 
+            <Route
+              path="/subscriptions"
               element={
                 <ProtectedRoute>
-                  <MySubscriptionsPage />
+                  <SubscriptionsPage />
                 </ProtectedRoute>
-              } 
+              }
             />
 
-            {/* Admin Only Route */}
-            <Route 
-              path="/admin" 
+            {/* ── Legacy redirects ── */}
+            <Route
+              path="/my-subscriptions"
+              element={
+                <ProtectedRoute>
+                  <SubscriptionsPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ── Admin Only ── */}
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute adminOnly={true}>
                   <AdminDashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
 
-            {/* Fallback Route */}
+            {/* ── Fallback ── */}
             <Route path="*" element={<LandingPage />} />
           </Routes>
         </div>

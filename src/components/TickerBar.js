@@ -2,14 +2,14 @@ import React from 'react';
 
 const TickerBar = () => {
     const features = [
-        { icon: '⚡', text: 'JWT Auth', highlight: 'with 30-min expiry' },
-        { icon: '🔄', text: 'Auto', highlight: 'renewal reminders', extra: 'at 9 AM daily' },
-        { icon: '📋', text: '', highlight: '3 flexible plans', extra: '— Basic, Pro, Enterprise' },
-        { icon: '🛡️', text: '', highlight: 'Role-based access', extra: '— USER & ADMIN' },
-        { icon: '🕐', text: 'Subscriptions', highlight: 'auto-expire', extra: 'at 2 AM' },
-        { icon: '📊', text: '', highlight: 'Admin dashboard', extra: 'with live stats' },
-        { icon: '🗄️', text: '', highlight: 'MySQL', extra: '+ Spring JPA backend' },
-        { icon: '✉️', text: '', highlight: 'Email notifications', extra: 'built in' }
+        { icon: '⚡', text: 'JWT Auth with', highlight: 'HS256 signing' },
+        { icon: '🔑', text: 'Auto-generated', highlight: 'Client ID & Secret', extra: 'on registration' },
+        { icon: '🕐', text: 'Subscriptions', highlight: 'auto-expire', extra: 'at 2:00 AM daily' },
+        { icon: '📧', text: 'Renewal emails sent at', highlight: '9:00 AM', extra: '— 3 days before expiry' },
+        { icon: '🏢', text: 'Multi-tenant —', highlight: 'complete data isolation', extra: 'per startup' },
+        { icon: '📊', text: 'Developer Console with', highlight: 'live API usage', extra: 'counter' },
+        { icon: '🗄️', text: '', highlight: 'MySQL + Spring JPA', extra: 'backend' },
+        { icon: '🔄', text: 'Cancel, Renew, Upgrade —', highlight: 'one API call', extra: 'each' },
     ];
 
     return (

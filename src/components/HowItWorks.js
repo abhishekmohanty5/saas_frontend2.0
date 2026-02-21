@@ -2,7 +2,7 @@ import React from 'react';
 
 const HowItWorks = () => {
     return (
-        <div style={{ background: 'var(--cream)', padding: '100px 48px', position: 'relative', overflow: 'hidden' }}>
+        <div id="how-it-works" style={{ background: 'var(--cream)', padding: '100px 48px', position: 'relative', overflow: 'hidden' }}>
             {/* Background decoration */}
             <div style={{
                 content: '',
@@ -28,7 +28,7 @@ const HowItWorks = () => {
                     color: 'var(--ink)',
                     fontWeight: 400
                 }}>
-                    Live in <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>minutes,</em> not months
+                    Integrated in <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>minutes,</em> not months
                 </h2>
 
                 {/* Steps Grid */}
@@ -51,20 +51,20 @@ const HowItWorks = () => {
                         zIndex: 0
                     }} />
 
-                    <StepCard number="1" title="Register & Login" active>
-                        POST to <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>/api/auth/register</code> to create an account. Get a JWT token back instantly.
+                    <StepCard number="1" title="Register your startup" active>
+                        POST <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>/api/auth/reg</code> with <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>tenantName, userName, email, password</code> → Gets JWT token + auto-generated clientId & clientSecret.
                     </StepCard>
 
-                    <StepCard number="2" title="Browse Plans">
-                        Public endpoint <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>/api/plans</code> returns all available subscription tiers — no auth needed.
+                    <StepCard number="2" title="Open Developer Console">
+                        GET <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>/api/dashboard</code> → See your plan, API keys, usage stats, and enabled services all in one place.
                     </StepCard>
 
-                    <StepCard number="3" title="Subscribe">
-                        POST planId to <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>/api/subscriptions</code> with Bearer token. Subscription goes ACTIVE immediately.
+                    <StepCard number="3" title="Use the APIs">
+                        Integrate SubSphere auth & subscription APIs into your own product using your <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--sand)', padding: '1px 5px', borderRadius: '3px' }}>clientId</code> as tenant identifier.
                     </StepCard>
 
-                    <StepCard number="4" title="Automated Lifecycle">
-                        Backend handles expiry, reminders, and cancellations automatically. Your UI just reads the status.
+                    <StepCard number="4" title="Engine handles the rest">
+                        Expiry auto-runs at 2 AM, reminders go out at 9 AM, usage is counted live per call via Spring interceptor. Zero cron jobs needed.
                     </StepCard>
                 </div>
             </div>

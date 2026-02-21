@@ -4,7 +4,7 @@ const Testimonials = () => {
     const testimonials = [
         {
             stars: 5,
-            quote: "The scheduler is a game-changer. Subscriptions expire and renew automatically — we stopped writing cron jobs entirely.",
+            quote: "The 2 AM scheduler is a game-changer. Subscriptions expire automatically and renewal emails go out at 9 AM sharp — we stopped writing cron jobs entirely.",
             name: "Arjun Kumar",
             role: "Lead Engineer · Buildworks",
             avatar: "AK",
@@ -12,15 +12,15 @@ const Testimonials = () => {
         },
         {
             stars: 5,
-            quote: "AppResponse wraps every endpoint consistently. Our frontend team stopped guessing what shape data would arrive in.",
-            name: "Sneha Rao",
+            quote: "The AppResponse<T> wrapper is consistent across every endpoint. Our frontend team stopped guessing what shape data would arrive in. Clean 401s, clean 403s — everything just works.",
+            name: "Priya Rao",
             role: "Frontend Dev · Pineloop",
-            avatar: "SR",
+            avatar: "PR",
             gradient: "linear-gradient(135deg,#2D6A4F,#40916C)"
         },
         {
             stars: 5,
-            quote: "Role-based access just worked from day one. Wired up our admin panel in an afternoon. The JWT setup is clean and predictable.",
+            quote: "Multi-tenancy with complete data isolation out of the box. Each startup gets their own clientId and secret. Wired up our admin panel in an afternoon using the /api/dashboard endpoint.",
             name: "Manish Shah",
             role: "CTO · Triarc",
             avatar: "MS",

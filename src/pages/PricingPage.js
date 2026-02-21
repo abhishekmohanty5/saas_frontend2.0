@@ -83,7 +83,7 @@ const PricingPage = () => {
     if (!user) {
       // Send user to login and return back to this pricing page with their selection.
       const redirect = `/pricing?plan=${encodeURIComponent(String(plan.id))}&planName=${encodeURIComponent(String(plan.name || ''))}&billing=${encodeURIComponent(billingInterval)}`;
-      navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
+      navigate(`/register?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 

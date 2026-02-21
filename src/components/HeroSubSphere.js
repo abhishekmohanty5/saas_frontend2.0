@@ -16,6 +16,11 @@ const HeroSubSphere = () => {
         });
     }, []);
 
+    const scrollToHowItWorks = () => {
+        const el = document.getElementById('how-it-works');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <section style={{
             maxWidth: '1280px',
@@ -79,7 +84,7 @@ const HeroSubSphere = () => {
                             borderRadius: '50%'
                         }} />
                     </div>
-                    Spring Boot backend · Production ready
+                    Spring Boot Backend · Multi-Tenant ·
                     <strong style={{ marginLeft: '2px', color: 'var(--ink)', fontWeight: 600 }}>v1.0</strong>
                 </div>
 
@@ -93,7 +98,7 @@ const HeroSubSphere = () => {
                     fontWeight: 400,
                     animation: 'fadeSlideUp 0.7s 0.1s ease both'
                 }}>
-                    Subscription<br />billing that <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>just<br />works.</em>
+                    Subscription infrastructure<br />for <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>modern SaaS</em><br />products.
                 </h1>
 
                 {/* Subtitle */}
@@ -106,7 +111,7 @@ const HeroSubSphere = () => {
                     fontWeight: 400,
                     animation: 'fadeSlideUp 0.7s 0.2s ease both'
                 }}>
-                    SubSphere handles the entire subscription lifecycle — from signup to expiry, renewal reminders, plan upgrades, and access control — powered by a battle-tested Spring Boot backend.
+                    SubSphere is an API-first engine that handles authentication, subscription lifecycle, plan management, and renewal automation — so startups can focus on building their core product, not the plumbing.
                 </p>
 
                 {/* CTA Buttons */}
@@ -119,7 +124,7 @@ const HeroSubSphere = () => {
                     animation: 'fadeSlideUp 0.7s 0.3s ease both'
                 }}>
                     <button
-                        onClick={() => navigate('/pricing')}
+                        onClick={() => navigate('/register')}
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -147,7 +152,7 @@ const HeroSubSphere = () => {
                             e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08)';
                         }}
                     >
-                        Start your free trial
+                        Start Free Trial
                         <div style={{
                             width: '20px',
                             height: '20px',
@@ -161,6 +166,7 @@ const HeroSubSphere = () => {
                     </button>
 
                     <button
+                        onClick={scrollToHowItWorks}
                         style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -182,15 +188,15 @@ const HeroSubSphere = () => {
                             <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
                             <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" />
                         </svg>
-                        See how it works
+                        See How It Works
                     </button>
                 </div>
 
                 <div style={{ fontSize: '13px', color: 'var(--stone)', marginTop: '16px' }}>
-                    No credit card required. <strong style={{ color: 'var(--muted)' }}>14-day free trial.</strong>
+                    No credit card required. <strong style={{ color: 'var(--muted)' }}>14-day free trial included.</strong>
                 </div>
 
-                {/* Trusted By Logos */}
+                {/* Architecture Chips */}
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -202,11 +208,11 @@ const HeroSubSphere = () => {
                     animation: 'fadeSlideUp 0.7s 0.4s ease both'
                 }}>
                     <span style={{ fontSize: '12px', color: 'var(--stone)', fontWeight: 500, marginRight: '4px', whiteSpace: 'nowrap' }}>
-                        Trusted by teams at
+                        Trusted architecture, not an app
                     </span>
-                    <LogoChip name="Buildworks" />
-                    <LogoChip name="Pineloop" />
-                    <LogoChip name="Triarc" />
+                    <LogoChip name="Auth0-style JWT" />
+                    <LogoChip name="Stripe-style Plans" />
+                    <LogoChip name="Multi-Tenant Engine" />
                 </div>
             </div>
 
@@ -268,53 +274,31 @@ const DashboardMockup = () => (
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ffbd2e' }} />
                 <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#28ca41' }} />
                 <span style={{ marginLeft: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, letterSpacing: '0', fontFamily: 'var(--ff-sans)' }}>
-                    SubSphere — admin dashboard
+                    subsphere — developer console
                 </span>
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, background: 'var(--white)', borderBottom: '1px solid var(--sand)' }}>
+            <div style={{ display: 'flex', gap: 0, background: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                 <Tab active>Overview</Tab>
-                <Tab>Subscriptions</Tab>
-                <Tab>Plans</Tab>
-                <Tab>Settings</Tab>
+                <Tab>API Credentials</Tab>
+                <Tab>Usage</Tab>
+                <Tab>Services</Tab>
             </div>
 
             {/* Body */}
             <div style={{ padding: '24px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-                    <MetricBox label="MRR" value="₹8,402" delta="↑ 12.4%" positive graph="mrr" bg="#F4F2EC" />
-                    <MetricBox label="Active" value="342" delta="↑ 8 today" positive graph="active" bg="#F0F5F2" />
-                    <MetricBox label="Churn" value="2.1%" delta="↓ 0.3%" negative graph="churn" bg="#FDF2F2" />
+                    <MetricBox label="API Calls" value="142" delta="↑ 18 today" positive bg="#F4F2EC" />
+                    <MetricBox label="Active" value="5 subs" delta="↑ 2 this week" positive bg="#F0F5F2" />
+                    <MetricBox label="Plan" value="Free Trial" delta="4 days left" bg="#FDF2F2" />
                 </div>
 
-                {/* Bar Chart */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    gap: '10px',
-                    height: '80px',
-                    marginBottom: '32px',
-                    padding: '0 8px'
-                }}>
-                    <ChartBar height="30%" />
-                    <ChartBar height="45%" />
-                    <ChartBar height="35%" />
-                    <ChartBar height="50%" />
-                    <ChartBar height="70%" highlight />
-                    <ChartBar height="60%" />
-                    <ChartBar height="80%" gold />
-                    <ChartBar height="55%" />
-                    <ChartBar height="65%" />
-                    <ChartBar height="85%" highlight />
-                    <ChartBar height="60%" />
-                    <ChartBar height="50%" />
-                </div>
                 {/* Subscription List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <SubItem name="Arjun Kumar" plan="Pro · expires Mar 17" amount="₹29.99" status="Active" gradient="#5887FF" />
-                    <SubItem name="Priya Rao" plan="Basic · expires Feb 28" amount="₹9.99" status="Trial" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-                    <SubItem name="Manish Shah" plan="Enterprise · expires Apr 1" amount="₹79.00" status="Active" gradient="#5887FF" />
+                    <SubItem name="Netflix" plan="Pro Plan · ₹649" status="Active" gradient="#E50914" />
+                    <SubItem name="Spotify" plan="Basic · ₹119" status="Active" gradient="#1DB954" />
+                    <SubItem name="Adobe CC" plan="Enterprise · ₹4,999" status="Trial" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
                 </div>
             </div>
         </div>
@@ -331,8 +315,8 @@ const Tab = ({ children, active }) => (
         padding: '12px 20px',
         fontSize: '13px',
         fontWeight: 500,
-        color: active ? 'var(--ink)' : 'var(--stone)',
-        borderBottom: active ? '2px solid var(--ink)' : '2px solid transparent',
+        color: active ? 'var(--white)' : 'rgba(255,255,255,0.45)',
+        borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
         transition: 'all 0.15s',
         cursor: 'pointer'
     }}>
@@ -340,90 +324,32 @@ const Tab = ({ children, active }) => (
     </div>
 );
 
-const MetricBox = ({ label, value, delta, positive, negative, graph, bg }) => (
+const MetricBox = ({ label, value, delta, positive, negative, bg }) => (
     <div style={{
         background: bg || 'var(--cream)',
         borderRadius: '16px',
-        padding: '20px 16px 16px', // Increased top padding
+        padding: '20px 16px 16px',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '120px',
+        minHeight: '100px',
         display: 'flex',
         flexDirection: 'column'
     }}>
         <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ fontSize: '13px', fontWeight: 900, color: '#C4BAA8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 900, color: '#C4BAA8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {label}
             </div>
-            <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '32px', color: '#1A1714', marginTop: '6px', fontWeight: 400 }}>
+            <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '24px', color: '#1A1714', marginTop: '6px', fontWeight: 400 }}>
                 {value}
             </div>
             <div style={{ fontSize: '12px', color: positive ? '#40916C' : negative ? '#B5463A' : '#7A7368', fontWeight: 700, marginTop: '4px' }}>
                 {delta}
             </div>
         </div>
-
-        {/* Graph Background */}
-        <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '45%',
-            opacity: 0.9,
-            zIndex: 1
-        }}>
-            {graph === 'mrr' && (
-                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="gradMrr" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#C9A84C" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#C9A84C" stopOpacity="0" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M0,35 Q20,32 30,25 T60,20 T80,10 L100,5 V40 H0 Z" fill="url(#gradMrr)" />
-                    <path d="M0,35 Q20,32 30,25 T60,20 T80,10 L100,5" fill="none" stroke="#C9A84C" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-            )}
-            {graph === 'active' && (
-                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="gradActive" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#40916C" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#40916C" stopOpacity="0" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M0,30 Q25,35 40,25 T75,15 L100,8 V40 H0 Z" fill="url(#gradActive)" />
-                    <path d="M0,30 Q25,35 40,25 T75,15 L100,8" fill="none" stroke="#40916C" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-            )}
-            {graph === 'churn' && (
-                <svg width="100%" height="100%" viewBox="0 0 100 40" preserveAspectRatio="none">
-                    <defs>
-                        <linearGradient id="gradChurn" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#B5463A" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#B5463A" stopOpacity="0" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M0,25 Q30,20 50,28 T80,32 L100,35 V40 H0 Z" fill="url(#gradChurn)" />
-                    <path d="M0,25 Q30,20 50,28 T80,32 L100,35" fill="none" stroke="#B5463A" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-            )}
-        </div>
     </div>
 );
 
-const ChartBar = ({ height, highlight, gold }) => (
-    <div className="chart-bar" style={{
-        flex: 1,
-        borderRadius: '5px 5px 0 0',
-        background: gold ? 'var(--gold)' : highlight ? 'var(--ink)' : 'var(--sand)',
-        height,
-        transition: 'height 0.8s cubic-bezier(.25,1,.5,1)'
-    }} />
-);
-
-const SubItem = ({ name, plan, amount, status, gradient }) => (
+const SubItem = ({ name, plan, status, gradient }) => (
     <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -446,14 +372,11 @@ const SubItem = ({ name, plan, amount, status, gradient }) => (
             color: 'white',
             background: gradient
         }}>
-            {name.split(' ').map(n => n[0]).join('')}
+            {name[0]}
         </div>
         <div style={{ flex: 1 }}>
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{name}</div>
             <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{plan}</div>
-        </div>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
-            {amount}
         </div>
         <div style={{
             fontSize: '11px',
@@ -482,16 +405,16 @@ const FloatingCard1 = () => (
         animation: 'float1 4s ease-in-out infinite'
     }}>
         <div style={{ fontSize: '11px', color: 'var(--stone)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Monthly Revenue
+            API Calls Today
         </div>
         <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '28px', color: 'var(--ink)', marginTop: '2px' }}>
-            ₹8,402
+            142
         </div>
         <div style={{ fontSize: '12px', color: 'var(--emerald2)', fontWeight: 600, marginTop: '2px' }}>
-            ↑ 12.4% vs last month
+            ↑ 18 since yesterday
         </div>
         <div style={{ height: '4px', background: 'var(--sand)', borderRadius: '2px', marginTop: '10px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: '2px', background: 'var(--gold)', width: '74%' }} />
+            <div style={{ height: '100%', borderRadius: '2px', background: 'var(--gold)', width: '62%' }} />
         </div>
     </div>
 );
@@ -513,7 +436,7 @@ const FloatingCard2 = () => (
             Renewal Reminder
         </div>
         <div style={{ fontSize: '14px', color: '#1A1714', marginTop: '8px', lineHeight: 1.5 }}>
-            📧   <strong style={{ fontWeight: 700 }}>14 users</strong> notified<br />
+            📧 <strong style={{ fontWeight: 700 }}>3 users</strong> notified<br />
             <span style={{ color: '#7A7368', fontSize: '13px' }}>expiring in 3 days</span>
         </div>
         <div style={{
