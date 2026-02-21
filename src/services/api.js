@@ -1,15 +1,8 @@
 import axios from 'axios';
 
 // Backend base URL
-const getApiBaseUrl = () => {
-  let url = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-  if (!url.endsWith('/api') && !url.endsWith('/api/')) {
-    url = url.endsWith('/') ? `${url}api` : `${url}/api`;
-  }
-  return url;
-};
-
-const API_BASE_URL = getApiBaseUrl();
+// Backend base URL - Hardcoded for production to ensure correct routing
+const API_BASE_URL = 'https://saassubscription-production.up.railway.app/api';
 
 // Create axios instance
 const api = axios.create({
