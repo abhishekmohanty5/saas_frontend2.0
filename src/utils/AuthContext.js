@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     // Check if user is logged in on app load
     const storedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    
+
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
     }
@@ -24,46 +24,46 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      
+
       console.log('Login response:', response.data);
-      
+
       // Backend returns: { message, data: { email, token }, status, timestamp }
       const { data, message } = response.data;
-      
+
       // Validate response
       if (!data || !data.token) {
-        return { 
-          success: false, 
-          error: message || 'Invalid response from server' 
+        return {
+          success: false,
+          error: message || 'Invalid response from server'
         };
       }
-      
+
       const { token, email: userEmail } = data;
-      
+
       // Store token
       localStorage.setItem('token', token);
-      
+
       // Check if user is admin (your email)
       const role = userEmail === ADMIN_EMAIL ? 'ADMIN' : 'USER';
-      
+
       // Create user object
       const userData = {
         email: userEmail,
         role: role
       };
-      
+
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
-      
+
       console.log('User logged in as:', role);
-      
+
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      
+
       // Extract error message from backend
       let errorMessage = 'Login failed';
-      
+
       if (error.response?.status === 401) {
         errorMessage = 'Invalid email or password';
       } else if (error.response?.status === 404) {
@@ -75,9 +75,9 @@ export const AuthProvider = ({ children }) => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
-      return { 
-        success: false, 
+
+      return {
+        success: false,
         error: errorMessage
       };
     }
@@ -86,26 +86,26 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authAPI.register(userData);
-      
+
       console.log('Registration response:', response.data);
-      
+
       // Backend returns: { message, data: { username, email }, status, timestamp }
       const { message } = response.data;
-      
+
       // Registration successful - DO NOT AUTO-LOGIN
       // Return success so AuthPage can redirect to login
-      return { 
+      return {
         success: true,
         message: message || 'Registration successful! Please login.'
       };
     } catch (error) {
       console.error('Registration error:', error);
-      
+
       // Extract error message from backend
       let errorMessage = 'Registration failed';
-      
-      if (error.response?.status === 409 || 
-          error.response?.status === 500 && error.message.includes('Duplicate')) {
+
+      if (error.response?.status === 409 ||
+        (error.response?.status === 500 && error.message.includes('Duplicate'))) {
         errorMessage = 'Email already registered. Please login instead.';
       } else if (error.response?.status === 400) {
         // Password validation or other validation errors
@@ -119,9 +119,9 @@ export const AuthProvider = ({ children }) => {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
-      return { 
-        success: false, 
+
+      return {
+        success: false,
         error: errorMessage
       };
     }

@@ -19,16 +19,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  useEffect(() => {
-    // Check if user is admin
-    if (!user || user.role !== 'ADMIN') {
-      navigate('/dashboard');
-      return;
-    }
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       const [usersRes, plansRes] = await Promise.all([
         adminAPI.getAllUsers(),
@@ -41,7 +32,17 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // Check if user is admin
+    if (!user || user.role !== 'ADMIN') {
+      navigate('/dashboard');
+      return;
+    }
+    fetchData();
+  }, [user, navigate, fetchData]);
+
 
   const handleCreatePlan = async (e) => {
     e.preventDefault();
@@ -57,7 +58,12 @@ const AdminDashboard = () => {
       setNewPlan({ name: '', price: '', duration: '', features: '' });
       fetchData();
     } catch (err) {
-      alert('Failed to create plan: ' + (err.response?.data?.message || 'Unknown error'));
+      if (err.response?.status === 409 ||
+        (err.response?.status === 500 && err.message.includes('Duplicate'))) {
+        alert('Failed to create plan: A plan with this name already exists.');
+      } else {
+        alert('Failed to create plan: ' + (err.response?.data?.message || 'Unknown error'));
+      }
     }
   };
 
@@ -113,7 +119,7 @@ const AdminDashboard = () => {
         <div className="admin-section">
           <div className="section-header">
             <h2>Subscription Plans</h2>
-            <button 
+            <button
               className="btn-create"
               onClick={() => setShowCreatePlan(!showCreatePlan)}
             >
@@ -127,7 +133,7 @@ const AdminDashboard = () => {
                 type="text"
                 placeholder="Plan Name (e.g., BASIC)"
                 value={newPlan.name}
-                onChange={(e) => setNewPlan({...newPlan, name: e.target.value})}
+                onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
                 required
               />
               <input
@@ -135,20 +141,20 @@ const AdminDashboard = () => {
                 step="0.01"
                 placeholder="Price"
                 value={newPlan.price}
-                onChange={(e) => setNewPlan({...newPlan, price: e.target.value})}
+                onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
                 required
               />
               <input
                 type="number"
                 placeholder="Duration (days)"
                 value={newPlan.duration}
-                onChange={(e) => setNewPlan({...newPlan, duration: e.target.value})}
+                onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })}
                 required
               />
               <textarea
                 placeholder="Features (comma-separated)"
                 value={newPlan.features}
-                onChange={(e) => setNewPlan({...newPlan, features: e.target.value})}
+                onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
                 required
               />
               <button type="submit" className="btn-submit">Create Plan</button>
@@ -174,7 +180,7 @@ const AdminDashboard = () => {
                     <td>${plan.price}</td>
                     <td>{plan.duration} days</td>
                     <td>
-                      <button 
+                      <button
                         className="btn-delete"
                         onClick={() => handleDeletePlan(plan.id)}
                       >
