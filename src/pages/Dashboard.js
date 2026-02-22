@@ -27,7 +27,7 @@ const Dashboard = () => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saassubscription-production.up.railway.app/api';
+        const API_BASE_URL = 'https://saassubscription-production.up.railway.app/api';
         const res = await fetch(`${API_BASE_URL}/dashboard`, {
           headers: { Authorization: `Bearer ${token}` },
         });
