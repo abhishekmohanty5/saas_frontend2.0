@@ -16,7 +16,7 @@
   --border: #e2e8f0;
   --border2: #cbd5e1;
   --text: #0f172a;
-  --muted: #64748b;
+  --muted: #334155;
   --accent: #4f46e5;
   --accent2: #0ea5e9;
   --green: #10b981;
@@ -25,13 +25,13 @@
   --purple: #8b5cf6;
   --ink: #0f172a;
   --sand: #f1f5f9;
-  --stone: #475569;
+  --stone: #1e293b;
 
   /* Legacy Colors - (Keeping for compatibility with existing components) */
   --white: #FFFFFF;
   --cream: #F8FAFC;
   --sand: #F1F5F9;
-  --stone: #94A3B8;
+  --stone: #334155;
   --ink: #020617;
   --ink2: #0F172A;
   --ink3: #1E293B;

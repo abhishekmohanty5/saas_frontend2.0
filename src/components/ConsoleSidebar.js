@@ -72,7 +72,7 @@ const ConsoleSidebar = ({
                 .sidebar-label {
                     font-size: 10px;
                     font-weight: 800;
-                    color: #94a3b8;
+                    color: #475569;
                     padding: 32px 28px 12px;
                     text-transform: uppercase;
                     letter-spacing: 0.15em;
@@ -87,8 +87,8 @@ const ConsoleSidebar = ({
                     border-radius: 14px;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-                    color: #64748b;
-                    font-weight: 600;
+                    color: #1e2b3c;
+                    font-weight: 700;
                     font-size: 14px;
                     position: relative;
                 }
@@ -129,8 +129,8 @@ const ConsoleSidebar = ({
                     gap: 14px;
                     padding: 14px 28px;
                     cursor: pointer;
-                    color: #64748b;
-                    font-weight: 600;
+                    color: #1e2b3c;
+                    font-weight: 700;
                     font-size: 14px;
                     transition: all 0.2s;
                     margin: 0 12px;
@@ -284,7 +284,7 @@ const ConsoleSidebar = ({
                         className={`sidebar-item ${activeTab === item.id ? "active" : ""}`}
                         onClick={() => handleNav(item.id)}
                     >
-                        <Icon name={item.icon} color={activeTab === item.id ? "#4f46e5" : "#94a3b8"} />
+                        <Icon name={item.icon} color={activeTab === item.id ? "#4f46e5" : "#475569"} />
                         {sidebarOpen && <span>{item.label}</span>}
                     </div>
                 ))}

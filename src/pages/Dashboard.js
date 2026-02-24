@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ConsoleSidebar from '../components/ConsoleSidebar';
 import Navbar from '../components/Navbar';
@@ -58,13 +58,101 @@ const Sparkline = ({ color }) => (
 );
 // ─── CENTRAL TELEMETRY COMPONENTS ──────────────────────────────────────────
 
-function TelemetryUnit({ dashboard, stats }) {
-  const telemetryData = [
-    { label: "NODE SYNC DATE", value: dashboard?.nextBillingDate ? new Date(dashboard.nextBillingDate).toLocaleDateString() : "SYNC_PENDING", color: "#6366f1", status: "SCHEDULED" },
-    { label: "IDENTITY PROTOCOL", value: dashboard?.tenantId?.slice(0, 12) || "ROOT_NODE", color: "#10b981", status: "VERIFIED" },
-    { label: "OPERATIONAL_QUEUE", value: stats?.pending || 0, color: "#8b5cf6", status: "POLLING" },
-    { label: "COMPUTE PROVISION", value: dashboard?.tenantPlan || "FREE", color: "#f59e0b", status: "AUTHORIZED" }
-  ];
+
+function TelemetryUnit({ dashboard }) {
+  const [flowIdx, setFlowIdx] = useState(0);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [lineIdx, setLineIdx] = useState(0);
+  const [charIdx, setCharIdx] = useState(0);
+  const [visibleSteps, setVisibleSteps] = useState([]);
+  const [phase, setPhase] = useState("typing");
+  const scrollRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const flow = FLOWS[flowIdx];
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const el = scrollRef.current;
+      // Direct, instant scroll for better anchoring during live typing
+      el.scrollTop = el.scrollHeight;
+
+      // Secondary safety check for DOM settling
+      const timeout = setTimeout(() => {
+        el.scrollTop = el.scrollHeight;
+      }, 50);
+      return () => clearTimeout(timeout);
+    }
+  }, [visibleSteps, lineIdx]); // Anchored to line changes for maximum stability
+
+  useEffect(() => {
+    clearTimeout(timerRef.current);
+    const currentStep = flow.steps[stepIdx];
+    if (!currentStep) return;
+    const currentLines = currentStep.lines;
+    const currentLine = currentLines[lineIdx];
+    if (!currentLine) return;
+
+    const fullText = currentLine.tokens.map(t => t.t).join("");
+
+    if (phase === "typing") {
+      if (charIdx < fullText.length) {
+        timerRef.current = setTimeout(() => setCharIdx(c => c + 1), 35);
+      } else {
+        timerRef.current = setTimeout(() => setPhase("next_line"), 150);
+      }
+    } else if (phase === "next_line") {
+      if (lineIdx + 1 < currentLines.length) {
+        setLineIdx(l => l + 1);
+        setCharIdx(0);
+        setPhase("typing");
+      } else {
+        setVisibleSteps(prev => {
+          const existing = prev.filter(s => s.stepIdx !== stepIdx || s.flowIdx !== flowIdx);
+          return [...existing, { flowIdx, stepIdx, lines: currentLines, step: currentStep, done: true }];
+        });
+        timerRef.current = setTimeout(() => setPhase("next_step"), 1200);
+      }
+    } else if (phase === "next_step") {
+      if (stepIdx + 1 < flow.steps.length) {
+        setStepIdx(s => s + 1);
+        setLineIdx(0);
+        setCharIdx(0);
+        setPhase("typing");
+      } else {
+        timerRef.current = setTimeout(() => setPhase("next_flow"), 3000);
+      }
+    } else if (phase === "next_flow") {
+      const nextFlow = (flowIdx + 1) % FLOWS.length;
+      setFlowIdx(nextFlow);
+      setStepIdx(0);
+      setLineIdx(0);
+      setCharIdx(0);
+      setVisibleSteps([]);
+      setPhase("typing");
+    }
+  }, [phase, charIdx, lineIdx, stepIdx, flowIdx]);
+
+  const buildTypingLine = (line, charCount) => {
+    let remaining = charCount;
+    return line.tokens.map((tok, ti) => {
+      if (remaining <= 0) return null;
+      let textToUse = tok.t;
+      if (tok.t === '"sb_c7daee5c65bb48fc"' && dashboard?.clientId) {
+        textToUse = `"${dashboard.clientId}"`;
+      }
+      const slice = textToUse.slice(0, remaining);
+      remaining -= textToUse.length;
+      return <span key={ti} style={{ color: tok.c }}>{slice}</span>;
+    });
+  };
+
+  const currentStep = flow.steps[stepIdx];
+  const sideLabel = (side) => ({
+    request: { text: "#60a5fa", dot: "#3b82f6" },
+    engine: { text: "#4ade80", dot: "#22c55e" },
+    response: { text: "#c084fc", dot: "#a855f7" },
+  }[side] || { text: "#94a3b8", dot: "#64748b" });
 
   return (
     <div className="telemetry-unit-container" style={{
@@ -73,85 +161,150 @@ function TelemetryUnit({ dashboard, stats }) {
     }}>
       <style>{`
         .telemetry-3d-card {
-          background: #020617;
-          border-radius: 24px;
-          border: 1px solid rgba(99, 102, 241, 0.25);
+          background: #07070a;
+          border-radius: 12px;
+          border: 1px solid #10b981;
           box-shadow: 
-            0 40px 100px -20px rgba(0, 0, 0, 0.7),
-            0 0 40px rgba(79, 70, 229, 0.1),
-            inset 0 1px 1px rgba(255, 255, 255, 0.05);
-          padding: 40px 48px;
+            0 40px 100px -20px rgba(0, 0, 0, 0.9),
+            0 0 30px rgba(16, 185, 129, 0.1);
           position: relative;
           overflow: hidden;
           transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
           transform-style: preserve-3d;
-          background-image: 
-            linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-          background-size: 40px 40px;
         }
         .telemetry-unit-container:hover .telemetry-3d-card {
-          transform: rotateX(4deg) rotateY(-2deg) translateY(-5px);
+          transform: rotateX(1deg) rotateY(-0.5deg) translateY(-2px);
         }
-        .telemetry-row {
-          display: grid;
-          grid-template-columns: 1.5fr 1fr 1fr;
-          align-items: center;
-          padding: 14px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-          transition: all 0.3s ease;
+        .terminal-scroll {
+          scroll-behavior: smooth;
+          mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+          -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
         }
-        .telemetry-row:last-child {
-          border-bottom: none;
-        }
-        .telemetry-row:hover {
-          background: rgba(255, 255, 255, 0.02);
-          padding-left: 12px;
-        }
+        .terminal-scroll::-webkit-scrollbar { width: 4px; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: #10b98144; border-radius: 2px; }
+        .line-num { color: #2d3748; user-select: none; margin-right: 18px; font-size: 11px; width: 24px; display: inline-block; text-align: right; }
+        .cursor { display: inline-block; width: 2px; height: 13px; background: #e2e8f0; margin-left: 2px; vertical-align: middle; animation: blink .8s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
       `}</style>
 
       <div className="telemetry-3d-card">
-        {/* HUD Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, opacity: 0.8 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.2em' }}>
-            SYSTEM_DIAGNOSTICS // INFRA_CORE_v4.2
+        {/* IDE Title Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#161b22', borderBottom: '1px solid #1e293b' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#28c840' }} />
           </div>
-          <div style={{ fontSize: 10, fontWeight: 800, color: '#475569', letterSpacing: '0.1em' }}>
-            ENGINE_SYNC: OK
+          <div style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "var(--ff-mono)" }}>
+            STREAMING_RESPONSE.JSON
+          </div>
+          <div style={{ fontSize: 9, fontWeight: 800, color: '#475569', letterSpacing: '0.05em' }}>
+            {flow.method} {flow.endpoint}
           </div>
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {telemetryData.map((data, idx) => (
-            <div key={idx} className="telemetry-row">
-              {/* Label */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: data.color, boxShadow: `0 0 8px ${data.color}` }} />
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.05em' }}>{data.label}</div>
+        {/* IDE Content Area */}
+        <div ref={scrollRef} className="terminal-scroll" style={{
+          height: 340,
+          overflowY: 'auto',
+          position: 'relative',
+          zIndex: 1,
+          padding: '40px 32px',
+          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          fontSize: 13,
+          fontWeight: 500,
+          lineHeight: '1.8',
+          WebkitFontSmoothing: 'antialiased',
+          background: '#07070a'
+        }}>
+          {visibleSteps.map((vs, vi) => (
+            <div key={vi} style={{ marginBottom: 16, animation: 'fadeIn 0.3s ease both' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: sideLabel(vs.step.side).dot }} />
+                <span style={{ fontSize: 10, fontWeight: 800, color: sideLabel(vs.step.side).text, letterSpacing: '0.1em' }}>{vs.step.label}</span>
               </div>
-
-              {/* Value */}
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#f8fafc', letterSpacing: '0.05em', fontFamily: 'var(--ff-mono, monospace)' }}>
-                {data.value}
-                <span style={{ fontSize: 8, color: '#475569', marginLeft: 12, letterSpacing: '0.1em', fontWeight: 600 }}>CORE_V</span>
-              </div>
-
-              {/* Status & Bar */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontWeight: 900 }}>
-                  <span style={{ color: '#475569' }}>STATUS</span>
-                  <span style={{ color: data.color }}>{data.status}</span>
-                </div>
-                <div style={{ height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 1, position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: data.value !== 0 ? '60%' : '5%', background: data.color, boxShadow: `0 0 10px ${data.color}` }} />
-                </div>
+              <div style={{ marginBottom: 20 }}>
+                {vs.lines.map((line, li) => (
+                  <div key={li} style={{ whiteSpace: 'pre-wrap' }}>
+                    <span className="line-num">{li + 1}</span>
+                    {line.tokens.map((tok, ti) => {
+                      let t = tok.t;
+                      if (t === '"sb_c7daee5c65bb48fc"' && dashboard?.clientId) t = `"${dashboard.clientId}"`;
+                      return <span key={ti} style={{ color: tok.c }}>{t}</span>;
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
+
+          {currentStep && phase !== "next_flow" && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: sideLabel(currentStep.side).dot, animation: 'pulse 1s infinite' }} />
+                <span style={{ fontSize: 10, fontWeight: 800, color: sideLabel(currentStep.side).text, letterSpacing: '0.1em' }}>{currentStep.label}</span>
+              </div>
+              <div>
+                {currentStep.lines.slice(0, lineIdx).map((line, li) => (
+                  <div key={li} style={{ whiteSpace: 'pre-wrap' }}>
+                    <span className="line-num">{li + 1}</span>
+                    {line.tokens.map((tok, ti) => {
+                      let t = tok.t;
+                      if (t === '"sb_c7daee5c65bb48fc"' && dashboard?.clientId) t = `"${dashboard.clientId}"`;
+                      return <span key={ti} style={{ color: tok.c }}>{t}</span>;
+                    })}
+                  </div>
+                ))}
+                <div style={{ whiteSpace: 'pre-wrap' }}>
+                  <span className="line-num">{lineIdx + 1}</span>
+                  {buildTypingLine(currentStep.lines[lineIdx], charIdx)}
+                  <span className="cursor" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Dynamic Accents */}
-        <div style={{ position: 'absolute', bottom: -50, right: -50, width: 300, height: 300, background: 'radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        {/* IDE Status Bar */}
+        <div style={{
+          padding: '14px 24px',
+          background: '#07070a',
+          borderTop: '1px solid #10b98122',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 -10px 30px rgba(0,0,0,0.5)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#ef4444',
+              boxShadow: '0 0 12px #ef4444',
+              animation: 'pulse 1.2s infinite'
+            }} />
+            <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 900, letterSpacing: '0.15em' }}>
+              AEGIS_CORE_ENGINE // LIVE_MOVE
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              padding: '6px 12px',
+              borderRadius: 6,
+              display: 'flex',
+              gap: 12,
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: 10, fontWeight: 900, color: '#ef4444', letterSpacing: '0.05em' }}>{flow.method}</span>
+              <div style={{ width: 1, height: 10, background: 'rgba(239, 68, 68, 0.3)' }} />
+              <span style={{ fontSize: 10, fontWeight: 800, color: '#f8fafc', fontFamily: "var(--ff-mono)" }}>{flow.endpoint}</span>
+            </div>
+            <div style={{ fontSize: 9, color: '#475569', fontWeight: 800, paddingLeft: 10 }}>LN: {lineIdx + 1}</div>
+          </div>
+        </div>
+
+        <div style={{ position: 'absolute', bottom: -50, right: -50, width: 300, height: 300, background: `radial-gradient(circle, ${flow.color}11 0%, transparent 70%)`, pointerEvents: 'none' }} />
       </div>
     </div>
   );
@@ -260,6 +413,280 @@ function LiveInsights({ stats, dashboard, subscribers }) {
   );
 }
 
+
+
+// ── Full API conversation scenarios for the Live Terminal ──────────────────
+const FLOWS = [
+  {
+    title: "Register End User",
+    method: "POST",
+    endpoint: "/api/v1/users/register",
+    color: "#6366f1",
+    steps: [
+      {
+        type: "comment",
+        label: "TENANT APP",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "// Step 1: Tenant calls engine to register their end user", c: "#4a5580" }] },
+        ]
+      },
+      {
+        type: "request",
+        label: "→ REQUEST",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "fetch", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: '"/api/v1/users/register"', c: "#c3e88d" }, { t: ", {", c: "#89ddff" }] },
+          { tokens: [{ t: "  method", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"POST"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "  headers", c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-ID"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sb_c7daee5c65bb48fc"', c: "#ffcb6b" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-SECRET"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sk_9f3b2a1c7d8e4f0a"', c: "#ffcb6b" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "Content-Type"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"application/json"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  },", c: "#89ddff" }] },
+          { tokens: [{ t: "  body", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "JSON.stringify", c: "#c792ea" }, { t: "({", c: "#89ddff" }] },
+          { tokens: [{ t: "    name", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"alex.morgan"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "    email", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"alex@jobhunt.io"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "    password", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"••••••••"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  })", c: "#89ddff" }] },
+          { tokens: [{ t: "})", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "engine",
+        label: "⚙ ENGINE",
+        side: "engine",
+        lines: [
+          { tokens: [{ t: "// ApiKeyInterceptor validates credentials", c: "#4a5580" }] },
+          { tokens: [{ t: "tenant", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "tenantRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "findByClientId", c: "#c792ea" }, { t: "(clientId)", c: "#89ddff" }] },
+          { tokens: [{ t: "// TenantPublicApiController.registerEndUser()", c: "#4a5580" }] },
+          { tokens: [{ t: "user", c: "#89ddff" }, { t: ".", c: "#89ddff" }, { t: "setTenant", c: "#c792ea" }, { t: "(tenant)", c: "#89ddff" }] },
+          { tokens: [{ t: "user", c: "#89ddff" }, { t: ".", c: "#89ddff" }, { t: "setRole", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: "ROLE_USER", c: "#ffcb6b" }, { t: ")", c: "#89ddff" }] },
+          { tokens: [{ t: "userRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "save", c: "#c792ea" }, { t: "(user)", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "response",
+        label: "← RESPONSE",
+        side: "response",
+        status: 201,
+        statusText: "CREATED",
+        lines: [
+          { tokens: [{ t: "{", c: "#89ddff" }] },
+          { tokens: [{ t: '  "message"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Successfully registered End User"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '  "status"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "201", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '  "data"', c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "id"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "42", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "username"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"alex.morgan"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "email"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"alex@jobhunt.io"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "role"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"ROLE_USER"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "}", c: "#89ddff" }] },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Subscribe User to Plan",
+    method: "POST",
+    endpoint: "/api/v1/subscriptions",
+    color: "#10b981",
+    steps: [
+      {
+        type: "comment",
+        label: "TENANT APP",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "// Step 2: Tenant subscribes their user to a plan", c: "#4a5580" }] },
+        ]
+      },
+      {
+        type: "request",
+        label: "→ REQUEST",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "fetch", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: '"/api/v1/subscriptions"', c: "#c3e88d" }, { t: ", {", c: "#89ddff" }] },
+          { tokens: [{ t: "  method", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"POST"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "  headers", c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-ID"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sb_c7daee5c65bb48fc"', c: "#ffcb6b" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-SECRET"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sk_9f3b2a1c7d8e4f0a"', c: "#ffcb6b" }] },
+          { tokens: [{ t: "  },", c: "#89ddff" }] },
+          { tokens: [{ t: "  body", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "JSON.stringify", c: "#c792ea" }, { t: "({", c: "#89ddff" }] },
+          { tokens: [{ t: "    userId", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "42", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "    tenantPlanId", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "3", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "    notes", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Growth plan upgrade"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  })", c: "#89ddff" }] },
+          { tokens: [{ t: "})", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "engine",
+        label: "⚙ ENGINE",
+        side: "engine",
+        lines: [
+          { tokens: [{ t: "// Validates user belongs to tenant", c: "#4a5580" }] },
+          { tokens: [{ t: "plan", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "tenantPlanRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "findById", c: "#c792ea" }, { t: "(3)", c: "#89ddff" }] },
+          { tokens: [{ t: "// Billing cycle computed", c: "#4a5580" }] },
+          { tokens: [{ t: "nextBilling", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "startDate", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "plusMonths", c: "#c792ea" }, { t: "(1)", c: "#89ddff" }] },
+          { tokens: [{ t: "subscription", c: "#89ddff" }, { t: ".", c: "#89ddff" }, { t: "setStatus", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: "ACTIVE", c: "#c3e88d" }, { t: ")", c: "#89ddff" }] },
+          { tokens: [{ t: "userSubscriptionRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "save", c: "#c792ea" }, { t: "(subscription)", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "response",
+        label: "← RESPONSE",
+        side: "response",
+        status: 201,
+        statusText: "CREATED",
+        lines: [
+          { tokens: [{ t: "{", c: "#89ddff" }] },
+          { tokens: [{ t: '  "message"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Successfully subscribed End User"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '  "data"', c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "id"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "18", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "subscriptionName"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Growth"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "amount"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "149.00", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "billingCycle"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"MONTHLY"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "startDate"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"2026-02-25"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "nextBillingDate"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"2026-03-25"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "status"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"ACTIVE"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "}", c: "#89ddff" }] },
+        ]
+      }
+    ]
+  },
+  {
+    title: "AI Churn Prediction",
+    method: "GET",
+    endpoint: "/api/v1/ai/predict-churn/42",
+    color: "#a78bfa",
+    steps: [
+      {
+        type: "comment",
+        label: "TENANT APP",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "// Step 3: Tenant requests AI churn analysis for user", c: "#4a5580" }] },
+        ]
+      },
+      {
+        type: "request",
+        label: "→ REQUEST",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "fetch", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: '"/api/v1/ai/predict-churn/42"', c: "#c3e88d" }, { t: ", {", c: "#89ddff" }] },
+          { tokens: [{ t: "  method", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"GET"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "  headers", c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-ID"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sb_c7daee5c65bb48fc"', c: "#ffcb6b" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-SECRET"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sk_9f3b2a1c7d8e4f0a"', c: "#ffcb6b" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "})", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "engine",
+        label: "⚙ ENGINE + AI",
+        side: "engine",
+        lines: [
+          { tokens: [{ t: "// AiService.predictChurnRisk(userId=42, tenantId=1)", c: "#4a5580" }] },
+          { tokens: [{ t: "user", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "userRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "findById", c: "#c792ea" }, { t: "(42)", c: "#89ddff" }] },
+          { tokens: [{ t: "subs", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "subscriptionRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "findByUserId", c: "#c792ea" }, { t: "(42)", c: "#89ddff" }] },
+          { tokens: [{ t: "// Calling Claude claude-sonnet-4...", c: "#4a5580" }] },
+          { tokens: [{ t: "response", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "claudeClient", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "predict", c: "#c792ea" }, { t: "(signals)", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "response",
+        label: "← RESPONSE",
+        side: "response",
+        status: 200,
+        statusText: "OK",
+        lines: [
+          { tokens: [{ t: "{", c: "#89ddff" }] },
+          { tokens: [{ t: '  "message"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"AI Churn Prediction Generated"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '  "data"', c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "risk"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"LOW"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "score"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: "18", c: "#f78c6c" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "signals"', c: "#f07178" }, { t: ": [", c: "#89ddff" }] },
+          { tokens: [{ t: '      "142 logins in 30 days — highly engaged"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '      "No support tickets filed"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '      "Active Growth plan subscriber"', c: "#c3e88d" }] },
+          { tokens: [{ t: "    ],", c: "#89ddff" }] },
+          { tokens: [{ t: '    "recommendation"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Offer annual plan discount to lock in"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "}", c: "#89ddff" }] },
+        ]
+      }
+    ]
+  },
+  {
+    title: "Get AI Subscription Analytics",
+    method: "GET",
+    endpoint: "/api/v1/ai/analytics",
+    color: "#f59e0b",
+    steps: [
+      {
+        type: "comment",
+        label: "TENANT APP",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "// Step 4: Tenant requests full analytics report", c: "#4a5580" }] },
+        ]
+      },
+      {
+        type: "request",
+        label: "→ REQUEST",
+        side: "request",
+        lines: [
+          { tokens: [{ t: "fetch", c: "#c792ea" }, { t: "(", c: "#89ddff" }, { t: '"/api/v1/ai/analytics"', c: "#c3e88d" }, { t: ", {", c: "#89ddff" }] },
+          { tokens: [{ t: "  method", c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"GET"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: "  headers", c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-ID"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sb_c7daee5c65bb48fc"', c: "#ffcb6b" }] },
+          { tokens: [{ t: '    "X-API-CLIENT-SECRET"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"sk_9f3b2a1c7d8e4f0a"', c: "#ffcb6b" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "})", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "engine",
+        label: "⚙ ENGINE + AI",
+        side: "engine",
+        lines: [
+          { tokens: [{ t: "// AiService.generateSubscriptionAnalytics(tenantId)", c: "#4a5580" }] },
+          { tokens: [{ t: "subs", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "subscriptionRepo", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "findByTenantId", c: "#c792ea" }, { t: "(1)", c: "#89ddff" }] },
+          { tokens: [{ t: "// Sends full dataset to Claude", c: "#4a5580" }] },
+          { tokens: [{ t: "prompt", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "buildAnalyticsPrompt", c: "#82aaff" }, { t: "(subs)", c: "#89ddff" }] },
+          { tokens: [{ t: "report", c: "#89ddff" }, { t: " = ", c: "#c792ea" }, { t: "claudeClient", c: "#82aaff" }, { t: ".", c: "#89ddff" }, { t: "complete", c: "#c792ea" }, { t: "(prompt)", c: "#89ddff" }] },
+        ]
+      },
+      {
+        type: "response",
+        label: "← RESPONSE",
+        side: "response",
+        status: 200,
+        statusText: "OK",
+        lines: [
+          { tokens: [{ t: "{", c: "#89ddff" }] },
+          { tokens: [{ t: '  "message"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"AI Analytics Generated"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '  "data"', c: "#f07178" }, { t: ": {", c: "#89ddff" }] },
+          { tokens: [{ t: '    "totalRevenue"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"$626/mo"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "churnRate"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"7.1%"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "topPlan"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Growth (40%)"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "insight"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"2 medium-risk users need re-engagement"', c: "#c3e88d" }, { t: ",", c: "#89ddff" }] },
+          { tokens: [{ t: '    "recommendation"', c: "#f07178" }, { t: ": ", c: "#89ddff" }, { t: '"Launch win-back campaign for cancelled users"', c: "#c3e88d" }] },
+          { tokens: [{ t: "  }", c: "#89ddff" }] },
+          { tokens: [{ t: "}", c: "#89ddff" }] },
+        ]
+      }
+    ]
+  }
+];
+
+const CHAR_DELAY = 18;
+const LINE_DELAY = 60;
+const STEP_PAUSE = 600;
+const FLOW_PAUSE = 2000;
+
+// DECOMMISSIONED LiveTerminal - integrated into TelemetryUnit
 
 
 export default function Dashboard() {
@@ -414,7 +841,7 @@ export default function Dashboard() {
                   </section>
 
                   {/* Developer Protocol Memo */}
-                  <section style={{ padding: "0 8px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 40 }}>
+                  <section style={{ padding: "0 8px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 40, marginTop: 40 }}>
                     <div style={{ fontSize: 11, fontWeight: 900, color: '#64748b', letterSpacing: '0.2em', marginBottom: 24, textTransform: 'uppercase' }}>
                       DEVELOPER_PROTOCOL // ADVISORY
                     </div>
@@ -433,50 +860,95 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'credentials' && (
-              <div style={{ maxWidth: 800 }}>
-                <div style={{ marginBottom: 32 }}>
-                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Credentials</h1>
-                  <p style={{ color: "#475569", marginTop: 4, fontWeight: 500 }}>Secure keys to authenticate your application with Aegis Infra infrastructure.</p>
+              <div style={{ maxWidth: 880 }}>
+                {/* Section Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                      <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
+                      <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Security & Access</span>
+                    </div>
+                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>API Credentials</h1>
+                    <p style={{ color: "#475569", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
+                      Secure keys to authenticate your application with the Aegis Mesh network.
+                    </p>
+                  </div>
                 </div>
 
-                <div style={{ display: "grid", gap: 20 }}>
-                  {[
-                    { label: "Client ID", value: dashboard?.clientId, type: "public" },
-                    { label: "Client Secret", value: dashboard?.clientSecret, type: "secret" },
-                    { label: "Tenant ID", value: dashboard?.tenantId, type: "public" }
-                  ].map((cred, i) => (
-                    <div key={i} style={{
-                      background: "rgba(255, 255, 255, 0.65)",
-                      backdropFilter: "blur(10px)",
-                      borderRadius: 20,
-                      border: "1px solid rgba(255, 255, 255, 0.5)",
-                      padding: 24,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      boxShadow: "0 4px 15px rgba(99, 102, 241, 0.05)"
-                    }}>
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: "#1e1b4b", textTransform: "uppercase", marginBottom: 8, opacity: 0.8 }}>{cred.label}</div>
-                        <div style={{ fontFamily: "var(--ff-mono)", fontSize: 15, color: "#1e1b4b", background: "rgba(0,0,0,0.03)", padding: "4px 8px", borderRadius: 6 }}>
-                          {cred.type === 'secret' && !showSecret ? '••••••••••••••••' : cred.value || 'N/A'}
+                <div style={{ display: "grid", gap: 32 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    {[
+                      { label: "CLIENT ID", value: dashboard?.clientId, type: "public" },
+                      { label: "CLIENT SECRET", value: dashboard?.clientSecret, type: "secret" }
+                    ].map((cred, i) => (
+                      <div key={i}>
+                        <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10, paddingLeft: 4 }}>{cred.label}</div>
+                        <div style={{
+                          background: "rgba(0,0,0,0.02)",
+                          border: "1px solid rgba(0,0,0,0.05)",
+                          borderRadius: 12,
+                          padding: '14px 18px',
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontFamily: "var(--ff-mono)",
+                          position: 'relative',
+                          transition: 'all 0.2s'
+                        }}>
+                          <div style={{ fontSize: 14, color: "#1e1b4b", letterSpacing: '-0.3px', fontWeight: 600 }}>
+                            {cred.type === 'secret' && !showSecret ? 'jh_live_sk_••••••••••••••••' : (cred.value || 'NOT_PROVISIONED')}
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                            {cred.type === 'secret' && (
+                              <button
+                                onClick={() => setShowSecret(!showSecret)}
+                                style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                              >
+                                {showSecret ? 'HIDE' : 'SHOW'}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(cred.value); toast.success("Copied", `${cred.label} copied`); }}
+                              style={{ background: 'transparent', border: 'none', color: '#6366f1', fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                            >
+                              COPY
+                            </button>
+                          </div>
                         </div>
                       </div>
-                      <div style={{ display: "flex", gap: 12 }}>
-                        {cred.type === 'secret' && (
-                          <button onClick={() => setShowSecret(!showSecret)} style={{ background: "rgba(99, 102, 241, 0.1)", border: "none", padding: "8px 12px", borderRadius: 8, color: "#4f46e5", cursor: "pointer", fontWeight: 600 }}>
-                            {showSecret ? 'Hide' : 'Reveal'}
-                          </button>
-                        )}
-                        <button
-                          onClick={() => { navigator.clipboard.writeText(cred.value); toast.success("Copied", `${cred.label} copied to clipboard`); }}
-                          style={{ background: "#6366f1", border: "none", padding: "8px 16px", borderRadius: 8, color: "white", cursor: "pointer", fontWeight: 600 }}
-                        >
-                          Copy
-                        </button>
-                      </div>
+                    ))}
+                  </div>
+
+                  {/* Quick Start Module */}
+                  <div style={{
+                    marginTop: 16,
+                    padding: 32,
+                    background: "#0f172a",
+                    borderRadius: 24,
+                    border: "1px solid rgba(255,255,255,0.05)",
+                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', marginBottom: 24, textTransform: 'uppercase' }}>
+                      QUICK START // INTEGRATION
                     </div>
-                  ))}
+                    <pre style={{
+                      margin: 0,
+                      color: '#94a3b8',
+                      fontSize: 13,
+                      fontFamily: 'var(--ff-mono)',
+                      lineHeight: 1.7,
+                      overflowX: 'auto'
+                    }}>
+                      <span style={{ color: '#8b5cf6' }}>fetch</span>(<span style={{ color: '#22d3ee' }}>"/api/v1/users/register"</span>, &#123;{"\n"}
+                      {"  "}headers: &#123;{"\n"}
+                      {"    "}<span style={{ color: '#f43f5e' }}>"X-API-CLIENT-ID"</span>: <span style={{ color: '#22d3ee' }}>"{dashboard?.clientId || 'YOUR_CLIENT_ID'}"</span>,{"\n"}
+                      {"    "}<span style={{ color: '#f43f5e' }}>"X-API-CLIENT-SECRET"</span>: <span style={{ color: '#22d3ee' }}>"YOUR_SECRET"</span>,{"\n"}
+                      {"    "}<span style={{ color: '#f43f5e' }}>"Content-Type"</span>: <span style={{ color: '#22d3ee' }}>"application/json"</span>{"\n"}
+                      {"  "}&#125;{"\n"}
+                      &#125;)
+                    </pre>
+                  </div>
                 </div>
               </div>
             )}
