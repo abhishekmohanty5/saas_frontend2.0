@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 
 // ICONS (SVG inline, match the image style)
-const Icon = ({ name, size = 18, color = "currentColor" }) => {
+const Icon = ({ name, size = 18, color = "currentColor", style }) => {
     const icons = {
         grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></>,
         key: <><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></>,
@@ -15,7 +15,7 @@ const Icon = ({ name, size = 18, color = "currentColor" }) => {
         chevronLeft: <><polyline points="15 18 9 12 15 6" /></>,
     };
     return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}
             stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {icons[name]}
         </svg>
@@ -27,7 +27,8 @@ const ConsoleSidebar = ({
     setSidebarOpen,
     activeTab,
     tenantName,
-    currentPlan
+    currentPlan,
+    daysRemaining
 }) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
@@ -52,138 +53,227 @@ const ConsoleSidebar = ({
 
     return (
         <aside style={{
-            width: sidebarOpen ? 260 : 80,
-            background: "#ffffff",
-            borderRight: "1px solid #f1f5f9",
+            width: sidebarOpen ? 280 : 80,
+            background: "rgba(255, 255, 255, 0.8)",
+            backdropFilter: "blur(20px) saturate(180%)",
+            borderRight: "1px solid rgba(15, 23, 42, 0.08)",
             display: "flex",
             flexDirection: "column",
-            transition: "width .3s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "all .4s cubic-bezier(0.19, 1, 0.22, 1)",
             position: "sticky",
             top: 68,
             height: "calc(100vh - 68px)",
             zIndex: 100,
-            padding: "24px 0"
+            padding: "32px 0",
+            boxShadow: "10px 0 50px rgba(0,0,0,0.02)",
+            overflowX: "hidden"
         }}>
             <style>{`
                 .sidebar-label {
-                    font-size: 11px;
-                    font-weight: 700;
+                    font-size: 10px;
+                    font-weight: 800;
                     color: #94a3b8;
-                    padding: 24px 24px 8px;
+                    padding: 32px 28px 12px;
                     text-transform: uppercase;
-                    letter-spacing: 0.05em;
+                    letter-spacing: 0.15em;
+                    font-family: var(--ff-mono, monospace);
                 }
                 .sidebar-item {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 12px 24px;
+                    gap: 16px;
+                    padding: 14px 28px;
+                    margin: 2px 12px;
+                    border-radius: 14px;
                     cursor: pointer;
-                    transition: all 0.2s;
+                    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
                     color: #64748b;
-                    font-weight: 500;
+                    font-weight: 600;
                     font-size: 14px;
+                    position: relative;
                 }
                 .sidebar-item:hover {
-                    color: #0f172a;
-                    background: #f8fafc;
+                    color: #1e1b4b;
+                    background: rgba(15, 23, 42, 0.03);
+                    transform: translateX(4px);
                 }
                 .sidebar-item.active {
                     color: #4f46e5;
-                    background: #eef2ff;
-                    border-right: 3px solid #4f46e5;
+                    background: #ffffff;
+                    box-shadow: 
+                        0 10px 25px -5px rgba(79, 70, 229, 0.1),
+                        0 8px 10px -6px rgba(79, 70, 229, 0.1),
+                        inset 0 1px 0 rgba(255,255,255,1);
+                    transform: translateX(6px);
                 }
-                .sidebar-item.active svg {
-                    stroke: #4f46e5;
+                .sidebar-item.active::before {
+                    content: '';
+                    position: absolute;
+                    left: -4px;
+                    top: 15%;
+                    height: 70%;
+                    width: 4px;
+                    background: #4f46e5;
+                    border-radius: 0 4px 4px 0;
+                    box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+                }
+                .sidebar-item svg {
+                    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+                }
+                .sidebar-item:hover svg {
+                    transform: scale(1.1) rotate(-5deg);
                 }
                 .sidebar-footer-item {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 12px 24px;
+                    gap: 14px;
+                    padding: 14px 28px;
                     cursor: pointer;
                     color: #64748b;
-                    font-weight: 500;
+                    font-weight: 600;
                     font-size: 14px;
                     transition: all 0.2s;
+                    margin: 0 12px;
+                    border-radius: 12px;
                 }
                 .sidebar-footer-item:hover {
-                    color: #0f172a;
+                    color: #1e1b4b;
+                    background: rgba(15, 23, 42, 0.03);
                 }
                 .sidebar-footer-item.logout {
-                    color: #ef4444;
+                    color: #f43f5e;
                 }
-                .plan-badge {
-                    font-size: 10px;
-                    font-weight: 700;
-                    color: #4f46e5;
-                    background: #eef2ff;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    margin-top: 4px;
-                    display: inline-block;
+                .sidebar-footer-item.logout:hover {
+                    background: rgba(244, 63, 94, 0.05);
+                }
+                .workspace-card {
+                    margin: 0 16px 24px;
+                    padding: 24px;
+                    border-radius: 12px;
+                    background: #ffffff;
+                    border: 1px solid rgba(15, 23, 42, 0.06);
+                    box-shadow: 
+                        0 20px 25px -5px rgba(0,0,0,0.03),
+                        0 8px 10px -6px rgba(0,0,0,0.03),
+                        inset 0 1px 1px rgba(255,255,255,1);
+                    position: relative;
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                }
+                .workspace-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 
+                        0 25px 30px -5px rgba(0,0,0,0.05),
+                        0 12px 15px -6px rgba(0,0,0,0.05);
+                }
+                .workspace-card::after {
+                    content: '';
+                    position: absolute;
+                    top: 0; right: 0;
+                    width: 70px; height: 70px;
+                    background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.05), transparent 70%);
+                    pointer-events: none;
                 }
             `}</style>
 
-            {/* Logo Section */}
-            <div style={{ padding: "0 24px 32px", display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{
-                    position: 'relative',
-                    width: '42px',
-                    height: '42px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                }}>
-                    <div style={{
-                        position: 'absolute',
-                        inset: '-4px',
-                        background: 'radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(192,132,252,0.15) 50%, transparent 70%)',
-                        borderRadius: '50%',
-                        zIndex: -1,
-                        filter: 'blur(8px)'
-                    }} />
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                        <defs>
-                            <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#1E293B" />
-                                <stop offset="100%" stopColor="#000000" />
-                            </linearGradient>
-                            <filter id="shardGlow">
-                                <feGaussianBlur stdDeviation="1.2" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
-                        <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="#3B82F6" strokeWidth="0.8" opacity="0.3" strokeDasharray="4 4" />
-                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)" />
-                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)" />
-                        <path d="M20 10L32 20L20 30L8 20L20 10Z" fill="url(#crystalGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
-                        <circle cx="20" cy="20" r="2.5" fill="none" stroke="#60A5FA" strokeWidth="1" />
-                        <circle cx="20" cy="20" r="1" fill="white" />
-                        <circle cx="32" cy="20" r="1.5" fill="#3B82F6" />
-                        <circle cx="8" cy="20" r="1.5" fill="#A259FF" />
-                        <circle cx="20" cy="8" r="1" fill="#FF3B82" />
-                        <circle cx="20" cy="32" r="1" fill="#10B981" />
-                    </svg>
-                </div>
-                {sidebarOpen && <span style={{ fontSize: 22, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-1.4px", fontFamily: 'var(--ff-sans)' }}>Aegis Infra</span>}
-            </div>
+            {/* Workspace Section - Persistent Operational HUD */}
+            <div className="workspace-card" style={{
+                margin: sidebarOpen ? "0 16px 24px" : "0 8px 24px",
+                padding: sidebarOpen ? "18px 20px" : "16px 8px",
+                textAlign: sidebarOpen ? "left" : "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: sidebarOpen ? "flex-start" : "center",
+                transition: "all 0.3s cubic-bezier(0.19, 1, 0.22, 1)",
+                minHeight: sidebarOpen ? "110px" : "100px",
+                justifyContent: "flex-start"
+            }}>
+                {sidebarOpen ? (
+                    <>
+                        <div style={{
+                            fontSize: 18,
+                            fontWeight: 800,
+                            color: "#1e1b4b",
+                            fontFamily: 'var(--ff-sans)',
+                            letterSpacing: '-0.5px',
+                            marginBottom: 14
+                        }}>
+                            {tenantName || 'Acme SaaS'}
+                        </div>
 
-            {/* Workspace Section */}
-            {sidebarOpen && (
-                <div style={{
-                    margin: "0 16px 24px",
-                    padding: "16px",
-                    borderRadius: "16px",
-                    background: "rgba(99, 102, 241, 0.05)",
-                    border: "1px solid rgba(99, 102, 241, 0.1)"
-                }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Workspace</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1e1b4b" }}>{tenantName || 'Acme SaaS'}</div>
-                    <div className="plan-badge" style={{ background: "#6366f1", color: "white", marginTop: 8 }}>{currentPlan || 'FREE'}</div>
-                </div>
-            )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{
+                                background: "#6366f1",
+                                color: "white",
+                                fontSize: '9px',
+                                fontWeight: 800,
+                                padding: '3px 10px',
+                                borderRadius: '100px',
+                                boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+                                letterSpacing: '0.05em',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                {currentPlan || 'FREE'}
+                            </div>
+
+                            {daysRemaining !== undefined && (
+                                <div style={{
+                                    fontSize: '10px',
+                                    fontWeight: 700,
+                                    color: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                                    background: daysRemaining > 10 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
+                                    padding: '3px 12px',
+                                    borderRadius: '100px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    boxShadow: `0 0 12px ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}`,
+                                    border: `1px solid ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}`,
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    <div style={{
+                                        width: 5, height: 5, borderRadius: '50%',
+                                        background: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                                        boxShadow: `0 0 8px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}`
+                                    }} />
+                                    {daysRemaining} days left
+                                </div>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        {/* Compact HUD Protocols (Lights & Plan) when collapsed */}
+                        <div style={{
+                            width: 12, height: 12, borderRadius: "50%",
+                            background: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                            boxShadow: `0 0 15px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}, 0 0 5px rgba(255,255,255,0.8)`,
+                            marginBottom: 14,
+                            position: 'relative'
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                inset: -4,
+                                borderRadius: '50%',
+                                border: `1px solid ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                                opacity: 0.5
+                            }} />
+                        </div>
+                        <div style={{
+                            fontSize: 10,
+                            fontWeight: 900,
+                            padding: '3px 6px',
+                            background: "linear-gradient(135deg, #1e1b4b, #4f46e5)",
+                            color: "white",
+                            borderRadius: 6,
+                            boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)',
+                            letterSpacing: '0.05em'
+                        }}>
+                            {(currentPlan || 'F')[0].toUpperCase()}
+                        </div>
+                    </>
+                )}
+            </div>
 
             {/* Menu Section */}
             <div style={{ flex: 1 }}>
@@ -201,14 +291,31 @@ const ConsoleSidebar = ({
             </div>
 
             {/* Bottom Section */}
-            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: 16 }}>
+            <div style={{
+                borderTop: "1px solid rgba(15, 23, 42, 0.05)",
+                margin: "16px 16px 0",
+                paddingTop: 16
+            }}>
                 <div className="sidebar-footer-item" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                    <Icon name="chevronLeft" size={18} style={{ transform: sidebarOpen ? "none" : "rotate(180deg)" }} />
-                    {sidebarOpen && <span>Collapse</span>}
+                    <div style={{
+                        width: 32, height: 32, borderRadius: 10,
+                        background: "rgba(15, 23, 42, 0.03)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transition: "all 0.3s"
+                    }}>
+                        <Icon name="chevronLeft" size={16} style={{ transform: sidebarOpen ? "none" : "rotate(180deg)" }} />
+                    </div>
+                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 12, letterSpacing: '0.05em' }}>SYSTEM.COLLAPSE()</span>}
                 </div>
                 <div className="sidebar-footer-item logout" onClick={handleLogout}>
-                    <Icon name="logout" size={18} color="#ef4444" />
-                    {sidebarOpen && <span>Sign Out</span>}
+                    <div style={{
+                        width: 32, height: 32, borderRadius: 10,
+                        background: "rgba(244, 63, 94, 0.05)",
+                        display: "flex", alignItems: "center", justifyContent: "center"
+                    }}>
+                        <Icon name="logout" size={16} color="#f43f5e" />
+                    </div>
+                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 12, letterSpacing: '0.05em' }}>AUTH.TERMINATE()</span>}
                 </div>
             </div>
         </aside>

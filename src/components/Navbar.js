@@ -1,9 +1,10 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated, user, logout } = useAuth();
 
     const handleLogout = () => {
@@ -55,7 +56,6 @@ const Navbar = () => {
                     justifyContent: 'center',
                     flexShrink: 0
                 }}>
-                    {/* Pulsing Prismatic Energy Field */}
                     <div style={{
                         position: 'absolute',
                         inset: '-4px',
@@ -76,28 +76,12 @@ const Navbar = () => {
                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                             </filter>
                         </defs>
-
-                        {/* Outer Geometric Orbit (Antigravity vibe) */}
                         <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="#3B82F6" strokeWidth="0.8" opacity="0.3" strokeDasharray="4 4" />
-
-                        {/* Upper Spectral Shard */}
-                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)">
-                            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite" />
-                        </path>
-
-                        {/* Lower Spectral Shard */}
-                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)">
-                            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite" delay="1.5s" />
-                        </path>
-
-                        {/* Central Crystalline Black Core */}
+                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)" />
+                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)" />
                         <path d="M20 10L32 20L20 30L8 20L20 10Z" fill="url(#crystalGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
-
-                        {/* Core Data Node */}
                         <circle cx="20" cy="20" r="2.5" fill="none" stroke="#60A5FA" strokeWidth="1" />
                         <circle cx="20" cy="20" r="1" fill="white" />
-
-                        {/* Floating Multicolour Particles */}
                         <circle cx="32" cy="20" r="1.5" fill="#3B82F6" />
                         <circle cx="8" cy="20" r="1.5" fill="#A259FF" />
                         <circle cx="20" cy="8" r="1" fill="#FF3B82" />

@@ -25,14 +25,34 @@ const Icon = ({ name, size = 20, color = "#64748b" }) => {
 
 // Simple Sparkline Mockup
 const Sparkline = ({ color }) => (
-  <svg width="80" height="30" viewBox="0 0 80 30" style={{ opacity: 0.8 }}>
+  <svg width="100" height="40" viewBox="0 0 80 30" style={{
+    opacity: 0.9,
+    filter: `drop-shadow(0 0 8px ${color}66)`
+  }}>
+    <defs>
+      <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+        <stop offset="100%" stopColor={color} stopOpacity="0" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M0 25 L10 20 L20 23 L30 15 L40 18 L50 10 L60 12 L70 5 L80 8"
+      fill={`url(#grad-${color.replace('#', '')})`}
+      style={{ transition: 'all 0.5s ease' }}
+    />
     <path
       d="M0 25 L10 20 L20 23 L30 15 L40 18 L50 10 L60 12 L70 5 L80 8"
       fill="none"
       stroke={color}
-      strokeWidth="2"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
+      style={{
+        filter: `drop-shadow(0 0 10px ${color})`,
+        strokeDasharray: '200',
+        strokeDashoffset: '0',
+        animation: 'drawPath 3s linear infinite'
+      }}
     />
   </svg>
 );
@@ -51,6 +71,7 @@ export default function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [stats, setStats] = useState({ total: 0, active: 0, cancelled: 0, pending: 0 });
   const [plans, setPlans] = useState([]);
+  const [subscribers, setSubscribers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSecret, setShowSecret] = useState(false);
@@ -78,10 +99,11 @@ export default function Dashboard() {
       const token = localStorage.getItem('token');
       if (!token) { handleUnauth(); return; }
 
-      const [dashRes, statsRes, plansRes] = await Promise.allSettled([
+      const [dashRes, statsRes, plansRes, subRes] = await Promise.allSettled([
         api.get('/dashboard'),
         api.get('/developer/tenant-stats'),
-        api.get('/developer/tenant-plans')
+        api.get('/developer/tenant-plans'),
+        api.get('/developer/tenant-subscribers')
       ]);
 
       const getVal = (res, fallback = null) => res.status === 'fulfilled' ? res.value.data.data : fallback;
@@ -89,6 +111,7 @@ export default function Dashboard() {
       setDashboard(getVal(dashRes));
       setStats(getVal(statsRes, { total: 0, active: 0, cancelled: 0, pending: 0 }));
       setPlans(getVal(plansRes, []));
+      setSubscribers(getVal(subRes, []));
 
     } catch (err) {
       console.error("Dashboard fetch error:", err);
@@ -109,7 +132,7 @@ export default function Dashboard() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #e8e4f3 0%, #d4e4f7 100%)",
+      background: "var(--white)",
       color: "#1e1b4b",
       fontFamily: "var(--ff-sans)",
       paddingTop: "68px"
@@ -120,52 +143,19 @@ export default function Dashboard() {
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           activeTab={activeTab} tenantName={dashboard?.tenantName}
           currentPlan={dashboard?.currentPlan}
+          daysRemaining={dashboard?.daysRemaining}
         />
 
         <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "calc(100vh - 68px)", overflowY: "auto" }}>
 
-          {/* Secondary Breadcrumb Bar */}
-          <div style={{
-            height: 54,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 32px",
-            background: "rgba(255, 255, 255, 0.3)",
-            backdropFilter: "blur(8px)",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.2)",
-            position: "sticky",
-            top: 0,
-            zIndex: 9
-          }}>
-            <div style={{ fontSize: 13, color: "#64748b", display: "flex", gap: 8 }}>
-              <span>Console</span>
-              <span style={{ color: "#cbd5e1" }}>/</span>
-              <span style={{ color: "#1e1b4b", fontWeight: 600 }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</span>
-            </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, color: "#64748b" }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px rgba(16, 185, 129, 0.4)" }} />
-                LIVE STATUS
-              </div>
-              <div style={{
-                width: 30, height: 30, borderRadius: "50%",
-                background: "linear-gradient(135deg, #6366f1, #4f46e5)", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 12, fontWeight: 700
-              }}>
-                {(dashboard?.tenantName || 'A')[0].toUpperCase()}
-              </div>
-            </div>
-          </div>
 
           <div style={{ padding: "40px 32px" }}>
 
             {activeTab === 'overview' && (
               <>
                 <div style={{ marginBottom: 40 }}>
-                  <h1 style={{ fontSize: 32, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-1px", fontFamily: "var(--ff-h)" }}>Dashboard Overview</h1>
+                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Dashboard Overview</h1>
                   <p style={{ color: "#64748b", marginTop: 4, fontSize: 16 }}>Monitor your tenant infrastructure and user base activity.</p>
                 </div>
 
@@ -226,14 +216,27 @@ export default function Dashboard() {
                         <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                           <th style={{ paddingBottom: 20 }}>User</th>
                           <th style={{ paddingBottom: 20 }}>Plan</th>
-                          <th style={{ paddingBottom: 20 }}>Amount</th>
                           <th style={{ paddingBottom: 20 }}>Status</th>
+                          <th style={{ paddingBottom: 20 }}>Date</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr style={{ fontSize: 14 }}>
-                          <td colSpan="4" style={{ padding: "60px 0", textAlign: "center", color: "#64748b", fontStyle: "italic" }}>No recent activity to show in your infrastructure.</td>
-                        </tr>
+                        {subscribers.slice(0, 5).length > 0 ? subscribers.slice(0, 5).map((sub, i) => (
+                          <tr key={i} style={{ fontSize: 14 }}>
+                            <td style={{ padding: "16px 0", color: "#1e1b4b", fontWeight: 600 }}>{sub.userName || sub.email.split('@')[0]}</td>
+                            <td style={{ padding: "16px 0", color: "#64748b" }}>{sub.planName || 'Standard'}</td>
+                            <td style={{ padding: "16px 0" }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, color: sub.status === 'ACTIVE' ? '#10b981' : '#f59e0b' }}>
+                                {sub.status || 'ACTIVE'}
+                              </span>
+                            </td>
+                            <td style={{ padding: "16px 0", color: "#94a3b8" }}>{sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : 'Today'}</td>
+                          </tr>
+                        )) : (
+                          <tr style={{ fontSize: 14 }}>
+                            <td colSpan="4" style={{ padding: "60px 0", textAlign: "center", color: "#64748b", fontStyle: "italic" }}>No recent activity to show in your infrastructure.</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </section>
@@ -274,7 +277,7 @@ export default function Dashboard() {
             {activeTab === 'credentials' && (
               <div style={{ maxWidth: 800 }}>
                 <div style={{ marginBottom: 32 }}>
-                  <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)" }}>Infrastructure Credentials</h1>
+                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Credentials</h1>
                   <p style={{ color: "#64748b", marginTop: 4 }}>Secure keys to authenticate your application with Aegis Infra infrastructure.</p>
                 </div>
 
@@ -324,7 +327,7 @@ export default function Dashboard() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                   <div>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)" }}>Subscription Plans</h1>
+                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Subscription Plans</h1>
                     <p style={{ color: "#64748b", marginTop: 4 }}>Define and manage plans available for your end-users.</p>
                   </div>
                   <button
@@ -487,7 +490,171 @@ export default function Dashboard() {
               </div>
             )}
 
-            {(!['overview', 'credentials', 'plans'].includes(activeTab)) && (
+            {activeTab === 'subscribers' && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                  <div>
+                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Subscribers</h1>
+                    <p style={{ color: "#64748b", marginTop: 4 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
+                  </div>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      style={{
+                        padding: '12px 12px 12px 40px',
+                        borderRadius: 14,
+                        border: '1px solid rgba(0,0,0,0.08)',
+                        background: 'rgba(255,255,255,0.7)',
+                        outline: 'none',
+                        width: 280,
+                        fontSize: 14,
+                        transition: 'all 0.2s'
+                      }}
+                      onFocus={(e) => e.target.style.border = '1px solid #6366f1'}
+                      onBlur={(e) => e.target.style.border = '1px solid rgba(0,0,0,0.08)'}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)", overflow: "hidden", boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", background: "rgba(255,255,255,0.4)" }}>
+                        <th style={{ padding: "20px 32px" }}>Subscriber</th>
+                        <th style={{ padding: "20px 32px" }}>Current Plan</th>
+                        <th style={{ padding: "20px 32px" }}>Status</th>
+                        <th style={{ padding: "20px 32px" }}>Joined Date</th>
+                        <th style={{ padding: "20px 32px" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscribers.length > 0 ? subscribers.map((sub, i) => (
+                        <tr key={i} style={{ borderBottom: "1px solid rgba(0,0,0,0.03)", fontSize: 14 }}>
+                          <td style={{ padding: "20px 32px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #e0e7ff, #c7d2fe)", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>
+                                {(sub.userName || sub.email || 'U')[0].toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, color: "#1e1b4b" }}>{sub.userName || 'Unknown User'}</div>
+                                <div style={{ fontSize: 12, color: "#94a3b8" }}>{sub.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: "20px 32px" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366f1" }} />
+                              <span style={{ fontWeight: 600, color: "#475569" }}>{sub.planName || 'Standard'}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: "20px 32px" }}>
+                            <span style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              padding: "4px 10px",
+                              borderRadius: "20px",
+                              background: sub.status === 'ACTIVE' ? "rgba(16, 185, 129, 0.1)" : "rgba(244, 63, 94, 0.1)",
+                              color: sub.status === 'ACTIVE' ? "#10b981" : "#f43f5e"
+                            }}>
+                              {sub.status || 'ACTIVE'}
+                            </span>
+                          </td>
+                          <td style={{ padding: "20px 32px", color: "#64748b" }}>
+                            {sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : new Date().toLocaleDateString()}
+                          </td>
+                          <td style={{ padding: "20px 32px" }}>
+                            <button style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>View Profile</button>
+                          </td>
+                        </tr>
+                      )) : (
+                        <tr>
+                          <td colSpan="5" style={{ padding: "80px 0", textAlign: "center" }}>
+                            <div style={{ opacity: 0.5, marginBottom: 16 }}>
+                              <Icon name="users" size={48} color="#94a3b8" />
+                            </div>
+                            <p style={{ color: "#64748b", fontWeight: 500 }}>No subscribers found in your infrastructure.</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'license' && (
+              <div style={{ maxWidth: 900 }}>
+                <div style={{ marginBottom: 40 }}>
+                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure License</h1>
+                  <p style={{ color: "#64748b", marginTop: 4 }}>Manage your Aegis Infra partnership and infrastructure tier.</p>
+                </div>
+
+                <div style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", borderRadius: 32, padding: 48, color: "white", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(30, 27, 75, 0.2)" }}>
+                  <div style={{ position: "absolute", top: -50, right: -50, width: 200, height: 200, background: "rgba(255,255,255,0.05)", borderRadius: "50%" }} />
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
+                      <div>
+                        <span style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", opacity: 0.7 }}>Current Tier</span>
+                        <h2 style={{ fontSize: 42, fontWeight: 900, marginTop: 4 }}>{dashboard?.tenantPlan || 'FREE'} NODE</h2>
+                      </div>
+                      <div style={{ background: "rgba(255,255,255,0.15)", padding: "12px 24px", borderRadius: 16, backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        <span style={{ fontSize: 14, fontWeight: 700 }}>Active License</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32, marginTop: 40, paddingTop: 40, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                      <div>
+                        <div style={{ fontSize: 12, opacity: 0.6, fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Next Billing</div>
+                        <div style={{ fontSize: 18, fontWeight: 700 }}>{dashboard?.nextBillingDate ? new Date(dashboard.nextBillingDate).toLocaleDateString() : 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, opacity: 0.6, fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>API Limit</div>
+                        <div style={{ fontSize: 18, fontWeight: 700 }}>Unlimited Calls</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, opacity: 0.6, fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Compute Capacity</div>
+                        <div style={{ fontSize: 18, fontWeight: 700 }}>High Efficiency</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'services' && (
+              <div>
+                <div style={{ marginBottom: 40 }}>
+                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>System Services</h1>
+                  <p style={{ color: "#64748b", marginTop: 4 }}>Operational status and configuration of your infrastructure core modules.</p>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+                  {[
+                    { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime' },
+                    { name: 'Subscription Mesh', status: 'Healthy', version: 'v1.1.0', stats: 'Active' },
+                    { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency' },
+                    { name: 'Edge Analytics', status: 'Provisioning', version: 'BETA', stats: 'Coming Soon' },
+                  ].map((service, i) => (
+                    <div key={i} style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(10px)", borderRadius: 24, padding: 28, border: "1px solid rgba(255,255,255,0.5)", boxShadow: "0 10px 30px rgba(0,0,0,0.02)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: service.status === 'Healthy' ? '#10b981' : '#6366f1', boxShadow: service.status === 'Healthy' ? '0 0 10px rgba(16, 185, 129, 0.4)' : 'none' }} />
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>{service.version}</span>
+                      </div>
+                      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1e1b4b", marginBottom: 4 }}>{service.name}</h3>
+                      <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>{service.stats}</p>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: service.status === 'Healthy' ? '#10b981' : '#6366f1' }}>{service.status.toUpperCase()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(!['overview', 'credentials', 'plans', 'subscribers', 'license', 'services'].includes(activeTab)) && (
               <div style={{ padding: 60, textAlign: "center", background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)" }}>
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1e1b4b" }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module</h2>
                 <p style={{ color: "#64748b", marginTop: 12 }}>This enterprise feature is currently being provisioned for your tenant.</p>
@@ -502,38 +669,111 @@ export default function Dashboard() {
 
 function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
   return (
-    <div style={{
-      background: "rgba(255, 255, 255, 0.65)",
-      backdropFilter: "blur(10px)",
+    <div className="stat-card" style={{
+      background: "rgba(255, 255, 255, 0.7)",
+      backdropFilter: "blur(20px) saturate(160%)",
       borderRadius: 24,
-      border: "1px solid rgba(255, 255, 255, 0.5)",
+      border: "1px solid rgba(255, 255, 255, 0.8)",
       padding: 28,
       display: "flex",
       flexDirection: "column",
       position: "relative",
       overflow: "hidden",
-      boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)",
-      transition: "transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+      boxShadow: `
+        0 10px 30px -10px rgba(0, 0, 0, 0.05),
+        inset 0 1px 1px rgba(255, 255, 255, 0.8),
+        inset 0 -1px 20px rgba(99, 102, 241, 0.02)
+      `,
+      transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
+      cursor: "pointer",
+      perspective: '1000px'
     }}>
       <style>{`
-                .stat-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1);
-                }
-            `}</style>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        .stat-card {
+            background-image: radial-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .stat-card:hover {
+            transform: translateY(-8px) rotateX(4deg) rotateY(-2deg);
+            box-shadow: 
+                0 30px 60px -12px rgba(99, 102, 241, 0.15),
+                0 18px 36px -18px rgba(0, 0, 0, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .stat-card:hover .spark-container {
+            transform: translateZ(20px) scale(1.05);
+        }
+        @keyframes drawPath {
+            0% { stroke-dashoffset: 200; opacity: 0.8; }
+            50% { stroke-dashoffset: 0; opacity: 1; }
+            100% { stroke-dashoffset: -200; opacity: 0.8; }
+        }
+      `}</style>
+
+      {/* Engineering Corner Accents */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: 40, height: 40, borderLeft: '1px solid rgba(99, 102, 241, 0.1)', borderTop: '1px solid rgba(99, 102, 241, 0.1)', borderTopLeftRadius: 24 }} />
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, zIndex: 2 }}>
         <div style={{
           width: 48, height: 48, borderRadius: 14, background: iconBg,
           display: "flex", alignItems: "center", justifyContent: "center",
-          border: `1px solid ${iconColor}22`
+          border: `1px solid ${iconColor}22`,
+          boxShadow: `0 8px 16px ${iconColor}15`
         }}>
           <Icon name={icon} color={iconColor} />
         </div>
-        <Sparkline color={sparklineColor} />
+        <div className="spark-container" style={{ transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}>
+          <Sparkline color={sparklineColor} />
+        </div>
       </div>
 
-      <div style={{ fontSize: 36, fontWeight: 800, color: "#1e1b4b", marginBottom: 6, letterSpacing: "-1px" }}>{value}</div>
-      <div style={{ fontSize: 15, fontWeight: 600, color: "#64748b" }}>{label}</div>
+      <div style={{ zIndex: 2 }}>
+        <div style={{
+          fontSize: 42,
+          fontWeight: 900,
+          color: "#1e1b4b",
+          marginBottom: 4,
+          letterSpacing: "-1.5px",
+          fontFamily: 'var(--ff-sans)',
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 8
+        }}>
+          {value}
+          <span style={{
+            fontSize: 10,
+            fontWeight: 800,
+            color: "#94a3b8",
+            letterSpacing: '0.1em',
+            fontFamily: 'var(--ff-mono)'
+          }}>[OPERATIONAL]</span>
+        </div>
+        <div style={{
+          fontSize: 14,
+          fontWeight: 700,
+          color: "#64748b",
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8
+        }}>
+          <div style={{ width: 4, height: 4, borderRadius: '50%', background: iconColor }} />
+          {label}
+        </div>
+      </div>
+
+      {/* Technical HUD glow */}
+      <div style={{
+        position: 'absolute',
+        bottom: -20,
+        right: -20,
+        width: 100,
+        height: 100,
+        background: `radial-gradient(circle, ${iconColor}08 0%, transparent 70%)`,
+        zIndex: 1
+      }} />
     </div>
   );
 }
