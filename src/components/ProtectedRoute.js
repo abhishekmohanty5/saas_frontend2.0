@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 
-const ProtectedRoute = ({ children, adminOnly = false }) => {
+const ProtectedRoute = ({ children, roles = [] }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
@@ -13,9 +13,10 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
         alignItems: 'center',
         height: '100vh',
         fontSize: '1.5rem',
-        color: '#666'
+        color: '#666',
+        background: '#0a0a0a'
       }}>
-        Loading...
+        Verifying Identity...
       </div>
     );
   }
@@ -24,8 +25,12 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && user?.role !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
+  // If roles are specified, check if user has ONE of the required roles
+  if (roles.length > 0 && !roles.includes(user?.role)) {
+    // Redirect based on what they ARE allowed to see
+    if (user.role === 'ROLE_SUPER_ADMIN') return <Navigate to="/super-admin" replace />;
+    if (user.role === 'ROLE_TENANT_ADMIN') return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/my-subscriptions" replace />;
   }
 
   return children;

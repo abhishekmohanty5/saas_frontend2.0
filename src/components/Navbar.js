@@ -38,31 +38,74 @@ const Navbar = () => {
             <Link to="/" style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: '12px',
                 fontFamily: 'var(--ff-sans)',
-                fontWeight: 700,
-                fontSize: '18px',
+                fontWeight: 900,
+                fontSize: '22px',
                 color: 'var(--ink)',
-                letterSpacing: '-0.4px',
+                letterSpacing: '-1.4px',
                 textDecoration: 'none'
             }}>
                 <div style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '8px',
-                    background: 'var(--ink)',
+                    position: 'relative',
+                    width: '42px',
+                    height: '42px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0
                 }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z" fill="#C9A84C" opacity="0.9" />
+                    {/* Pulsing Prismatic Energy Field */}
+                    <div style={{
+                        position: 'absolute',
+                        inset: '-4px',
+                        background: 'radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(192,132,252,0.15) 50%, transparent 70%)',
+                        borderRadius: '50%',
+                        zIndex: -1,
+                        filter: 'blur(8px)'
+                    }} />
+
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <defs>
+                            <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#1E293B" />
+                                <stop offset="100%" stopColor="#000000" />
+                            </linearGradient>
+                            <filter id="shardGlow">
+                                <feGaussianBlur stdDeviation="1.2" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+
+                        {/* Outer Geometric Orbit (Antigravity vibe) */}
+                        <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="#3B82F6" strokeWidth="0.8" opacity="0.3" strokeDasharray="4 4" />
+
+                        {/* Upper Spectral Shard */}
+                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)">
+                            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite" />
+                        </path>
+
+                        {/* Lower Spectral Shard */}
+                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)">
+                            <animate attributeName="opacity" values="0.8;0.3;0.8" dur="3s" repeatCount="indefinite" delay="1.5s" />
+                        </path>
+
+                        {/* Central Crystalline Black Core */}
+                        <path d="M20 10L32 20L20 30L8 20L20 10Z" fill="url(#crystalGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
+
+                        {/* Core Data Node */}
+                        <circle cx="20" cy="20" r="2.5" fill="none" stroke="#60A5FA" strokeWidth="1" />
+                        <circle cx="20" cy="20" r="1" fill="white" />
+
+                        {/* Floating Multicolour Particles */}
+                        <circle cx="32" cy="20" r="1.5" fill="#3B82F6" />
+                        <circle cx="8" cy="20" r="1.5" fill="#A259FF" />
+                        <circle cx="20" cy="8" r="1" fill="#FF3B82" />
+                        <circle cx="20" cy="32" r="1" fill="#10B981" />
                     </svg>
                 </div>
-                SubSphere
+                Aegis Infra
             </Link>
-
             {/* Center Navigation */}
             <div style={{
                 display: 'flex',
@@ -155,23 +198,26 @@ const Navbar = () => {
                             onClick={() => navigate('/login')}
                             style={{
                                 fontSize: '14px',
-                                fontWeight: 500,
-                                padding: '8px 18px',
-                                borderRadius: '8px',
+                                fontWeight: 600,
+                                padding: '8px 22px',
+                                borderRadius: '100px',
                                 cursor: 'pointer',
-                                border: 'none',
-                                background: 'none',
-                                color: 'var(--muted)',
-                                transition: 'all 0.15s',
+                                border: '1px solid rgba(0,0,0,0.05)',
+                                background: 'rgba(255,255,255,0.4)',
+                                backdropFilter: 'blur(10px)',
+                                color: 'var(--ink)',
+                                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                 fontFamily: 'var(--ff-sans)'
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.color = 'var(--ink)';
-                                e.target.style.background = 'var(--cream)';
+                                e.target.style.background = 'rgba(255,255,255,0.8)';
+                                e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 10px 20px -10px rgba(0,0,0,0.1)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.color = 'var(--muted)';
-                                e.target.style.background = 'none';
+                                e.target.style.background = 'rgba(255,255,255,0.4)';
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = 'none';
                             }}
                         >
                             Sign In
@@ -180,34 +226,33 @@ const Navbar = () => {
                             onClick={() => navigate('/register')}
                             style={{
                                 fontSize: '14px',
-                                fontWeight: 500,
-                                padding: '8px 18px',
-                                borderRadius: '8px',
+                                fontWeight: 700,
+                                padding: '8px 24px',
+                                borderRadius: '100px',
                                 cursor: 'pointer',
-                                border: 'none',
-                                background: 'var(--ink)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,1) 100%)',
+                                backdropFilter: 'blur(10px)',
                                 color: 'var(--white)',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)',
-                                transition: 'all 0.15s',
+                                boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                 fontFamily: 'var(--ff-sans)'
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--ink2)';
-                                e.target.style.transform = 'translateY(-1px)';
-                                e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                                e.target.style.transform = 'translateY(-2px) scale(1.02)';
+                                e.target.style.boxShadow = '0 12px 24px -6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'var(--ink)';
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = '0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)';
+                                e.target.style.transform = 'translateY(0) scale(1)';
+                                e.target.style.boxShadow = '0 8px 16px -4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)';
                             }}
                         >
                             Start Free Trial →
                         </button>
                     </>
                 )}
-            </div>
-        </nav>
+            </div >
+        </nav >
     );
 };
 
@@ -228,8 +273,9 @@ const NavLink = ({ children, onClick }) => {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 border: 'none',
-                background: isHovered ? 'var(--cream)' : 'none',
-                transition: 'color 0.15s, background 0.15s',
+                background: isHovered ? 'rgba(0,0,0,0.03)' : 'none',
+                backdropFilter: isHovered ? 'blur(4px)' : 'none',
+                transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
                 fontFamily: 'var(--ff-sans)'
             }}

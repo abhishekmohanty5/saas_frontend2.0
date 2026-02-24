@@ -6,14 +6,22 @@ const FeatureGrid = () => {
     return (
         <div className="py-24 px-6">
             <div className="max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12" style={{ perspective: '1200px' }}>
                     {/* Left Card - AI-First Lifecycle Management */}
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         whileInView={{ opacity: 1, x: 0 }}
+                        whileHover={{
+                            y: -10,
+                            rotateX: 2,
+                            rotateY: -2,
+                            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.12)',
+                            transition: { type: 'spring', stiffness: 400, damping: 25 }
+                        }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                         className="glass-card glass-card-hover p-8"
+                        style={{ transformStyle: 'preserve-3d' }}
                     >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -55,9 +63,17 @@ const FeatureGrid = () => {
                     <motion.div
                         initial={{ opacity: 0, x: 50 }}
                         whileInView={{ opacity: 1, x: 0 }}
+                        whileHover={{
+                            y: -10,
+                            rotateX: 2,
+                            rotateY: 2,
+                            boxShadow: '0 30px 60px -12px rgba(0,0,0,0.12)',
+                            transition: { type: 'spring', stiffness: 400, damping: 25 }
+                        }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                         className="glass-card glass-card-hover p-8"
+                        style={{ transformStyle: 'preserve-3d' }}
                     >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">

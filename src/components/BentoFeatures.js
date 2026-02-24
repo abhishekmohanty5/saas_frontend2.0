@@ -1,273 +1,338 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+
+const codeSnippets = {
+    auth: `// AuthController.java
+@PostMapping("/login")
+public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest req) {
+    Authentication auth = authManager.authenticate(
+        new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
+    );
+    
+    SecurityContextHolder.getContext().setAuthentication(auth);
+    String jwt = jwtUtils.generateJwtToken(auth);
+    
+    // JWT Payload includes tenantId for automatic data isolation
+    return ResponseEntity.ok(new JwtResponse(jwt, user.getId(), user.getTenantId()));
+}`,
+    tenant: `// TenantInterceptor.java
+@Component
+public class TenantInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest req, HttpServletResponse res, Object handler) {
+        String token = parseJwt(req);
+        if (token != null && jwtUtils.validateJwtToken(token)) {
+            // Extract and set tenant context globally per request
+            String tenantId = jwtUtils.getTenantIdFromJwtToken(token);
+            TenantContext.setCurrentTenant(tenantId);
+        }
+        return true;
+    }
+}`,
+    schedule: `// SubscriptionScheduler.java
+@Scheduled(cron = "0 0 2 * * ?") // Runs at 2:00 AM daily
+public void expireSubscriptions() {
+    log.info("Running daily subscription expiration check...");
+    List<Subscription> expired = subRepo.findExpiredSubscriptions(LocalDate.now());
+    
+    for (Subscription sub : expired) {
+        sub.setStatus(SubscriptionStatus.EXPIRED);
+        subRepo.save(sub);
+        // Revoke API access instantly
+        apiGateway.revokeAccess(sub.getTenantId());
+    }
+}`,
+    api: `// ApiUsageFilter.java
+@Override
+public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) {
+    String tenantId = TenantContext.getCurrentTenant();
+    
+    // Increment real-time Redis counter per API call
+    redisTemplate.opsForValue().increment("usage:" + tenantId + ":calls");
+    
+    // Check if tenant exceeded tier limits
+    if (usageService.isLimitExceeded(tenantId)) {
+        throw new RateLimitExceededException("Upgrade plan for more API calls");
+    }
+    
+    chain.doFilter(req, res);
+}`
+};
 
 const BentoFeatures = () => {
-    return (
-        <div id="features" style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal">
-            <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
-                Platform Features
-            </div>
-            <h2 style={{
-                fontFamily: 'var(--ff-serif)',
-                fontSize: 'clamp(32px, 4vw, 52px)',
-                lineHeight: 1.1,
-                letterSpacing: '-0.5px',
-                color: 'var(--ink)',
-                fontWeight: 400,
-                maxWidth: '680px'
-            }}>
-                Built for the full subscription <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>lifecycle</em>
-            </h2>
-            <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
-                Real backend architecture — JWT auth, multi-tenancy, automated scheduling, and a reference module that proves engine integration.
-            </p>
+    const [activeTab, setActiveTab] = useState('auth');
+    const [displayedCode, setDisplayedCode] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
 
-            {/* Bento Grid */}
+    // Typing effect logic
+    useEffect(() => {
+        setIsTyping(true);
+        setDisplayedCode('');
+        const targetCode = codeSnippets[activeTab];
+        let currentIndex = 0;
+
+        const typingInterval = setInterval(() => {
+            if (currentIndex < targetCode.length) {
+                setDisplayedCode(prev => prev + targetCode[currentIndex]);
+                currentIndex++;
+            } else {
+                clearInterval(typingInterval);
+                setIsTyping(false);
+            }
+        }, 8); // extremely fast typing speed
+
+        return () => clearInterval(typingInterval);
+    }, [activeTab]);
+
+    const tabs = [
+        {
+            id: 'auth',
+            icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>,
+            title: 'Authentication Engine',
+            desc: 'JWT-secured with HS256 signing.'
+        },
+        {
+            id: 'tenant',
+            icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 12 12 17 22 12"></polyline><polyline points="2 17 12 22 22 17"></polyline></svg>,
+            title: 'Multi-Tenant Architecture',
+            desc: 'Complete data isolation per startup.'
+        },
+        {
+            id: 'schedule',
+            icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+            title: 'Automated Lifecycle',
+            desc: 'Auto-expire at 2 AM & daily reminders.'
+        },
+        {
+            id: 'api',
+            icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>,
+            title: 'API Usage Tracking',
+            desc: 'Every non-auth call counted in real-time.'
+        }
+    ];
+
+    return (
+        <div id="features" style={{ padding: '120px 48px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'var(--ff-sans)' }}>
+
+            {/* Header Section */}
+            <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                <div style={{
+                    display: 'inline-block',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    color: 'var(--gold)',
+                    marginBottom: '20px',
+                    padding: '8px 16px',
+                    background: 'rgba(201, 168, 76, 0.1)',
+                    borderRadius: '100px',
+                    border: '1px solid rgba(201, 168, 76, 0.2)'
+                }}>
+                    Core Infrastructure
+                </div>
+                <h2 style={{
+                    fontFamily: 'var(--ff-serif)',
+                    fontSize: 'clamp(40px, 5vw, 64px)',
+                    lineHeight: 1.1,
+                    letterSpacing: '-1px',
+                    color: 'var(--ink)',
+                    fontWeight: 400,
+                    maxWidth: '800px',
+                    margin: '0 auto'
+                }}>
+                    Built for the full subscription <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>lifecycle</em>
+                </h2>
+                <p style={{ fontSize: '18px', color: 'var(--muted)', lineHeight: 1.6, maxWidth: '600px', margin: '24px auto 0' }}>
+                    Real backend architecture. See how the engine handles auth, multi-tenancy, and automated billing schedules under the hood.
+                </p>
+            </div>
+
+            {/* Split Layout Container */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(12, 1fr)',
-                gap: '16px',
-                marginTop: '56px'
+                gridTemplateColumns: '1fr 1.5fr',
+                gap: '40px',
+                alignItems: 'start'
             }}>
-                {/* Card 1 - JWT Auth (7 cols) */}
-                <BentoCard span={7} dark>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(201,168,76,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        🔐
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Authentication Engine
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--white)', lineHeight: 1.3, fontWeight: 400 }}>
-                        JWT-secured with HS256 signing
-                    </h3>
-                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Every request carries a Bearer token. The JWT payload includes <code style={{ fontFamily: 'var(--ff-mono)', color: 'var(--gold2)' }}>tenantId</code> — so every API call is automatically isolated to the correct startup. Tokens expire per config and return clean 401 responses.
-                    </p>
-                    <JWTVisual />
-                </BentoCard>
 
-                {/* Card 2 - Multi-Tenancy (5 cols) */}
-                <BentoCard span={5} goldBg>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(201,168,76,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        🏢
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Multi-Tenant Architecture
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--white)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Complete data isolation per startup
-                    </h3>
-                    <MiniTenants />
-                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '12px' }}>
-                        Each startup gets unique Client ID & Secret. All engine services filter by tenantId — startups can never see each other's data.
-                    </p>
-                </BentoCard>
+                {/* Left Side: Interactive Navigation */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            style={{
+                                textAlign: 'left',
+                                padding: '24px',
+                                borderRadius: '16px',
+                                background: activeTab === tab.id ? 'var(--ink)' : 'transparent',
+                                border: activeTab === tab.id ? '1px solid var(--ink2)' : '1px solid transparent',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: activeTab === tab.id ? '0 20px 40px rgba(0,0,0,0.1)' : 'none',
+                                transform: activeTab === tab.id ? 'translateX(10px)' : 'translateX(0)',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: '20px'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.background = 'rgba(0,0,0,0.02)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (activeTab !== tab.id) {
+                                    e.currentTarget.style.background = 'transparent';
+                                }
+                            }}
+                        >
+                            <div style={{
+                                fontSize: '24px',
+                                background: activeTab === tab.id ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                                width: '48px', height: '48px',
+                                borderRadius: '12px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
+                                transition: 'all 0.3s ease'
+                            }}>
+                                <div style={{
+                                    color: activeTab === tab.id ? 'var(--gold)' : 'var(--muted)',
+                                    transition: 'color 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {tab.icon}
+                                </div>
+                            </div>
+                            <div>
+                                <div style={{
+                                    fontSize: '18px',
+                                    fontWeight: 600,
+                                    color: activeTab === tab.id ? 'var(--white)' : 'var(--ink)',
+                                    marginBottom: '8px',
+                                    transition: 'color 0.3s ease'
+                                }}>
+                                    {tab.title}
+                                </div>
+                                <div style={{
+                                    fontSize: '15px',
+                                    color: activeTab === tab.id ? 'rgba(255,255,255,0.6)' : 'var(--muted)',
+                                    lineHeight: 1.5,
+                                    transition: 'color 0.3s ease'
+                                }}>
+                                    {tab.desc}
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
 
-                {/* Card 3 - Scheduler (4 cols) */}
-                <BentoCard span={4}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(44,111,172,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        ⏰
+                {/* Right Side: IDE/Terminal Window */}
+                <div style={{
+                    background: '#0D0D0D',
+                    borderRadius: '24px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '560px', // Fixed height so it doesn't jump
+                    position: 'relative'
+                }}>
+                    {/* IDE Header (Mac style) */}
+                    <div style={{
+                        background: '#1A1A1A',
+                        padding: '16px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderBottom: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#FF5F56' }} />
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#FFBD2E' }} />
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27C93F' }} />
+                        </div>
+                        <div style={{
+                            fontSize: '13px',
+                            color: 'rgba(255,255,255,0.4)',
+                            fontFamily: 'var(--ff-mono)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            src/main/java/com/saas/engine
+                        </div>
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Automated Lifecycle
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Auto-expire at 2 AM · Remind at 9 AM
-                    </h3>
-                    <SchedulerTimeline />
-                </BentoCard>
 
-                {/* Card 4 - Reference Module (4 cols) */}
-                <BentoCard span={4}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(64,145,108,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        🔄
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Reference Module
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Subscription management — proof it works
-                    </h3>
-                    <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginTop: '10px' }}>
-                        A real working subscription manager is built using SubSphere APIs — add, cancel, update, filter by category, view upcoming renewals. This proves engine integration.
-                    </p>
-                </BentoCard>
+                    {/* IDE Content */}
+                    <div style={{
+                        padding: '32px',
+                        fontFamily: 'var(--ff-mono)',
+                        fontSize: '15px',
+                        lineHeight: 1.7,
+                        color: '#E6E6E6',
+                        overflowY: 'auto',
+                        flex: 1,
+                        position: 'relative'
+                    }}>
+                        {/* Syntax Highlighting overrides via inline styles conceptually */}
+                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
+                            {displayedCode.split('\n').map((line, i) => {
+                                // Super basic syntax coloring logic for the demo
+                                let coloredLine = line;
+                                if (line.startsWith('//')) {
+                                    return <div key={i} style={{ color: '#6B7280' }}>{line}</div>;
+                                }
+                                if (line.includes('@PostMapping') || line.includes('@Component') || line.includes('@Scheduled') || line.includes('@Override')) {
+                                    return <div key={i} style={{ color: '#F59E0B' }}>{line}</div>;
+                                }
+                                if (line.includes('public') || line.includes('class') || line.includes('return') || line.includes('if')) {
+                                    coloredLine = coloredLine.replace(/(public|class|return|if|new)/g, '<span style="color: #EC4899">$1</span>');
+                                }
+                                if (line.includes('String') || line.includes('void') || line.includes('boolean') || line.includes('ResponseEntity')) {
+                                    coloredLine = coloredLine.replace(/(String|void|boolean|ResponseEntity|Authentication|List)/g, '<span style="color: #60A5FA">$1</span>');
+                                }
 
-                {/* Card 5 - API Usage (4 cols) */}
-                <BentoCard span={4} dark>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        API Usage Tracking
-                    </div>
-                    <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '64px', color: 'var(--white)', lineHeight: 1, letterSpacing: '-2px', marginTop: '16px' }}>
-                        ∞<span style={{ color: 'var(--gold)' }}>+</span>
-                    </div>
-                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Every non-auth API call is counted per tenant in real-time via Spring interceptor. See your usage live in the Developer Console at <code style={{ fontFamily: 'var(--ff-mono)', color: 'var(--gold2)' }}>/api/dashboard</code>
-                    </p>
-                </BentoCard>
+                                return <div key={i} dangerouslySetInnerHTML={{ __html: coloredLine }} />;
+                            })}
 
-                {/* Card 6 - API Response (8 cols) */}
-                <BentoCard span={8}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(201,168,76,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        📡
+                            {/* Blinking cursor */}
+                            {isTyping && <span style={{
+                                display: 'inline-block',
+                                width: '8px',
+                                height: '16px',
+                                background: 'rgba(255,255,255,0.8)',
+                                marginLeft: '4px',
+                                verticalAlign: 'middle',
+                                animation: 'blink 1s step-end infinite'
+                            }} />}
+                        </pre>
                     </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Unified Response Format
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        Every endpoint speaks the same language
-                    </h3>
-                    <APIResponse />
-                </BentoCard>
 
-                {/* Card 7 - Access Control (4 cols) */}
-                <BentoCard span={4}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(181,70,58,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '20px' }}>
-                        🛡️
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)', letterSpacing: '0.3px', marginBottom: '10px' }}>
-                        Role-Based Access
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--ff-serif)', fontSize: '22px', color: 'var(--ink)', lineHeight: 1.3, fontWeight: 400 }}>
-                        USER and ADMIN roles enforced
-                    </h3>
-                    <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6, marginTop: '10px' }}>
-                        Admin endpoints (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/admin/plan</code>) are locked to ADMIN role. Developer Console (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/dashboard</code>) requires any authenticated user. Public plans (<code style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px' }}>/api/public</code>) need no auth.
-                    </p>
-                </BentoCard>
+                    {/* Faint subtle glow inside the IDE */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '-50%',
+                        right: '-50%',
+                        width: '100%',
+                        height: '100%',
+                        background: 'radial-gradient(circle, rgba(201, 168, 76, 0.05) 0%, transparent 60%)',
+                        pointerEvents: 'none'
+                    }} />
+                </div>
             </div>
+
+            <style>{`
+                @keyframes blink {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0; }
+                }
+            `}</style>
         </div>
     );
 };
-
-const BentoCard = ({ children, span, dark, goldBg }) => {
-    const [isHovered, setIsHovered] = React.useState(false);
-
-    const baseStyle = {
-        gridColumn: `span ${span}`,
-        background: dark ? 'var(--ink)' : goldBg ? 'linear-gradient(135deg, #3D2F0E 0%, #1A1410 100%)' : 'var(--cream)',
-        border: dark ? '1px solid var(--ink2)' : goldBg ? '1px solid rgba(201,168,76,0.2)' : '1px solid var(--sand)',
-        borderRadius: 'var(--r2)',
-        padding: '32px',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'box-shadow 0.2s, transform 0.2s, border-color 0.2s',
-        color: dark || goldBg ? 'var(--white)' : 'var(--ink)'
-    };
-
-    const hoverStyle = isHovered ? {
-        boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
-        transform: 'translateY(-2px)',
-        borderColor: dark ? 'var(--ink3)' : goldBg ? 'rgba(201,168,76,0.3)' : 'var(--stone)'
-    } : {};
-
-    return (
-        <div
-            style={{ ...baseStyle, ...hoverStyle }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {children}
-        </div>
-    );
-};
-
-const JWTVisual = () => (
-    <div style={{ marginTop: '20px', fontFamily: 'var(--ff-mono)', fontSize: '12px', background: 'var(--ink2)', borderRadius: 'var(--r)', padding: '16px', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#56B4F5', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Header · HS256</span>
-        </div>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', paddingLeft: '16px', wordBreak: 'break-all' }}>
-            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#9DE070', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Payload</span>
-        </div>
-        <div style={{ fontFamily: 'var(--ff-mono)', fontSize: '10px', color: 'rgba(255,255,255,0.55)', marginBottom: '8px', paddingLeft: '16px' }}>
-            {`{ "tenantId": 1, "sub": "founder@startup.com" }`}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C9A84C', flexShrink: 0 }} />
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>Signature · HS256</span>
-        </div>
-    </div>
-);
-
-const MiniTenants = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-        <MiniTenant label="Tenant A" secret="sb_a1b2c3..." />
-        <MiniTenant label="Tenant B" secret="sb_x9y8z7..." />
-        <MiniTenant label="Tenant C" secret="sb_p3q2r1..." />
-    </div>
-);
-
-const MiniTenant = ({ label, secret }) => (
-    <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'rgba(255,255,255,0.06)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 'var(--r)',
-        padding: '10px 14px'
-    }}>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--white)' }}>{label}</span>
-        <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '12px', color: 'var(--gold2)' }}>{secret}</span>
-    </div>
-);
-
-const SchedulerTimeline = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginTop: '16px', position: 'relative' }}>
-        <div style={{
-            content: '',
-            position: 'absolute',
-            left: '15px',
-            top: '16px',
-            bottom: '16px',
-            width: '1px',
-            background: 'var(--sand)'
-        }} />
-        <SchedItem time="2AM" title="Expire subscriptions" sub="STATUS → EXPIRED" bg="var(--ink)" />
-        <SchedItem time="9AM" title="Send reminders" sub="3-day notice emails" bg="var(--gold)" />
-    </div>
-);
-
-const SchedItem = ({ time, title, sub, bg }) => (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', padding: '10px 0', position: 'relative' }}>
-        <div style={{
-            width: '30px',
-            height: '30px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '9px',
-            fontWeight: 700,
-            flexShrink: 0,
-            zIndex: 1,
-            background: bg,
-            color: bg === 'var(--gold)' ? 'var(--ink)' : 'white'
-        }}>
-            {time}
-        </div>
-        <div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{title}</div>
-            <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>{sub}</div>
-        </div>
-    </div>
-);
-
-const APIResponse = () => (
-    <div style={{ marginTop: '16px', background: 'var(--ink)', borderRadius: 'var(--r)', padding: '16px', fontFamily: 'var(--ff-mono)', fontSize: '12px', lineHeight: 1.8, overflowX: 'auto' }}>
-        <span style={{ color: 'rgba(255,255,255,0.3)' }}>{'// AppResponse<T>'}</span><br />
-        <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{'}</span><br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"message"</span>: <span style={{ color: '#9DE070' }}>"Success"</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"data"</span>: <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{ ... }'}</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"status"</span>: <span style={{ color: '#F0B070' }}>201</span>,<br />
-        &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"timestamp"</span>: <span style={{ color: '#9DE070' }}>"2026-02-20T09:30:00"</span><br />
-        <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'}'}</span>
-    </div>
-);
 
 export default BentoFeatures;

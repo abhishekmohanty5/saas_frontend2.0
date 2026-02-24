@@ -1,187 +1,306 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const ENDPOINTS = [
-    { method: 'POST', path: '/api/auth/reg', badge: 'PUBLIC', desc: 'Register a new startup — returns JWT token + clientId & clientSecret' },
-    { method: 'POST', path: '/api/auth/log', badge: 'PUBLIC', desc: 'Login with email & password — returns JWT Bearer token' },
-    { method: 'GET', path: '/api/public', badge: 'PUBLIC', desc: 'Get all available subscription plans — no auth required' },
-    { method: 'GET', path: '/api/dashboard', badge: 'AUTH', desc: 'Get full developer console data — plan, keys, usage, services' },
-    { method: 'POST', path: '/api/subscriptions/subscribe/{planId}', badge: 'AUTH', desc: 'Subscribe to a plan by planId — subscription goes ACTIVE immediately' },
-    { method: 'PUT', path: '/api/subscriptions/cancel', badge: 'AUTH', desc: 'Cancel current plan subscription' },
-    { method: 'GET', path: '/api/user-Subscriptions/stats', badge: 'AUTH', desc: 'Get reference module subscription statistics' },
-    { method: 'GET', path: '/api/user-Subscriptions/upcoming', badge: 'AUTH', desc: 'Get upcoming renewals within configurable days window' },
-    { method: 'POST', path: '/api/admin/plan', badge: 'ADMIN', desc: 'Create a new subscription plan — ADMIN role required' },
-];
-
-const BADGE_COLORS = {
-    PUBLIC: { bg: 'rgba(64,145,108,0.12)', color: '#40916C', border: 'rgba(64,145,108,0.2)' },
-    AUTH: { bg: 'rgba(87,135,255,0.12)', color: '#5887FF', border: 'rgba(87,135,255,0.2)' },
-    ADMIN: { bg: 'rgba(181,70,58,0.12)', color: '#B5463A', border: 'rgba(181,70,58,0.2)' },
-};
-
-const METHOD_COLORS = {
-    GET: '#40916C',
-    POST: '#5887FF',
-    PUT: '#C9A84C',
-    DELETE: '#B5463A',
-};
+/**
+ * API DOCS SECTION
+ * Optimized style with interactive cards and live JSON editor
+ */
 
 const ApiDocsSection = () => {
-    const [activeEndpoint, setActiveEndpoint] = useState(0);
+    const [selectedEndpoint, setSelectedEndpoint] = useState(0);
+    const [displayText, setDisplayText] = useState("");
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+    const endpoints = [
+        {
+            method: 'POST',
+            path: '/api/auth/reg',
+            desc: 'Register a new startup — returns JWT token + client credentials',
+            badge: 'PUBLIC',
+            response: `{
+  "message": "Success",
+  "data": {
+    "email": "startup@example.com",
+    "token": "eyJhbGciOiJIUzI1NiIsInR...",
+    "clientId": "client_abc123",
+    "clientSecret": "sec_xyz789"
+  },
+  "status": 201
+}`
+        },
+        {
+            method: 'POST',
+            path: '/api/auth/log',
+            desc: 'Login with email & password — returns JWT Bearer token',
+            badge: 'PUBLIC',
+            response: `{
+  "message": "Authenticated",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR...",
+    "expiresIn": 3600,
+    "role": "ADMIN"
+  },
+  "status": 200
+}`
+        },
+        {
+            method: 'GET',
+            path: '/api/public/plans',
+            desc: 'Get all available subscription plans — no auth required',
+            badge: 'PUBLIC',
+            response: `{
+  "message": "Plans retrieved",
+  "data": [
+    { "id": 1, "name": "FREE", "price": 0 },
+    { "id": 2, "name": "PRO", "price": 29.99 }
+  ],
+  "status": 200
+}`
+        },
+        {
+            method: 'GET',
+            path: '/api/dashboard',
+            desc: 'Get full developer console data — plan, keys, usage',
+            badge: 'AUTH',
+            response: `{
+  "message": "Dashboard data",
+  "data": {
+    "usage": 4821,
+    "limit": 20000,
+    "activeKeys": 2
+  },
+  "status": 200
+}`
+        },
+        {
+            method: 'POST',
+            path: '/api/subscribe/{id}',
+            desc: 'Subscribe to a plan — subscription goes ACTIVE immediately',
+            badge: 'AUTH',
+            response: `{
+  "message": "Subscription activated",
+  "data": {
+    "subscriptionId": "sub_88291",
+    "status": "ACTIVE",
+    "expiry": "2026-03-23"
+  },
+  "status": 201
+}`
+        }
+    ];
+
+    // Mouse tilt effect logic
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        setTilt({ x: x * 10, y: y * -10 });
+    };
+
+    const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
+
+    // Live Typing Logic
+    useEffect(() => {
+        let currentText = "";
+        const targetText = endpoints[selectedEndpoint].response;
+        setDisplayText("");
+
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < targetText.length) {
+                currentText += targetText.charAt(i);
+                setDisplayText(currentText);
+                i++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 8); // Fast typing speed
+
+        return () => clearInterval(interval);
+    }, [selectedEndpoint]);
 
     return (
-        <div id="api-docs" style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal">
-            <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
-                API Reference
-            </div>
-            <h2 style={{
-                fontFamily: 'var(--ff-serif)',
-                fontSize: 'clamp(32px, 4vw, 52px)',
-                lineHeight: 1.1,
-                letterSpacing: '-0.5px',
-                color: 'var(--ink)',
-                fontWeight: 400,
-                maxWidth: '680px'
-            }}>
-                Every endpoint, <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>documented</em>
-            </h2>
-            <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
-                All endpoints return the same <code style={{ fontFamily: 'var(--ff-mono)', fontSize: '14px', background: 'var(--cream)', padding: '2px 6px', borderRadius: '4px' }}>AppResponse&lt;T&gt;</code> shape. Register once, integrate anywhere.
-            </p>
+        <section id="api-reference" style={{
+            background: 'var(--white)',
+            padding: '120px 48px',
+            fontFamily: 'var(--ff-sans)',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(37,99,235,0.2), transparent)'
+            }} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginTop: '56px' }}>
-                {/* Endpoint List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {ENDPOINTS.map((ep, i) => {
-                        const badge = BADGE_COLORS[ep.badge];
-                        const isActive = activeEndpoint === i;
-                        return (
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ marginBottom: '64px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--gold)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px' }}>
+                        API REFERENCE
+                    </div>
+                    <h2 style={{
+                        fontSize: 'clamp(40px, 5vw, 56px)',
+                        fontFamily: 'var(--ff-serif)',
+                        color: 'var(--ink)',
+                        lineHeight: 1.1,
+                        letterSpacing: '-2px',
+                        fontWeight: 400
+                    }}>
+                        Every endpoint, <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>documented.</em>
+                    </h2>
+                    <p style={{
+                        fontSize: '18px', color: 'var(--muted)', marginTop: '20px', maxWidth: '600px', lineHeight: 1.6
+                    }}>
+                        All endpoints return the same <code style={{ background: 'rgba(37,99,235,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'var(--ink)', fontSize: '14px' }}>AppResponse&lt;T&gt;</code> shape.
+                        Register once, integrate anywhere.
+                    </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1.2fr', gap: '60px', alignItems: 'start' }}>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        {endpoints.map((ep, i) => (
                             <div
                                 key={i}
-                                onClick={() => setActiveEndpoint(i)}
+                                onClick={() => setSelectedEndpoint(i)}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: '12px',
-                                    padding: '14px 16px',
-                                    borderRadius: '12px',
-                                    border: `1px solid ${isActive ? 'var(--stone)' : 'var(--sand)'}`,
-                                    background: isActive ? 'var(--cream)' : 'var(--white)',
+                                    padding: '20px 24px',
+                                    borderRadius: '16px',
+                                    background: selectedEndpoint === i ? 'var(--white)' : 'transparent',
+                                    border: '1px solid',
+                                    borderColor: selectedEndpoint === i ? 'rgba(37,99,235,0.3)' : 'rgba(0,0,0,0.05)',
                                     cursor: 'pointer',
-                                    transition: 'all 0.15s'
+                                    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '20px',
+                                    boxShadow: selectedEndpoint === i ? '0 10px 30px -5px rgba(37,99,235,0.15)' : 'none',
+                                    transform: selectedEndpoint === i ? 'translateX(10px)' : 'translateX(0)',
+                                    position: 'relative'
                                 }}
                             >
-                                <span style={{
-                                    fontFamily: 'var(--ff-mono)',
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    color: METHOD_COLORS[ep.method] || 'var(--ink)',
-                                    minWidth: '36px',
-                                    marginTop: '1px'
+                                <div style={{
+                                    fontSize: '10px', fontWeight: 900, color: ep.method === 'POST' ? '#3B82F6' : '#10B981',
+                                    padding: '4px 8px', borderRadius: '6px', background: ep.method === 'POST' ? 'rgba(59,130,246,0.1)' : 'rgba(16,185,129,0.1)',
+                                    minWidth: '45px', textAlign: 'center'
                                 }}>
                                     {ep.method}
-                                </span>
-                                <div style={{ flex: 1, overflow: 'hidden' }}>
-                                    <div style={{
-                                        fontFamily: 'var(--ff-mono)',
-                                        fontSize: '12px',
-                                        color: 'var(--ink)',
-                                        fontWeight: 500,
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {ep.path}
-                                    </div>
-                                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '3px' }}>
-                                        {ep.desc}
-                                    </div>
                                 </div>
-                                <span style={{
-                                    fontSize: '10px',
-                                    fontWeight: 700,
-                                    padding: '3px 8px',
-                                    borderRadius: '20px',
-                                    background: badge.bg,
-                                    color: badge.color,
-                                    border: `1px solid ${badge.border}`,
-                                    flexShrink: 0,
-                                    marginTop: '1px'
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px' }}>{ep.path}</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--stone)', marginTop: '4px', opacity: 0.8 }}>{ep.desc}</div>
+                                </div>
+                                <div style={{
+                                    fontSize: '9px', fontWeight: 800, color: ep.badge === 'PUBLIC' ? '#10B981' : '#F59E0B',
+                                    letterSpacing: '1px', padding: '4px 10px', borderRadius: '100px',
+                                    background: ep.badge === 'PUBLIC' ? 'rgba(16,185,129,0.05)' : 'rgba(245,158,11,0.05)',
+                                    border: `1px solid ${ep.badge === 'PUBLIC' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}`
                                 }}>
                                     {ep.badge}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        style={{
+                            perspective: '1000px',
+                            position: 'sticky',
+                            top: '100px'
+                        }}
+                    >
+                        <div style={{
+                            background: '#0D0D0D',
+                            borderRadius: '24px',
+                            boxShadow: '0 40px 100px -20px rgba(0,0,0,0.5)',
+                            overflow: 'hidden',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            transform: `rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+                            transition: 'transform 0.1s ease-out',
+                            transformStyle: 'preserve-3d'
+                        }}>
+                            <div style={{
+                                padding: '16px 24px',
+                                background: 'rgba(255,255,255,0.03)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                borderBottom: '1px solid rgba(255,255,255,0.06)'
+                            }}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#FF5F56' }} />
+                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#FFBD2E' }} />
+                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27C93F' }} />
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--gold)', fontFamily: 'var(--ff-mono)', letterSpacing: '1px', fontWeight: 600 }}>
+                                    LIVE_RESPONSE.JSON
+                                </div>
+                            </div>
+
+                            <div style={{
+                                padding: '32px',
+                                minHeight: '400px',
+                                position: 'relative',
+                                transform: 'translateZ(30px)'
+                            }}>
+                                <pre style={{
+                                    margin: 0,
+                                    fontFamily: 'var(--ff-mono)',
+                                    fontSize: '14px',
+                                    lineHeight: 1.7,
+                                    color: '#E2E8F0',
+                                    whiteSpace: 'pre-wrap'
+                                }}>
+                                    {formatJson(displayText)}
+                                </pre>
+                            </div>
+
+                            <div style={{
+                                padding: '12px 32px',
+                                background: 'rgba(0,0,0,0.5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                borderTop: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <div style={{
+                                    width: '6px', height: '6px', background: '#10B981', borderRadius: '50%',
+                                    boxShadow: '0 0 8px #10B981'
+                                }} />
+                                <span style={{ fontSize: '11px', color: '#10B981', fontFamily: 'var(--ff-mono)', letterSpacing: '1.5px', fontWeight: 700 }}>
+                                    AEGIS_STREAMING: ACTIVE
                                 </span>
                             </div>
-                        );
-                    })}
-                </div>
-
-                {/* Code Preview */}
-                <div style={{ position: 'sticky', top: '100px', alignSelf: 'start' }}>
-                    <div style={{
-                        background: 'var(--ink)',
-                        borderRadius: '16px',
-                        overflow: 'hidden',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
-                    }}>
-                        {/* Code header */}
-                        <div style={{
-                            background: 'var(--ink2)',
-                            padding: '14px 20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            borderBottom: '1px solid rgba(255,255,255,0.06)'
-                        }}>
-                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
-                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
-                            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28ca41' }} />
-                            <span style={{ marginLeft: '8px', fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--ff-mono)' }}>
-                                POST /api/auth/reg → 200 OK
-                            </span>
-                        </div>
-                        {/* Code body */}
-                        <div style={{ padding: '24px', fontFamily: 'var(--ff-mono)', fontSize: '13px', lineHeight: 1.9 }}>
-                            <div style={{ color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>{'// Register Response — AppResponse<AuthDto>'}</div>
-                            <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'{'}</span><br />
-                            &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"message"</span>: <span style={{ color: '#9DE070' }}>"Success"</span>,<br />
-                            &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"data"</span>: {'{'}<br />
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"email"</span>: <span style={{ color: '#9DE070' }}>"founder@startup.com"</span>,<br />
-                            &nbsp;&nbsp;&nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"token"</span>: <span style={{ color: '#9DE070' }}>"eyJhbGci..."</span><br />
-                            &nbsp;&nbsp;{'}'},<br />
-                            &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"status"</span>: <span style={{ color: '#F0B070' }}>200</span>,<br />
-                            &nbsp;&nbsp;<span style={{ color: '#7BAFDE' }}>"timestamp"</span>: <span style={{ color: '#9DE070' }}>"2026-02-20T09:30:00"</span><br />
-                            <span style={{ color: 'rgba(255,255,255,0.5)' }}>{'}'}</span>
-                        </div>
-
-                        {/* Badge legend */}
-                        <div style={{
-                            padding: '16px 24px',
-                            borderTop: '1px solid rgba(255,255,255,0.06)',
-                            display: 'flex',
-                            gap: '16px',
-                            flexWrap: 'wrap'
-                        }}>
-                            {Object.entries(BADGE_COLORS).map(([key, val]) => (
-                                <span key={key} style={{
-                                    fontSize: '11px',
-                                    fontWeight: 700,
-                                    padding: '3px 10px',
-                                    borderRadius: '20px',
-                                    background: val.bg,
-                                    color: val.color,
-                                    border: `1px solid ${val.border}`
-                                }}>
-                                    {key}
-                                </span>
-                            ))}
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', alignSelf: 'center' }}>
-                                — access level
-                            </span>
                         </div>
                     </div>
+
                 </div>
             </div>
-        </div>
+        </section>
     );
+};
+
+const formatJson = (json) => {
+    return json.split('\n').map((line, i) => {
+        const parts = line.split(':');
+        if (parts.length > 1) {
+            const key = parts[0];
+            const val = parts.slice(1).join(':');
+            return (
+                <div key={i} style={{ display: 'flex' }}>
+                    <span style={{ width: '32px', color: 'rgba(255,255,255,0.1)', userSelect: 'none', textAlign: 'right', paddingRight: '12px' }}>{i + 1}</span>
+                    <span style={{ color: '#94A3B8' }}>{key}:</span>
+                    <span style={{ color: val.includes('"') ? '#A78BFA' : '#F59E0B' }}>{val}</span>
+                </div>
+            );
+        }
+        return (
+            <div key={i} style={{ display: 'flex' }}>
+                <span style={{ width: '32px', color: 'rgba(255,255,255,0.1)', userSelect: 'none', textAlign: 'right', paddingRight: '12px' }}>{i + 1}</span>
+                <span style={{ color: '#94A3B8' }}>{line}</span>
+            </div>
+        );
+    });
 };
 
 export default ApiDocsSection;

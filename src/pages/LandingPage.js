@@ -2,24 +2,27 @@ import React, { useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import HeroSubSphere from '../components/HeroSubSphere';
 import TickerBar from '../components/TickerBar';
-import BentoFeatures from '../components/BentoFeatures';
+import LiveBackendStream from '../components/EngineShowcase';
 import HowItWorks from '../components/HowItWorks';
 import ApiDocsSection from '../components/ApiDocsSection';
-import PricingSubSphereStatic from '../components/PricingSubSphereStatic';
+import InfraTrustSection from '../components/InfraTrustSection';
 import Testimonials from '../components/Testimonials';
 import CTASection from '../components/CTASection';
 import Footer from '../components/Footer';
 
+import Aegis3DOverlay from '../components/Aegis3DOverlay';
+import SectionDivider from '../components/SectionDivider';
+
 const LandingPage = () => {
   useEffect(() => {
-    // Scroll reveal observer
+    // Scroll reveal observer with higher threshold for dramatic entry
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
+      entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          entry.target.classList.add('visible');
         }
       });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.15 });
 
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
@@ -27,15 +30,45 @@ const LandingPage = () => {
   }, []);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--white)',
+      position: 'relative',
+      overflowX: 'hidden'
+    }}>
+      <Aegis3DOverlay />
       <Navbar />
       <HeroSubSphere />
       <TickerBar />
-      <BentoFeatures />
-      <HowItWorks />
-      <ApiDocsSection />
-      <PricingSubSphereStatic />
-      <Testimonials />
+
+      <SectionDivider />
+
+      <div className="reveal">
+        <LiveBackendStream />
+      </div>
+
+      <SectionDivider />
+
+      <div className="reveal">
+        <HowItWorks />
+      </div>
+
+      <SectionDivider />
+
+      <div className="reveal">
+        <ApiDocsSection />
+      </div>
+
+      <SectionDivider />
+
+      <div className="reveal">
+        <InfraTrustSection />
+      </div>
+
+      <div className="reveal">
+        <Testimonials />
+      </div>
+
       <CTASection />
       <Footer />
     </div>

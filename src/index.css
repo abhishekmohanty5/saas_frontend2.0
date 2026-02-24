@@ -5,34 +5,37 @@
 ═══════════════════════════════════════════════════════════ */
 
 /* ── FONTS ── */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* ── DESIGN TOKENS ── */
 :root {
-  /* Colors */
-  --white: #FAFAF8;
-  --cream: #F4F1EB;
-  --sand: #E8E2D6;
-  --stone: #C4BAA8;
-  --ink: #1A1714;
-  --ink2: #2E2A25;
-  --ink3: #403B34;
-  --muted: #7A7368;
-  --muted2: #9B9186;
+  /* Colors - Modern Azure & Slate */
+  --white: #FFFFFF;
+  --cream: #F8FAFC;
+  --sand: #F1F5F9;
+  --stone: #94A3B8;
+  --ink: #020617;
+  --ink2: #0F172A;
+  --ink3: #1E293B;
+  --muted: #64748B;
+  --muted2: #475569;
 
-  --gold: #C9A84C;
-  --gold2: #E2BE6A;
-  --gold-dim: rgba(201, 168, 76, 0.12);
+  --gold: #2563EB;
+  /* Primary Azure Blue */
+  --gold2: #3B82F6;
+  --gold-dim: rgba(37, 99, 235, 0.1);
 
-  --emerald: #2D6A4F;
-  --emerald2: #40916C;
-  --sky: #2C6FAC;
-  --rose: #B5463A;
+  --emerald: #059669;
+  --emerald2: #10B981;
+  --sky: #0EA5E9;
+  --rose: #E11D48;
 
   /* Typography */
-  --ff-serif: 'Instrument Serif', Georgia, serif;
-  --ff-sans: 'Geist', system-ui, sans-serif;
-  --ff-mono: 'Geist Mono', 'Courier New', monospace;
+  --ff-h: 'Outfit', system-ui, sans-serif;
+  --ff-sans: 'Inter', system-ui, sans-serif;
+  --ff-mono: ui-monospace, 'Geist Mono', 'Courier New', monospace;
+  --ff-serif: 'Outfit', system-ui, sans-serif;
+  /* Fallback for existing serif refs */
 
   /* Spacing */
   --r: 10px;
@@ -146,6 +149,7 @@ code {
 }
 
 @keyframes floatSubtle {
+
   0%,
   100% {
     transform: translateY(0);
@@ -169,13 +173,18 @@ code {
 /* ── UTILITY CLASSES ── */
 .reveal {
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(40px) scale(0.96);
+  filter: blur(8px);
+  transition: opacity 1.2s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 1s cubic-bezier(0.23, 1, 0.32, 1),
+    filter 0.8s ease;
+  will-change: transform, opacity, filter;
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
 }
 
 /* ── RESPONSIVE BREAKPOINTS ── */

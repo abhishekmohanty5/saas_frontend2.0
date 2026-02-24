@@ -3,9 +3,6 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
-// Admin email - YOU are the admin!
-const ADMIN_EMAIL = 'abhishekmohanty78962@gmail.com';
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -38,24 +35,21 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      const { token, email: userEmail } = data;
+      const { token, email: userEmail, role } = data;
 
       // Store token
       localStorage.setItem('token', token);
 
-      // Check if user is admin (your email)
-      const role = userEmail === ADMIN_EMAIL ? 'ADMIN' : 'USER';
-
       // Create user object
       const userData = {
         email: userEmail,
-        role: role
+        role: role // Use role directly from backend: ROLE_SUPER_ADMIN, ROLE_TENANT_ADMIN, ROLE_USER
       };
 
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
 
-      console.log('User logged in as:', role);
+      console.log('User logged in with role:', role);
 
       return { success: true };
     } catch (error) {

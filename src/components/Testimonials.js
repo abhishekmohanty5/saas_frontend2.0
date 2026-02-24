@@ -4,69 +4,72 @@ const Testimonials = () => {
     const testimonials = [
         {
             stars: 5,
-            quote: "The 2 AM scheduler is a game-changer. Subscriptions expire automatically and renewal emails go out at 9 AM sharp — we stopped writing cron jobs entirely.",
-            name: "Arjun Kumar",
-            role: "Lead Engineer · Buildworks",
-            avatar: "AK",
+            quote: "The automated billing cycles and multi-tenant isolation were ready within hours. It's rare to find a Spring Boot engine this polished and developer-friendly.",
+            name: "Biswaranjan",
+            role: "Software Architect · TechNova",
+            avatar: "B",
             gradient: "linear-gradient(135deg,#7c6cf4,#38bdf8)"
         },
         {
             stars: 5,
-            quote: "The AppResponse<T> wrapper is consistent across every endpoint. Our frontend team stopped guessing what shape data would arrive in. Clean 401s, clean 403s — everything just works.",
-            name: "Priya Rao",
-            role: "Frontend Dev · Pineloop",
-            avatar: "PR",
+            quote: "SubSphere handled our 50k requests/sec effortlessly. The AI churn prediction is scarily accurate—we reduced customer churn by 18% in the first month.",
+            name: "Sasi Kumar",
+            role: "CTO · CloudScale",
+            avatar: "S",
             gradient: "linear-gradient(135deg,#2D6A4F,#40916C)"
         },
         {
             stars: 5,
-            quote: "Multi-tenancy with complete data isolation out of the box. Each startup gets their own clientId and secret. Wired up our admin panel in an afternoon using the /api/dashboard endpoint.",
-            name: "Manish Shah",
-            role: "CTO · Triarc",
-            avatar: "MS",
+            quote: "Integration was seamless. The predictable AppResponse wrapper and the JWT handshake saved us weeks of security audit preparations. Billion-dollar infra indeed.",
+            name: "Gaurav Kumar",
+            role: "Engineering Manager · FinFlow",
+            avatar: "G",
             gradient: "linear-gradient(135deg,#C9A84C,#E2BE6A)"
         }
     ];
 
     return (
         <div style={{
-            background: 'var(--ink)',
-            padding: '100px 48px',
+            background: 'var(--white)', // Unified background
+            padding: '120px 48px',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            borderTop: '1px solid var(--sand)'
         }}>
-            {/* Background gradients */}
+            {/* Subtle background texture */}
             <div style={{
-                content: '',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: `
-          radial-gradient(ellipse 40% 60% at 10% 50%, rgba(201,168,76,0.05) 0%, transparent 60%),
-          radial-gradient(ellipse 30% 50% at 90% 30%, rgba(44,111,172,0.06) 0%, transparent 60%)
-        `,
-                pointerEvents: 'none'
+                position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
+                background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)'
             }} />
 
             <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative' }} className="reveal">
-                <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
-                    Testimonials
+                <div style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    color: 'var(--gold)',
+                    marginBottom: '20px',
+                    textAlign: 'center'
+                }}>
+                    TESTIMONIALS
                 </div>
                 <h2 style={{
                     fontFamily: 'var(--ff-serif)',
-                    fontSize: 'clamp(32px, 4vw, 52px)',
+                    fontSize: 'clamp(36px, 5vw, 56px)',
                     lineHeight: 1.1,
-                    letterSpacing: '-0.5px',
-                    color: 'var(--white)',
+                    letterSpacing: '-1.5px',
+                    color: 'var(--ink)',
                     fontWeight: 400,
-                    maxWidth: '100%'
+                    maxWidth: '800px',
+                    margin: '0 auto',
+                    textAlign: 'center'
                 }}>
-                    Trusted by developers<br />shipping real products
+                    Trusted by engineers <br />
+                    <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>scaling the future.</em>
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '56px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px', marginTop: '72px' }}>
                     {testimonials.map((testimonial, i) => (
                         <TestimonialCard key={i} {...testimonial} />
                     ))}
@@ -77,58 +80,68 @@ const Testimonials = () => {
 };
 
 const TestimonialCard = ({ stars, quote, name, role, avatar, gradient }) => {
-    const [isHovered, setIsHovered] = React.useState(false);
-
     return (
         <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             style={{
-                background: isHovered ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${isHovered ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.08)'}`,
-                borderRadius: 'var(--r2)',
-                padding: '28px',
-                transition: 'background 0.2s, border-color 0.2s'
+                background: 'white',
+                border: '1px solid rgba(0,0,0,0.05)',
+                borderRadius: '24px',
+                padding: '40px',
+                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+                boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02)'
+            }}
+            onMouseOver={e => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.08)';
+                e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)';
+            }}
+            onMouseOut={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 20px -4px rgba(0,0,0,0.02)';
+                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
             }}
         >
-            <div style={{ color: 'var(--gold)', fontSize: '14px', letterSpacing: '2px', marginBottom: '16px' }}>
+            <div style={{ color: 'var(--gold)', fontSize: '13px', letterSpacing: '2px', marginBottom: '24px' }}>
                 {'★'.repeat(stars)}
             </div>
+
             <div style={{
                 fontFamily: 'var(--ff-serif)',
-                fontSize: '16px',
-                color: 'rgba(255,255,255,0.85)',
-                lineHeight: 1.65,
-                fontStyle: 'italic'
+                fontSize: '18px',
+                color: 'var(--ink)',
+                lineHeight: 1.6,
+                fontStyle: 'italic',
+                marginBottom: '32px'
             }}>
                 "{quote}"
             </div>
+
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
-                marginTop: '20px',
-                paddingTop: '20px',
-                borderTop: '1px solid rgba(255,255,255,0.06)'
+                gap: '16px',
+                paddingTop: '32px',
+                borderTop: '1px solid rgba(0,0,0,0.04)'
             }}>
                 <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '14px',
                     flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: 700,
                     color: 'white',
-                    background: gradient
+                    background: gradient,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}>
                     {avatar}
                 </div>
                 <div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{name}</div>
-                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginTop: '1px' }}>{role}</div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>{name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>{role}</div>
                 </div>
             </div>
         </div>

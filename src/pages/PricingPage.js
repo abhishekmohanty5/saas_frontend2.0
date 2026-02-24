@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
+import { useToast } from '../components/ToastProvider';
 import { publicAPI, subscriptionAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -11,6 +12,7 @@ const PricingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const toast = useToast();
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const selectedPlanParam = searchParams.get('plan'); // can be id or name
@@ -90,9 +92,10 @@ const PricingPage = () => {
     try {
       setSubscribingPlanId(plan.id);
       setError('');
-      const response = await subscriptionAPI.subscribe(plan.id);
-      // alert(response.data?.message || `Successfully subscribed to ${plan.name} plan!`);
-      navigate('/dashboard', { state: { successMessage: response.data?.message || `Successfully subscribed to ${plan.name} plan!` } });
+      await subscriptionAPI.subscribe(plan.id);
+
+      toast.success('Payment success', `Subscribed to ${plan.name} plan`);
+      navigate('/dashboard');
     } catch (err) {
       console.error('Subscription error:', err);
 
@@ -108,8 +111,8 @@ const PricingPage = () => {
         errorMessage = 'Failed to subscribe. Please try logging in again or contact support.';
       }
 
+      toast.error('Something went wrong', errorMessage);
       setError(errorMessage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSubscribingPlanId(null);
     }
@@ -144,16 +147,16 @@ const PricingPage = () => {
           Pricing
         </div>
         <h1 style={{
-          fontFamily: 'var(--ff-serif)',
-          fontSize: 'clamp(32px, 4vw, 52px)',
+          fontFamily: 'var(--ff-h)',
+          fontSize: 'clamp(28px, 4vw, 44px)',
           lineHeight: 1.1,
-          letterSpacing: '-0.5px',
+          letterSpacing: '-1px',
           color: 'var(--ink)',
-          fontWeight: 400,
+          fontWeight: 700,
           maxWidth: '680px',
           marginBottom: '20px'
         }}>
-          Simple, transparent <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>pricing</em>
+          Simple, transparent <span style={{ color: 'var(--gold)' }}>pricing</span>
         </h1>
         <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
           All plans include the full API, JWT auth, automated scheduler, and admin dashboard.

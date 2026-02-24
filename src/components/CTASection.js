@@ -5,9 +5,9 @@ const CTASection = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto' }} className="reveal">
+        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto', background: 'var(--white)' }} className="reveal">
             <div style={{
-                background: 'linear-gradient(135deg, var(--ink) 0%, #2A241C 100%)',
+                background: 'black',
                 borderRadius: '24px',
                 padding: '80px 80px',
                 display: 'grid',
@@ -15,7 +15,8 @@ const CTASection = () => {
                 gap: '60px',
                 alignItems: 'center',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 {/* Background decorations */}
                 <div style={{
@@ -26,7 +27,7 @@ const CTASection = () => {
                     width: '300px',
                     height: '300px',
                     borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%)'
+                    background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%)'
                 }} />
                 <div style={{
                     content: '',
@@ -127,10 +128,10 @@ const CTASection = () => {
                 {/* Right - Trust Badges */}
                 <div style={{ position: 'relative', zIndex: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '240px' }}>
-                        <TrustItem icon="🔐" text="JWT-secured endpoints" />
-                        <TrustItem icon="⚡" text="No credit card required" />
-                        <TrustItem icon="🔄" text="Automated lifecycle" />
-                        <TrustItem icon="📊" text="Admin dashboard included" />
+                        <TrustItem text="JWT-secured endpoints" />
+                        <TrustItem text="No credit card required" />
+                        <TrustItem text="Automated lifecycle" />
+                        <TrustItem text="Admin dashboard included" />
                     </div>
                 </div>
             </div>
@@ -138,18 +139,19 @@ const CTASection = () => {
     );
 };
 
-const TrustItem = ({ icon, text }) => (
+const TrustItem = ({ text }) => (
     <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
         borderRadius: 'var(--r)',
-        padding: '12px 16px'
+        padding: '12px 20px',
+        transition: 'all 0.3s'
     }}>
-        <span style={{ fontSize: '18px' }}>{icon}</span>
-        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>{text}</span>
+        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--gold)' }} />
+        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, letterSpacing: '0.2px' }}>{text}</span>
     </div>
 );
 

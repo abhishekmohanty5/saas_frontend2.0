@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSubSphere = () => {
     const navigate = useNavigate();
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+    const handleMouseMove = (e) => {
+        const x = (e.clientX / window.innerWidth - 0.5) * 30;
+        const y = (e.clientY / window.innerHeight - 0.5) * -30;
+        setTilt({ x, y });
+    };
 
     useEffect(() => {
-        // Animate chart bars on mount
-        const bars = document.querySelectorAll('.chart-bar');
-        bars.forEach((bar, i) => {
-            const height = bar.style.height;
-            bar.style.height = '0';
-            setTimeout(() => {
-                bar.style.height = height;
-            }, 300 + i * 60);
-        });
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
     const scrollToHowItWorks = () => {
@@ -23,434 +23,370 @@ const HeroSubSphere = () => {
 
     return (
         <section style={{
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '140px 48px 100px',
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '80px',
-            alignItems: 'center',
             minHeight: '100vh',
-            position: 'relative'
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '120px 24px',
+            position: 'relative',
+            overflow: 'hidden',
+            textAlign: 'center',
+            zIndex: 1,
+            background: 'var(--white)',
+            perspective: '2000px'
         }}>
-            {/* Background Gradient */}
+            {/* 1. Digital Rain - Neural Data Streams */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: -4, opacity: 0.5 }}>
+                {[...Array(15)].map((_, i) => (
+                    <div key={i} style={{
+                        position: 'absolute',
+                        top: '-10%',
+                        left: `${i * 7}%`,
+                        width: '1px',
+                        height: '120%',
+                        background: 'linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.3), transparent)',
+                        animation: `digitalRain ${3 + Math.random() * 5}s infinite linear`,
+                        animationDelay: `${Math.random() * 5}s`,
+                        filter: 'blur(0.3px)'
+                    }} />
+                ))}
+            </div>
+
+            {/* 2. Central Neon Kinetic Core (Preserved Circles) */}
+
+            {/* ═ HYPER-3D BACKGROUND FIELD ═ */}
+
+            {/* Liquid Mesh Gradient Aura */}
             <div style={{
-                content: '',
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                position: 'absolute',
+                top: '50%', left: '50%',
+                width: '120%', height: '120%',
                 background: `
-          radial-gradient(ellipse 55% 60% at 85% 30%, rgba(201,168,76,0.08) 0%, transparent 65%),
-          radial-gradient(ellipse 40% 50% at 15% 75%, rgba(44,111,172,0.05) 0%, transparent 60%)
-        `,
-                pointerEvents: 'none',
-                zIndex: -1
+                    radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 70% 70%, rgba(162, 89, 255, 0.05) 0%, transparent 50%)
+                `,
+                transform: `translate(-50%, -50%) translate3d(${tilt.x * -0.5}px, ${tilt.y * -0.5}px, -100px)`,
+                filter: 'blur(100px)',
+                zIndex: -3,
+                pointerEvents: 'none'
             }} />
 
-            {/* Left Column */}
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {/* Pill Badge */}
+            {/* Deep Perspective Grid Layer */}
+            <div style={{
+                position: 'absolute',
+                top: '50%', left: '50%',
+                width: '300%', height: '300%',
+                background: `
+                    linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px)
+                `,
+                backgroundSize: '150px 150px',
+                transform: `translate(-50%, -50%) rotateX(80deg) translateZ(-500px) translateY(${tilt.y * 2}px)`,
+                opacity: 0.35,
+                maskImage: 'radial-gradient(ellipse at center, black, transparent 80%)',
+                WebkitMaskImage: 'radial-gradient(ellipse at center, black, transparent 80%)',
+                zIndex: -2,
+                pointerEvents: 'none'
+            }} />
+
+            {/* Drifting 3D Glass Shards */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: -1 }}>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} style={{
+                        position: 'absolute',
+                        top: `${(i * 123) % 100}%`,
+                        left: `${(i * 456) % 100}%`,
+                        width: `${40 + (i % 3) * 30}px`,
+                        height: `${100 + (i % 2) * 50}px`,
+                        background: 'rgba(255, 255, 255, 0.3)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.5)',
+                        borderRadius: '4px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
+                        transform: `translate3d(${tilt.x * (i * 0.3)}px, ${tilt.y * (i * 0.3)}px, ${i * 60}px) rotateX(${tilt.y * 0.5}deg) rotateY(${tilt.x * 0.5}deg)`,
+                        opacity: 0.15 + (i * 0.05),
+                        transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)'
+                    }} />
+                ))}
+            </div>
+
+            {/* ═ THE AEGIS SPATIAL GLOBE (Pure CSS 3D - Setup for Perf) ═ */}
+            <div style={{
+                position: 'absolute',
+                top: '50%', left: '50%',
+                /* Drastically simplified parallax - translation is much faster than 3D rotation */
+                transform: `translate(-50%, -50%) translate3d(${tilt.x * -0.5}px, ${tilt.y * -0.5}px, 0)`,
+                width: '800px', height: '800px',
+                zIndex: -2,
+                pointerEvents: 'none',
+                /* Removed expensive perspective here, keeping it flat but parallaxed */
+                transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                willChange: 'transform' // Hardware acceleration hint
+            }}>
+                <div style={{
+                    position: 'absolute', inset: 0,
+                    animation: 'slowRotateGlobe 60s linear infinite', /* Further slowed down to reduce frame updates */
+                    willChange: 'transform'
+                }}>
+                    {/* Inner Core Glow - Kept simple radial blur */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '50%', left: '50%',
+                        width: '300px', height: '300px',
+                        transform: 'translate(-50%, -50%)',
+                        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 60%)',
+                        filter: 'blur(40px)',
+                        borderRadius: '50%',
+                        willChange: 'transform',
+                    }} />
+
+                    {/* 
+                        PERFORMANCE HACK: Replace 24 expensive 3D CSS nodes with a single SVG!
+                        SVGs are hardware accelerated differently and handle many paths much better 
+                        than the DOM handles many deeply nested 3D intersecting divs.
+                    */}
+                    <svg width="100%" height="100%" viewBox="-400 -400 800 800" style={{ overflow: 'visible' }}>
+                        <defs>
+                            <linearGradient id="globeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="rgba(14,165,233,0.3)" />
+                                <stop offset="100%" stopColor="rgba(14,165,233,0.05)" />
+                            </linearGradient>
+                        </defs>
+
+                        {/* Meridians (Vertical Ellipses) */}
+                        {[...Array(6)].map((_, i) => ( // Reduced to 6 for perf
+                            <ellipse
+                                key={`m-${i}`}
+                                cx="0" cy="0"
+                                rx="400" ry="400"
+                                fill="none"
+                                stroke="url(#globeGrad)"
+                                strokeWidth="1"
+                                transform={`rotate(${i * 30}) scale(${Math.cos(i * 30 * Math.PI / 180)}, 1)`}
+                            />
+                        ))}
+
+                        {/* Parallels (Horizontal Ellipses) */}
+                        {[...Array(9)].map((_, i) => { // Reduced to 9 for perf
+                            const index = i - 4;
+                            const yPosition = index * 80;
+                            const r = 400;
+                            if (Math.abs(yPosition) >= r) return null;
+                            const rx = Math.sqrt(r * r - yPosition * yPosition);
+                            const ry = rx * 0.3; // Simulate 3D tilt
+
+                            return (
+                                <ellipse
+                                    key={`p-${i}`}
+                                    cx="0" cy={yPosition}
+                                    rx={rx} ry={ry}
+                                    fill="none"
+                                    stroke="url(#globeGrad)"
+                                    strokeWidth="1"
+                                />
+                            );
+                        })}
+                    </svg>
+
+                    {/* Orbiting Quantum Data Nodes - Reduced count for perf */}
+                    {[...Array(8)].map((_, i) => (
+                        <div key={`n-${i}`} style={{
+                            position: 'absolute', inset: 0,
+                            animation: `slowRotateGlobe ${15 + i * 2}s linear infinite`,
+                            animationDirection: i % 2 === 0 ? 'normal' : 'reverse',
+                            willChange: 'transform'
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%', left: '50%',
+                                width: '6px', height: '6px',
+                                background: i % 3 === 0 ? 'var(--gold)' : '#0EA5E9',
+                                boxShadow: `0 0 15px ${i % 3 === 0 ? 'var(--gold)' : '#0EA5E9'}`, /* Single box-shadow instead of triple */
+                                borderRadius: '50%',
+                                /* Used 2D transforms to simulate 3D orbit */
+                                transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(-380px)`,
+                                willChange: 'transform'
+                            }} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Content Display */}
+            <div style={{ maxWidth: '800px', position: 'relative', zIndex: 2 }}>
                 <div style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    border: '1px solid var(--sand)',
+                    gap: '12px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(0,0,0,0.05)',
                     borderRadius: '100px',
-                    padding: '6px 14px 6px 8px',
-                    fontSize: '13px',
-                    fontWeight: 500,
-                    color: 'var(--muted)',
-                    width: 'fit-content',
-                    marginBottom: '32px',
-                    background: 'var(--white)',
-                    animation: 'fadeSlideUp 0.6s ease both'
+                    padding: '10px 24px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    color: 'var(--gold)',
+                    marginBottom: '40px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '3px',
+                    animation: 'fadeSlideUp 0.8s ease both'
                 }}>
-                    <div style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: 'var(--emerald2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0
-                    }}>
-                        <div style={{
-                            width: '8px',
-                            height: '8px',
-                            background: 'white',
-                            borderRadius: '50%'
-                        }} />
-                    </div>
-                    Spring Boot Backend · Multi-Tenant ·
-                    <strong style={{ marginLeft: '2px', color: 'var(--ink)', fontWeight: 600 }}>v1.0</strong>
+                    <span style={{ width: 8, height: 8, background: 'var(--emerald2)', borderRadius: '50%', boxShadow: '0 0 15px var(--emerald2)' }} />
+                    Engineering the Infrastructure Future
                 </div>
 
-                {/* Headline */}
                 <h1 style={{
-                    fontFamily: 'var(--ff-serif)',
-                    fontSize: 'clamp(42px, 5.5vw, 68px)',
-                    lineHeight: 1.08,
-                    letterSpacing: '-1px',
+                    fontFamily: 'var(--ff-h)',
+                    fontSize: 'clamp(42px, 6.5vw, 76px)',
+                    lineHeight: 1.05,
+                    letterSpacing: '-3px',
                     color: 'var(--ink)',
-                    fontWeight: 400,
-                    animation: 'fadeSlideUp 0.7s 0.1s ease both'
+                    fontWeight: 900,
+                    marginBottom: '28px',
+                    animation: 'fadeSlideUp 0.8s 0.1s ease both',
                 }}>
-                    Subscription infrastructure<br />for <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>modern SaaS</em><br />products.
+                    Architecture for <br />
+                    <span style={{
+                        background: 'linear-gradient(135deg, var(--gold) 0%, #0EA5E9 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                    }}>Modern Stability.</span>
                 </h1>
 
-                {/* Subtitle */}
                 <p style={{
-                    fontSize: '17px',
-                    color: 'var(--muted)',
-                    lineHeight: 1.7,
-                    marginTop: '24px',
-                    maxWidth: '480px',
-                    fontWeight: 400,
-                    animation: 'fadeSlideUp 0.7s 0.2s ease both'
+                    fontSize: '18px',
+                    color: 'var(--stone)',
+                    lineHeight: 1.6,
+                    maxWidth: '540px',
+                    margin: '0 auto 60px',
+                    fontWeight: 450,
+                    animation: 'fadeSlideUp 0.8s 0.2s ease both'
                 }}>
-                    SubSphere is an API-first engine that handles authentication, subscription lifecycle, plan management, and renewal automation — so startups can focus on building their core product, not the plumbing.
+                    Aegis Infra is the high-velocity core powering the next generation of SaaS.
+                    Unified auth and subscription lifecycles in one spatial engine.
                 </p>
 
-                {/* CTA Buttons */}
                 <div style={{
                     display: 'flex',
-                    gap: '12px',
-                    marginTop: '40px',
+                    gap: '32px',
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    flexWrap: 'wrap',
-                    animation: 'fadeSlideUp 0.7s 0.3s ease both'
+                    animation: 'fadeSlideUp 0.8s 0.3s ease both'
                 }}>
                     <button
                         onClick={() => navigate('/register')}
                         style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
                             background: 'var(--ink)',
-                            color: 'var(--white)',
+                            color: 'white',
                             fontSize: '15px',
-                            fontWeight: 600,
-                            fontFamily: 'var(--ff-sans)',
-                            padding: '14px 28px',
-                            borderRadius: 'var(--r2)',
+                            fontWeight: 800,
+                            padding: '18px 48px',
+                            borderRadius: '100px',
                             border: 'none',
                             cursor: 'pointer',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08)',
-                            transition: 'all 0.2s'
+                            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
+                            transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--ink2)';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'var(--ink)';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08)';
-                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
-                        Start Free Trial
-                        <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            background: 'rgba(255,255,255,0.15)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '11px'
-                        }}>→</div>
+                        Initialize Engine
                     </button>
 
                     <button
                         onClick={scrollToHowItWorks}
                         style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: 'none',
-                            color: 'var(--muted)',
-                            fontSize: '14px',
-                            fontWeight: 500,
+                            fontSize: '15px',
+                            fontWeight: 700,
+                            color: 'var(--ink)',
+                            background: 'transparent',
                             border: 'none',
                             cursor: 'pointer',
-                            fontFamily: 'var(--ff-sans)',
-                            padding: '14px 0',
-                            transition: 'color 0.15s'
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            transition: 'color 0.3s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ink)'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gold)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ink)'}
                     >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                            <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" />
-                        </svg>
-                        See How It Works
+                        Blueprint
+                        <div style={{ width: 32, height: 1.5, background: 'currentColor', opacity: 0.3 }} />
                     </button>
-                </div>
-
-                <div style={{ fontSize: '13px', color: 'var(--stone)', marginTop: '16px' }}>
-                    No credit card required. <strong style={{ color: 'var(--muted)' }}>14-day free trial included.</strong>
-                </div>
-
-                {/* Architecture Chips */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    marginTop: '48px',
-                    paddingTop: '36px',
-                    borderTop: '1px solid var(--sand)',
-                    flexWrap: 'wrap',
-                    animation: 'fadeSlideUp 0.7s 0.4s ease both'
-                }}>
-                    <span style={{ fontSize: '12px', color: 'var(--stone)', fontWeight: 500, marginRight: '4px', whiteSpace: 'nowrap' }}>
-                        Trusted architecture, not an app
-                    </span>
-                    <LogoChip name="Auth0-style JWT" />
-                    <LogoChip name="Stripe-style Plans" />
-                    <LogoChip name="Multi-Tenant Engine" />
                 </div>
             </div>
 
-            {/* Right Column - Dashboard Mockup */}
-            <DashboardMockup />
+            {/* ═ PREMIUM GLASSMORPHIC ACCENTS ═ */}
+            <div style={{
+                position: 'absolute',
+                inset: 0,
+                pointerEvents: 'none',
+                zIndex: 1
+            }}>
+                <FloatingGlassBadge
+                    top="15%" right="10%"
+                    label="SYS: OPTIMAL"
+                    iconColor="var(--emerald2)"
+                    tilt={tilt} delay="0s"
+                />
+
+                <FloatingGlassBadge
+                    bottom="20%" left="12%"
+                    label="LATENCY: 12ms"
+                    iconColor="#0EA5E9"
+                    tilt={tilt} delay="0.5s"
+                />
+            </div>
+
+            <style>{`
+                @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes digitalRain { 0% { transform: translateY(-100%); opacity: 0; } 50% { opacity: 0.5; } 100% { transform: translateY(100vh); opacity: 0; } }
+                @keyframes slowRotateGlobe {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                @keyframes floatGlass {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-15px); }
+                }
+            `}</style>
         </section>
     );
 };
 
-// Logo Chip Component
-const LogoChip = ({ name }) => (
+const FloatingGlassBadge = ({ top, bottom, left, right, label, iconColor, tilt, delay }) => (
     <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        fontSize: '13px',
-        fontWeight: 600,
-        color: 'var(--muted)',
-        background: 'var(--cream)',
-        border: '1px solid var(--sand)',
-        padding: '5px 12px',
-        borderRadius: '6px'
-    }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <rect width="6" height="6" rx="1.5" fill="#1A1714" />
-            <rect x="8" width="6" height="6" rx="1.5" fill="#1A1714" opacity=".4" />
-            <rect y="8" width="6" height="6" rx="1.5" fill="#1A1714" opacity=".4" />
-            <rect x="8" y="8" width="6" height="6" rx="1.5" fill="#1A1714" opacity=".7" />
-        </svg>
-        {name}
-    </div>
-);
-
-// Dashboard Mockup Component
-const DashboardMockup = () => (
-    <div style={{
-        position: 'relative',
-        animation: 'fadeSlideUp 0.9s 0.15s ease both',
-        padding: '28px 28px 28px 0'
+        position: 'absolute', top, bottom, left, right,
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
+        padding: '10px 20px',
+        background: 'rgba(255, 255, 255, 0.6)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid rgba(255, 255, 255, 0.8)',
+        borderRadius: '100px',
+        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.4)',
+        /* Parallax + Float */
+        transform: `translate3d(${tilt.x * 0.2}px, ${tilt.y * 0.2}px, 0)`,
+        transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
+        animation: `floatGlass 6s infinite alternate ease-in-out ${delay}`,
     }}>
         <div style={{
-            background: 'var(--white)',
-            border: 'none',
-            borderRadius: '24px',
-            boxShadow: '0 32px 64px -12px rgba(0,0,0,0.14)',
-            overflow: 'hidden',
-            animation: 'floatSubtle 6s ease-in-out infinite'
-        }}>
-            {/* Header */}
-            <div style={{
-                background: 'var(--ink)',
-                borderBottom: '1px solid var(--ink)',
-                padding: '14px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-            }}>
-                <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ff5f57' }} />
-                <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#ffbd2e' }} />
-                <div style={{ width: '11px', height: '11px', borderRadius: '50%', background: '#28ca41' }} />
-                <span style={{ marginLeft: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, letterSpacing: '0', fontFamily: 'var(--ff-sans)' }}>
-                    subsphere — developer console
-                </span>
-            </div>
-
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: 0, background: 'var(--ink)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <Tab active>Overview</Tab>
-                <Tab>API Credentials</Tab>
-                <Tab>Usage</Tab>
-                <Tab>Services</Tab>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-                    <MetricBox label="API Calls" value="142" delta="↑ 18 today" positive bg="#F4F2EC" />
-                    <MetricBox label="Active" value="5 subs" delta="↑ 2 this week" positive bg="#F0F5F2" />
-                    <MetricBox label="Plan" value="Free Trial" delta="4 days left" bg="#FDF2F2" />
-                </div>
-
-                {/* Subscription List */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <SubItem name="Netflix" plan="Pro Plan · ₹649" status="Active" gradient="#E50914" />
-                    <SubItem name="Spotify" plan="Basic · ₹119" status="Active" gradient="#1DB954" />
-                    <SubItem name="Adobe CC" plan="Enterprise · ₹4,999" status="Trial" gradient="linear-gradient(135deg,#f59e0b,#ef4444)" />
-                </div>
-            </div>
-        </div>
-
-        {/* Floating Card 1 */}
-        <FloatingCard1 />
-        {/* Floating Card 2 */}
-        <FloatingCard2 />
-    </div>
-);
-
-const Tab = ({ children, active }) => (
-    <div style={{
-        padding: '12px 20px',
-        fontSize: '13px',
-        fontWeight: 500,
-        color: active ? 'var(--white)' : 'rgba(255,255,255,0.45)',
-        borderBottom: active ? '2px solid var(--gold)' : '2px solid transparent',
-        transition: 'all 0.15s',
-        cursor: 'pointer'
-    }}>
-        {children}
-    </div>
-);
-
-const MetricBox = ({ label, value, delta, positive, negative, bg }) => (
-    <div style={{
-        background: bg || 'var(--cream)',
-        borderRadius: '16px',
-        padding: '20px 16px 16px',
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: '100px',
-        display: 'flex',
-        flexDirection: 'column'
-    }}>
-        <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ fontSize: '11px', fontWeight: 900, color: '#C4BAA8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {label}
-            </div>
-            <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '24px', color: '#1A1714', marginTop: '6px', fontWeight: 400 }}>
-                {value}
-            </div>
-            <div style={{ fontSize: '12px', color: positive ? '#40916C' : negative ? '#B5463A' : '#7A7368', fontWeight: 700, marginTop: '4px' }}>
-                {delta}
-            </div>
-        </div>
-    </div>
-);
-
-const SubItem = ({ name, plan, status, gradient }) => (
-    <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '10px 12px',
-        borderRadius: 'var(--r)',
-        background: 'var(--white)',
-        border: '1px solid var(--sand)'
-    }}>
-        <div style={{
-            width: '32px',
-            height: '32px',
+            width: '6px', height: '6px',
             borderRadius: '50%',
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 700,
-            color: 'white',
-            background: gradient
+            background: iconColor,
+            boxShadow: `0 0 10px ${iconColor}`
+        }} />
+        <span style={{
+            fontSize: '10px',
+            fontWeight: 800,
+            color: 'var(--ink)',
+            letterSpacing: '1px',
+            textTransform: 'uppercase'
         }}>
-            {name[0]}
-        </div>
-        <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)' }}>{name}</div>
-            <div style={{ fontSize: '11px', color: 'var(--muted)' }}>{plan}</div>
-        </div>
-        <div style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            padding: '3px 8px',
-            borderRadius: '20px',
-            background: status === 'Active' ? 'rgba(64,145,108,0.1)' : 'rgba(201,168,76,0.12)',
-            color: status === 'Active' ? 'var(--emerald2)' : 'var(--gold)'
-        }}>
-            {status}
-        </div>
-    </div>
-);
-
-const FloatingCard1 = () => (
-    <div style={{
-        position: 'absolute',
-        top: '-28px',
-        right: '-28px',
-        background: 'var(--cream)',
-        border: 'none',
-        borderRadius: 'var(--r2)',
-        padding: '14px 18px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        minWidth: '180px',
-        animation: 'float1 4s ease-in-out infinite'
-    }}>
-        <div style={{ fontSize: '11px', color: 'var(--stone)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            API Calls Today
-        </div>
-        <div style={{ fontFamily: 'var(--ff-serif)', fontSize: '28px', color: 'var(--ink)', marginTop: '2px' }}>
-            142
-        </div>
-        <div style={{ fontSize: '12px', color: 'var(--emerald2)', fontWeight: 600, marginTop: '2px' }}>
-            ↑ 18 since yesterday
-        </div>
-        <div style={{ height: '4px', background: 'var(--sand)', borderRadius: '2px', marginTop: '10px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: '2px', background: 'var(--gold)', width: '62%' }} />
-        </div>
-    </div>
-);
-
-const FloatingCard2 = () => (
-    <div style={{
-        position: 'absolute',
-        bottom: '24px',
-        left: '-48px',
-        background: 'var(--white)',
-        border: 'none',
-        borderRadius: '20px',
-        padding: '20px 24px',
-        boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
-        minWidth: '220px',
-        animation: 'float2 5.5s ease-in-out infinite'
-    }}>
-        <div style={{ fontSize: '11px', color: '#9B9186', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Renewal Reminder
-        </div>
-        <div style={{ fontSize: '14px', color: '#1A1714', marginTop: '8px', lineHeight: 1.5 }}>
-            📧 <strong style={{ fontWeight: 700 }}>3 users</strong> notified<br />
-            <span style={{ color: '#7A7368', fontSize: '13px' }}>expiring in 3 days</span>
-        </div>
-        <div style={{
-            marginTop: '12px',
-            fontSize: '11px',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            background: '#E3F1E8',
-            color: '#40916C',
-            display: 'inline-block',
-            fontWeight: 700
-        }}>
-            Sent at 9:00 AM
-        </div>
+            {label}
+        </span>
     </div>
 );
 

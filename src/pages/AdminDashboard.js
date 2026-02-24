@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI, subscriptionAPI } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
-import './AdminDashboard.css';
+import { useToast } from '../components/ToastProvider';
+import Footer from '../components/Footer';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
+  const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePlan, setShowCreatePlan] = useState(false);
   const [newPlan, setNewPlan] = useState({
@@ -17,16 +19,25 @@ const AdminDashboard = () => {
   });
 
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const toast = useToast();
 
   const fetchData = React.useCallback(async () => {
     try {
-      const [usersRes, plansRes] = await Promise.all([
+      const token = localStorage.getItem('token');
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saassubscription-production.up.railway.app/api';
+
+      const [usersRes, plansRes, tenantsRes] = await Promise.all([
         adminAPI.getAllUsers(),
-        subscriptionAPI.getAllPlans()
+        subscriptionAPI.getAllPlans(),
+        fetch(`${API_BASE_URL}/admin/tenants`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => r.json())
       ]);
+
       setUsers(usersRes.data);
       setPlans(plansRes.data);
+      setTenants(tenantsRes.data || []);
     } catch (err) {
       console.error('Failed to fetch admin data', err);
     } finally {
@@ -35,8 +46,7 @@ const AdminDashboard = () => {
   }, []);
 
   useEffect(() => {
-    // Check if user is admin
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role !== 'ROLE_SUPER_ADMIN') {
       navigate('/dashboard');
       return;
     }
@@ -53,16 +63,16 @@ const AdminDashboard = () => {
         duration: parseInt(newPlan.duration),
         features: newPlan.features
       });
-      alert('Plan created successfully!');
+      toast.success('Plan created', 'The pricing plan was successfully added.');
       setShowCreatePlan(false);
       setNewPlan({ name: '', price: '', duration: '', features: '' });
       fetchData();
     } catch (err) {
       if (err.response?.status === 409 ||
-        (err.response?.status === 500 && err.message.includes('Duplicate'))) {
-        alert('Failed to create plan: A plan with this name already exists.');
+        (err.response?.status === 500 && err.message?.includes('Duplicate'))) {
+        toast.error('Creation failed', 'A plan with this name already exists.');
       } else {
-        alert('Failed to create plan: ' + (err.response?.data?.message || 'Unknown error'));
+        toast.error('Creation failed', err.response?.data?.message || 'Unknown error occurred.');
       }
     }
   };
@@ -73,167 +83,199 @@ const AdminDashboard = () => {
     }
     try {
       await adminAPI.deletePlan(planId);
-      alert('Plan deleted successfully!');
+      toast.success('Plan deleted', 'The pricing plan has been permanently removed.');
       fetchData();
     } catch (err) {
-      alert('Failed to delete plan');
+      toast.error('Deletion failed', 'Could not delete the selected plan.');
     }
   };
 
+  const METRIC_CARDS = [
+    { label: 'Total Users', value: users.length.toString(), change: '+4.5%', isPositive: true },
+    { label: 'Total Plans', value: plans.length.toString(), change: 'Stable', isPositive: true },
+    { label: 'Platform Revenue', value: '₹' + plans.reduce((acc, p) => acc + (p.price || 0), 0) * 10, change: '+12.5%', isPositive: true },
+    { label: 'Active Subscriptions', value: users.filter(u => u.status === 'ACTIVE').length.toString(), change: '+2.4%', isPositive: true },
+  ];
+
   if (loading) {
-    return <div className="admin-dashboard"><div className="loading">Loading...</div></div>;
+    return <div style={{ background: '#0a0a0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading secure admin gateway...</div>;
   }
 
   return (
-    <div className="admin-dashboard">
-      <header className="admin-header">
-        <div className="header-content">
-          <h1>Admin Dashboard</h1>
-          <div className="header-actions">
-            <button onClick={() => navigate('/dashboard')}>User View</button>
-            <button onClick={() => { logout(); navigate('/'); }}>Logout</button>
-          </div>
-        </div>
-      </header>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#ededed', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
-      <div className="admin-content">
-        {/* Stats Overview */}
-        <div className="stats-overview">
-          <div className="stat-box">
-            <h3>Total Users</h3>
-            <p className="stat-number">{users.length}</p>
-          </div>
-          <div className="stat-box">
-            <h3>Total Plans</h3>
-            <p className="stat-number">{plans.length}</p>
-          </div>
-          <div className="stat-box">
-            <h3>Active Subscriptions</h3>
-            <p className="stat-number">
-              {users.filter(u => u.subscription?.status === 'ACTIVE').length}
-            </p>
-          </div>
-        </div>
+      {/* ── Main layout ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
 
-        {/* Plans Management */}
-        <div className="admin-section">
-          <div className="section-header">
-            <h2>Subscription Plans</h2>
-            <button
-              className="btn-create"
-              onClick={() => setShowCreatePlan(!showCreatePlan)}
-            >
-              {showCreatePlan ? 'Cancel' : '+ Create Plan'}
-            </button>
+        {/* ── TOP HEADER ── */}
+        <header style={{
+          height: '64px',
+          borderBottom: '1px solid #1f1f1f',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 32px',
+        }}>
+          <div style={{ fontSize: '15px', fontWeight: 500, color: '#f5f5f5', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={() => navigate('/dashboard')} style={{ background: '#121212', border: '1px solid #27272a', color: '#a1a1aa', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>&larr; Exit Admin</button>
+            Super Admin Control Panel
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600 }}>SYSTEM ADMIN / {user.email}</span>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }} />
+          </div>
+        </header>
+
+        {/* ── CONTENT ── */}
+        <div style={{ padding: '32px 40px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+            <div>
+              <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Platform Metrics</h1>
+              <p style={{ color: '#a1a1aa', fontSize: '14px', marginTop: '4px' }}>Global overview of users, active tenants, and revenue models.</p>
+            </div>
           </div>
 
-          {showCreatePlan && (
-            <form className="create-plan-form" onSubmit={handleCreatePlan}>
-              <input
-                type="text"
-                placeholder="Plan Name (e.g., BASIC)"
-                value={newPlan.name}
-                onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                required
-              />
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Price"
-                value={newPlan.price}
-                onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                required
-              />
-              <input
-                type="number"
-                placeholder="Duration (days)"
-                value={newPlan.duration}
-                onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })}
-                required
-              />
-              <textarea
-                placeholder="Features (comma-separated)"
-                value={newPlan.features}
-                onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                required
-              />
-              <button type="submit" className="btn-submit">Create Plan</button>
-            </form>
-          )}
+          {/* ── METRIC CARDS OVERVIEW ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '20px',
+            marginBottom: '32px'
+          }}>
+            {METRIC_CARDS.map((card, i) => (
+              <div key={i} style={{
+                background: '#121212',
+                border: '1px solid #1f1f1f',
+                borderRadius: '12px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}>
+                <div style={{ color: '#a1a1aa', fontSize: '13px', fontWeight: 500, marginBottom: '16px' }}>{card.label}</div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-1px' }}>{card.value}</div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: card.isPositive ? '#22c55e' : '#ef4444',
+                    background: card.isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    marginBottom: '4px'
+                  }}>
+                    {card.change}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-          <div className="plans-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Price</th>
-                  <th>Duration</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            {/* Plans Section */}
+            <div style={{ background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Pricing Plans</h2>
+                <button
+                  onClick={() => setShowCreatePlan(!showCreatePlan)}
+                  style={{ background: '#ededed', color: '#0a0a0a', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  + New Plan
+                </button>
+              </div>
+
+              {showCreatePlan && (
+                <form onSubmit={handleCreatePlan} style={{ background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', padding: '20px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                    <input type="text" placeholder="Plan Name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ flex: 1, background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                    <input type="number" placeholder="Price (₹)" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })} style={{ width: '100px', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                    <input type="number" placeholder="Days" value={newPlan.duration} onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })} style={{ width: '80px', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                  </div>
+                  <input type="text" placeholder="Features (comma separated)" value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })} style={{ width: '100%', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none', marginBottom: '12px' }} required />
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button type="button" onClick={() => setShowCreatePlan(false)} style={{ background: 'transparent', color: '#a1a1aa', border: 'none', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+                    <button type="submit" style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Create</button>
+                  </div>
+                </form>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {plans.map(plan => (
-                  <tr key={plan.id}>
-                    <td>{plan.id}</td>
-                    <td>{plan.name}</td>
-                    <td>${plan.price}</td>
-                    <td>{plan.duration} days</td>
-                    <td>
-                      <button
-                        className="btn-delete"
-                        onClick={() => handleDeletePlan(plan.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+                  <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px' }}>
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: 600 }}>{plan.name}</div>
+                      <div style={{ fontSize: '13px', color: '#a1a1aa' }}>₹{plan.price} / {plan.durationInDays} days</div>
+                    </div>
+                    <button onClick={() => handleDeletePlan(plan.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Delete</button>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                {plans.length === 0 && <div style={{ color: '#71717a', fontSize: '13px' }}>No plans available.</div>}
+              </div>
+            </div>
 
-        {/* Users Management */}
-        <div className="admin-section">
-          <h2>Users</h2>
-          <div className="users-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Subscription</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map(user => (
-                  <tr key={user.id}>
-                    <td>{user.id}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>
-                      <span className={`role-badge ${user.role?.toLowerCase()}`}>
-                        {user.role}
-                      </span>
-                    </td>
-                    <td>
-                      {user.subscription ? (
-                        <span className={`status-badge ${user.subscription.status?.toLowerCase()}`}>
-                          {user.subscription.planName} - {user.subscription.status}
-                        </span>
-                      ) : (
-                        <span className="no-sub">No subscription</span>
-                      )}
-                    </td>
-                  </tr>
+            {/* Users Section */}
+            <div style={{ background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>User Directory</h2>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase' }}>
+                  <span>ID</span>
+                  <span>Identity</span>
+                  <span>Role</span>
+                </div>
+                {users.map(u => (
+                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', alignItems: 'center', padding: '12px 16px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', fontSize: '14px' }}>
+                    <span style={{ color: '#a1a1aa', fontFamily: 'monospace' }}>#{u.id}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontWeight: 500 }}>{u.username || 'N/A'}</span>
+                      <span style={{ fontSize: '12px', color: '#71717a' }}>{u.email}</span>
+                    </div>
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      padding: '4px 8px',
+                      borderRadius: '20px',
+                      width: 'fit-content',
+                      background: u.role === 'ROLE_SUPER_ADMIN' || u.role === 'ROLE_TENANT_ADMIN' ? 'rgba(162, 89, 255, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                      color: u.role === 'ROLE_SUPER_ADMIN' || u.role === 'ROLE_TENANT_ADMIN' ? '#a259ff' : '#22c55e'
+                    }}>{u.role}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
+
+          {/* Tenants Section */}
+          <div style={{ marginTop: '32px', background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Platform Tenants</h2>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {tenants.map(t => (
+                <div key={t.id} style={{ padding: '20px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#fff' }}>{t.name}</span>
+                    <span style={{ fontSize: '11px', color: '#71717a', fontFamily: 'monospace' }}>ID: {t.id}</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#a1a1aa' }}>
+                    Email: <span style={{ color: '#ededed' }}>{t.email}</span>
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
+                    Created: <span style={{ color: '#ededed' }}>{new Date(t.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+              {tenants.length === 0 && <div style={{ color: '#71717a', fontSize: '13px' }}>No active tenants found.</div>}
+            </div>
+          </div>
+
         </div>
+        <Footer />
       </div>
     </div>
   );

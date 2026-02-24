@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ConsoleSidebar from '../components/ConsoleSidebar';
 import { userSubscriptionAPI } from '../services/api';
+import Footer from '../components/Footer';
 
 /* ─────────────────────────────────────────────────────────
    SUBSCRIPTION MANAGER  –  /subscriptions
@@ -330,6 +331,8 @@ const SubscriptionsPage = () => {
                         </>
                     )}
                 </div>
+
+                <Footer />
             </div>
 
             {/* ── Add / Edit Modal ── */}

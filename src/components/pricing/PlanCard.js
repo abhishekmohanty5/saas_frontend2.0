@@ -7,9 +7,6 @@ const roundPrice = (value) => {
   return Math.round(n);
 };
 
-// Annual toggle behavior:
-// - UI shows the equivalent discounted monthly price (20% off) when annual is selected.
-// - Keeps the same layout (₹ + big number + "/30 days") like landing section.
 const getDisplayPrice = ({ price, billingInterval }) => {
   const base = roundPrice(price);
   if (billingInterval === BILLING_INTERVALS.ANNUAL) {
@@ -21,8 +18,7 @@ const getDisplayPrice = ({ price, billingInterval }) => {
 const defaultButtonLabel = (plan) => {
   const name = String(plan?.name || '').toLowerCase();
   if (name === 'enterprise') return 'Contact sales';
-  if (plan?.featured) return 'Start 14-day free trial';
-  return 'Get started';
+  return `Upgrade to ${plan?.name || 'Plus'}`;
 };
 
 export default function PlanCard({
@@ -52,85 +48,88 @@ export default function PlanCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        background: featured ? 'linear-gradient(145deg, #1A1714 0%, #2D2620 100%)' : 'rgba(255, 255, 255, 0.6)',
-        backdropFilter: featured ? 'none' : 'blur(20px)',
-        WebkitBackdropFilter: featured ? 'none' : 'blur(20px)',
-        border: featured ? '1px solid rgba(201, 168, 76, 0.3)' : '1px solid rgba(232, 226, 214, 0.6)',
+        background: 'rgba(255, 255, 255, 0.7)',
+        backdropFilter: 'blur(30px)',
+        WebkitBackdropFilter: 'blur(30px)',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
         borderRadius: '24px',
-        padding: '40px 32px',
-        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        padding: '32px 32px',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         position: 'relative',
-        transform: featured ? (isHovered ? 'translateY(-12px)' : 'translateY(-8px)') : (isHovered ? 'translateY(-6px)' : 'translateY(0)'),
-        boxShadow: featured
-          ? (isHovered ? '0 20px 40px -10px rgba(201, 168, 76, 0.2)' : '0 10px 30px -10px rgba(0, 0, 0, 0.3)')
-          : (isHovered ? '0 15px 30px -5px rgba(0, 0, 0, 0.05)' : '0 2px 10px rgba(0, 0, 0, 0.02)'),
+        transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: isHovered
+          ? '0 32px 64px -16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)'
+          : '0 4px 12px rgba(0, 0, 0, 0.03)',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         opacity: plan?.active === false ? 0.6 : 1,
       }}
     >
-      {/* Most Popular Badge */}
-      {featured && showMostPopularBadge && (
+      {/* Header Row: Title & Badge */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
         <div
           style={{
-            position: 'absolute',
-            top: '-14px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'linear-gradient(90deg, #D4AF37 0%, #C5A028 100%)',
-            color: '#fff',
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            boxShadow: '0 4px 12px rgba(212, 175, 55, 0.4)',
-            border: '1px solid rgba(255,255,255,0.2)',
+            fontFamily: 'var(--ff-sans)',
+            fontSize: '28px',
+            fontWeight: 600,
+            background: featured ? 'linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%)' : 'var(--ink)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: featured ? 'transparent' : 'initial',
+            letterSpacing: '-0.5px',
           }}
         >
-          Most Popular
+          {plan?.name || 'Plus'}
         </div>
-      )}
 
-      {/* Plan Name */}
-      <div
-        style={{
-          fontFamily: 'var(--ff-serif)',
-          fontSize: '28px',
-          fontWeight: 400,
-          color: featured ? '#fff' : 'var(--ink)',
-          letterSpacing: '-0.5px',
-          marginBottom: '8px',
-        }}
-      >
-        {plan?.name}
+        {featured && showMostPopularBadge && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'rgba(37, 99, 235, 0.05)',
+              color: 'var(--gold)',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+              textTransform: 'uppercase',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              border: '1px solid rgba(37,99,235,0.1)',
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            Popular
+          </div>
+        )}
       </div>
 
       {/* Description */}
       <p
         style={{
           fontSize: '15px',
-          color: featured ? 'rgba(255,255,255,0.6)' : 'var(--muted)',
-          lineHeight: 1.5,
+          color: '#667085',
           marginBottom: '24px',
           fontFamily: 'var(--ff-sans)',
         }}
       >
-        {plan?.description || '30 days of full access to all features.'}
+        {plan?.description || 'personal productivity'}
       </p>
 
       {/* Price */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '16px' }}>
         {isFree ? (
           <span
             style={{
-              fontFamily: 'var(--ff-serif)',
-              fontSize: '56px',
-              color: featured ? 'var(--gold)' : 'var(--ink)',
-              lineHeight: 0.9,
-              letterSpacing: '-2px',
+              fontFamily: 'var(--ff-sans)',
+              fontSize: '48px',
+              fontWeight: 700,
+              color: '#1A1714',
+              lineHeight: 1,
+              letterSpacing: '-1.5px',
             }}
           >
             Free
@@ -139,87 +138,27 @@ export default function PlanCard({
           <>
             <span
               style={{
-                fontSize: '24px',
-                color: featured ? 'rgba(255,255,255,0.8)' : 'var(--muted)',
-                fontWeight: 400,
                 fontFamily: 'var(--ff-sans)',
+                fontSize: '48px',
+                fontWeight: 800,
+                color: 'var(--ink)',
+                lineHeight: 1,
+                letterSpacing: '-2.5px',
               }}
             >
-              ₹
+              ₹{displayPrice}
             </span>
-            <span
-              style={{
-                fontFamily: 'var(--ff-serif)',
-                fontSize: '56px',
-                color: featured ? 'var(--gold)' : 'var(--ink)',
-                lineHeight: 0.9,
-                letterSpacing: '-2px',
-              }}
-            >
-              {displayPrice}
-            </span>
-            <span style={{ fontSize: '15px', color: featured ? 'rgba(255,255,255,0.4)' : 'var(--muted)' }}>
-              /{plan?.durationInDays || 30} days
+            <span style={{ fontSize: '15px', color: 'var(--stone)', fontWeight: 500, marginLeft: '4px' }}>
+              /mo
             </span>
           </>
         )}
       </div>
 
-      {/* Divider */}
-      <div
-        style={{
-          height: '1px',
-          background: featured
-            ? 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0) 100%)'
-            : 'rgba(0,0,0,0.06)',
-          marginBottom: '32px',
-        }}
-      />
-
-      {/* Features */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px', flex: 1 }}>
-        {(plan?.features || []).map((feature, i) => {
-          const featureText = typeof feature === 'string' ? feature : feature.text;
-          const included = typeof feature === 'string' ? true : feature.included;
-
-          return (
-            <div
-              key={`${featureText}-${i}`}
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '12px',
-                fontSize: '15px',
-                color: featured ? 'rgba(255,255,255,0.8)' : 'var(--ink2)',
-              }}
-            >
-              <div
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  marginTop: '2px',
-                  background: included
-                    ? (featured ? 'rgba(201, 168, 76, 0.2)' : 'rgba(45, 106, 79, 0.1)')
-                    : featured
-                      ? 'rgba(255,255,255,0.05)'
-                      : 'rgba(0,0,0,0.03)',
-                  color: included ? (featured ? 'var(--gold)' : 'var(--emerald)') : 'var(--stone)',
-                  border: included ? `1px solid ${featured ? 'rgba(201, 168, 76, 0.3)' : 'rgba(45, 106, 79, 0.15)'}` : 'none',
-                }}
-              >
-                {included ? '✓' : '–'}
-              </div>
-              <span style={{ opacity: included ? 1 : 0.6 }}>{featureText}</span>
-            </div>
-          );
-        })}
-      </div>
+      {/* Value prop text */}
+      <p style={{ fontSize: '14px', color: '#475467', lineHeight: 1.5, marginBottom: '24px' }}>
+        Level up productivity and creativity with expanded access
+      </p>
 
       {/* CTA */}
       <button
@@ -235,29 +174,69 @@ export default function PlanCard({
           fontFamily: 'var(--ff-sans)',
           border: 'none',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.3s',
-          marginTop: 'auto',
-          opacity: isDisabled ? 0.5 : 1,
-          background: subscribing
-            ? '#999'
-            : featured
-              ? 'linear-gradient(135deg, #C9A84C 0%, #F5D77F 100%)'
-              : (isHovered ? 'var(--ink)' : 'rgba(0,0,0,0.03)'),
-          color: subscribing ? '#fff' : featured ? '#1A1714' : isHovered ? '#fff' : 'var(--ink)',
-          boxShadow: featured && !subscribing
-            ? (isHovered ? '0 4px 15px rgba(201, 168, 76, 0.4)' : '0 2px 10px rgba(201, 168, 76, 0.2)')
-            : 'none',
+          transition: 'all 0.2s',
+          marginBottom: '32px',
+          background: subscribing ? 'var(--stone)' : 'var(--ink)',
+          color: '#ffffff',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.06)',
+        }}
+        onMouseEnter={(e) => {
+          if (!disabled && !subscribing) e.currentTarget.style.transform = 'translateY(-1px)';
+        }}
+        onMouseLeave={(e) => {
+          if (!disabled && !subscribing) e.currentTarget.style.transform = 'translateY(0)';
         }}
       >
         {subscribing ? 'Processing...' : buttonText}
       </button>
 
-      {billingInterval === BILLING_INTERVALS.ANNUAL && !isFree && (
-        <div style={{ marginTop: '10px', fontSize: '12px', color: featured ? 'rgba(255,255,255,0.5)' : 'var(--muted2)' }}>
-          Billed annually (20% off)
-        </div>
-      )}
+      {/* Features */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+        {(plan?.features || [
+          'Advanced reporting',
+          'Call recording',
+          'Business phone services',
+          'Video meeting',
+          'Screen share & file share',
+          'Advanced data privacy'
+        ]).map((feature, i) => {
+          const featureText = typeof feature === 'string' ? feature : feature.text;
+          const included = typeof feature === 'string' ? true : feature.included;
+
+          return (
+            <div
+              key={`${featureText}-${i}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                fontSize: '14px',
+                color: '#344054',
+                fontWeight: 500,
+              }}
+            >
+              <div
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: included ? 'var(--gold)' : 'var(--sand)',
+                }}
+              >
+                {/* Standard check icon mimicking the reference image style */}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <span style={{ opacity: included ? 1 : 0.5 }}>{featureText}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
-

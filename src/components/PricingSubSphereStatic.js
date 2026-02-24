@@ -48,7 +48,7 @@ const PricingSubSphereStatic = () => {
                         width: '44px',
                         height: '24px',
                         borderRadius: '12px',
-                        background: isAnnual ? 'var(--ink)' : 'var(--sand)',
+                        background: isAnnual ? 'var(--gold)' : 'var(--sand)',
                         cursor: 'pointer',
                         position: 'relative',
                         transition: 'background 0.2s',
