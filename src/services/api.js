@@ -55,10 +55,10 @@ const publicApi = axios.create({
 // ==================== AUTH ENDPOINTS ====================
 export const authAPI = {
   // Register new user - uses publicApi (no token needed, avoids 401 interceptor)
-  register: (userData) => publicApi.post('/auth/reg', userData),
+  register: (userData) => publicApi.post('/auth/register', userData),
 
   // Login user - uses publicApi (no token needed, avoids 401 interceptor causing redirect loop)
-  login: (credentials) => publicApi.post('/auth/log', credentials),
+  login: (credentials) => publicApi.post('/auth/login', credentials),
 
   // Logout (client-side only - clear tokens)
   logout: () => {
@@ -125,10 +125,6 @@ export const userSubscriptionAPI = {
   // Get smart insights
   getInsights: () =>
     api.get('/user-Subscriptions/insights'),
-
-  // Get subscription categories
-  getCategories: () =>
-    api.get('/categories'), // You'll need to add this endpoint in backend
 };
 
 // ==================== ADMIN ENDPOINTS ====================

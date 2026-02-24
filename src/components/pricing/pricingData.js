@@ -56,7 +56,7 @@ export const getDefaultFeaturesForPlan = (planName) => {
   ];
 };
 
-// Real SubSphere plans matching /api/public
+// Real Aegis Infra plans matching /api/public
 export const DEFAULT_PLANS = [
   {
     id: 1,
@@ -64,7 +64,7 @@ export const DEFAULT_PLANS = [
     price: 0,
     durationInDays: 14,
     active: true,
-    description: '14 days to explore the full SubSphere engine — no credit card required.',
+    description: '14 days to explore the full Aegis Infra engine — no credit card required.',
     features: getDefaultFeaturesForPlan('free trial'),
   },
   {

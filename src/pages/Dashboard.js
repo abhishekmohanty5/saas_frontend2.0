@@ -1,302 +1,265 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ConsoleSidebar from '../components/ConsoleSidebar';
 import { useToast } from '../components/ToastProvider';
-import Footer from '../components/Footer';
+import api from '../services/api';
 
-const Dashboard = () => {
+// ─── ICONS (SVG inline) ───────────────────────────────────────────────────
+const Icon = ({ name, size = 20, color = "#64748b" }) => {
+  const icons = {
+    users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+    zap: <><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></>,
+    chart: <><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></>,
+    clock: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {icons[name]}
+    </svg>
+  );
+};
+
+// Simple Sparkline Mockup
+const Sparkline = ({ color }) => (
+  <svg width="80" height="30" viewBox="0 0 80 30" style={{ opacity: 0.8 }}>
+    <path
+      d="M0 25 L10 20 L20 23 L30 15 L40 18 L50 10 L60 12 L70 5 L80 8"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export default function Dashboard() {
   const navigate = useNavigate();
   const toast = useToast();
-  const [data, setData] = useState(null);
-  const [engineSub, setEngineSub] = useState(null);
+  const location = useLocation();
+  const queryTab = new URLSearchParams(location.search).get('tab');
+  const [activeTab, setActiveTab] = useState(queryTab || "overview");
+
+  useEffect(() => {
+    if (queryTab) setActiveTab(queryTab);
+  }, [queryTab]);
+
+  const [dashboard, setDashboard] = useState(null);
+  const [stats, setStats] = useState({ total: 0, active: 0, cancelled: 0, pending: 0 });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [showSecret, setShowSecret] = useState(false);
-  const [copiedId, setCopiedId] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleUnauth = useCallback(() => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     navigate('/login');
   }, [navigate]);
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       if (!token) { handleUnauth(); return; }
 
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saassubscription-production.up.railway.app/api';
-
-      const [dashRes, engineRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE_URL}/tenant-admin/engine-subscription`, { headers: { Authorization: `Bearer ${token}` } })
+      const [dashRes, statsRes] = await Promise.allSettled([
+        api.get('/dashboard'),
+        api.get('/developer/tenant-stats')
       ]);
 
-      if (dashRes.status === 401) { handleUnauth(); return; }
+      const getVal = (res, fallback = null) => res.status === 'fulfilled' ? res.value.data.data : fallback;
 
-      const dashJson = await dashRes.json();
-      const engineJson = await engineRes.json();
+      setDashboard(getVal(dashRes));
+      setStats(getVal(statsRes, { total: 0, active: 0, cancelled: 0, pending: 0 }));
 
-      setData(dashJson.data || dashJson);
-      setEngineSub(engineJson.data);
     } catch (err) {
-      setError('Failed to load operations data.');
+      console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
   }, [handleUnauth]);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleUpgrade = async (targetPlanId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saassubscription-production.up.railway.app/api';
-
-      const res = await fetch(`${API_BASE_URL}/tenant-admin/engine-subscription/upgrade`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ targetPlanId })
-      }).then(r => r.json());
-
-      if (res.status === 200) {
-        toast.success('License Upgraded', `Successfully moved to ${res.data.planName}`);
-        fetchDashboard();
-      } else {
-        toast.error('Upgrade Failed', res.message);
-      }
-    } catch (err) {
-      toast.error('Error', 'An error occurred while upgrading.');
-    }
-  };
-
-  const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedId(key);
-      setTimeout(() => setCopiedId(''), 2000);
-    });
-  };
-
-  /* ── Loading state ── */
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', background: '#0a0a0a' }}>
-        <ConsoleSidebar />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>
-          Loading your operations console...
-        </div>
-      </div>
-    );
-  }
-
-  /* ── Error state ── */
-  if (error) {
-    return (
-      <div style={{ display: 'flex', height: '100vh', background: '#0a0a0a' }}>
-        <ConsoleSidebar />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ff4444' }}>
-          {error}
-        </div>
-      </div>
-    );
-  }
-
-  const METRIC_CARDS = data ? [
-    { label: 'Total Volume', value: data.apiCallCount ?? '0', change: '+12.5%', isPositive: true },
-    { label: 'Active Subscriptions', value: data.activeUserSubscriptions ?? '0', change: '+2.4%', isPositive: true },
-    { label: 'Total Users', value: data.totalUserSubscriptions ?? '0', change: '-1.2%', isPositive: false },
-    { label: 'Days Remaining', value: `${data.daysRemaining ?? 0}d`, change: 'Current Cycle', isPositive: true },
-  ] : [];
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#ffffff" }}>
+      <div style={{ width: 40, height: 40, border: "3px solid #f1f5f9", borderTopColor: "#4f46e5", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#ededed', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <ConsoleSidebar />
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc", color: "#0f172a", fontFamily: "var(--ff-sans)" }}>
+      <ConsoleSidebar
+        sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+        activeTab={activeTab} tenantName={dashboard?.tenantName}
+        currentPlan={dashboard?.currentPlan}
+      />
 
-      {/* ── Main layout ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflowY: "auto" }}>
 
-        {/* ── TOP HEADER ── */}
+        {/* Top Nav Bar */}
         <header style={{
-          height: '64px',
-          borderBottom: '1px solid #1f1f1f',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 32px',
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          background: "#ffffff",
+          borderBottom: "1px solid #f1f5f9"
         }}>
-          <div style={{ fontSize: '15px', fontWeight: 500, color: '#f5f5f5' }}>Operations Dashboard</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '13px', color: '#a1a1aa' }}>Tenant ID: {data?.tenantName || 'Unknown'}</span>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e', border: '2px solid rgba(34, 197, 94, 0.2)' }} />
+          <div style={{ fontSize: 13, color: "#94a3b8", display: "flex", gap: 8 }}>
+            <span>Console</span>
+            <span style={{ color: "#cbd5e1" }}>/</span>
+            <span style={{ color: "#0f172a", fontWeight: 600 }}>Overview</span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, color: "#64748b" }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px rgba(16, 185, 129, 0.4)" }} />
+              System Online
+            </div>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "#eef2ff", color: "#4f46e5",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 700, border: "1px solid #e0e7ff"
+            }}>
+              {(dashboard?.tenantName || 'A')[0].toUpperCase()}
+            </div>
           </div>
         </header>
 
-        {/* ── CONTENT ── */}
-        <div style={{ padding: '32px 40px', maxWidth: '1400px', width: '100%' }}>
+        <div style={{ padding: "40px 32px" }}>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-            <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Terminal Overview</h1>
-              <p style={{ color: '#a1a1aa', fontSize: '14px', marginTop: '4px' }}>Analyze your API metrics and revenue streams across active plan cycles.</p>
-            </div>
-            <button style={{
-              background: '#ededed',
-              color: '#0a0a0a',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: 500,
-              cursor: 'pointer'
-            }}>Export Report</button>
-          </div>
-
-          {/* ── METRIC CARDS OVERVIEW ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '20px',
-            marginBottom: '32px'
-          }}>
-            {METRIC_CARDS.map((card, i) => (
-              <div key={i} style={{
-                background: '#121212',
-                border: '1px solid #1f1f1f',
-                borderRadius: '12px',
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ color: '#a1a1aa', fontSize: '13px', fontWeight: 500, marginBottom: '16px' }}>{card.label}</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-1px' }}>{card.value}</div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: card.isPositive ? '#22c55e' : '#ef4444',
-                    background: card.isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    marginBottom: '4px'
-                  }}>
-                    {card.change}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
-            {/* ── API CREDENTIALS CHART/TABLE AREA ── */}
-            <div style={{
-              background: '#121212',
-              border: '1px solid #1f1f1f',
-              borderRadius: '12px',
-              padding: '24px'
-            }}>
-              <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>API Access Credentials</span>
-                <span style={{ fontSize: '12px', color: '#a1a1aa', fontWeight: 400 }}>Status: <span style={{ color: '#22c55e' }}>Secure</span></span>
+          {activeTab === 'overview' && (
+            <>
+              <div style={{ marginBottom: 40 }}>
+                <h1 style={{ fontSize: 28, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)" }}>Dashboard Overview</h1>
+                <p style={{ color: "#64748b", marginTop: 4, fontSize: 15 }}>Monitor your tenant infrastructure and user base activity.</p>
               </div>
 
-              {/* Client ID */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Client ID</label>
-                <div style={{ display: 'flex', alignItems: 'center', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', padding: '10px 16px' }}>
-                  <code style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px', color: '#e4e4e7' }}>{data?.clientId || '—'}</code>
-                  <button
-                    onClick={() => copyToClipboard(data?.clientId || '', 'clientId')}
-                    style={{ background: 'none', border: 'none', color: copiedId === 'clientId' ? '#22c55e' : '#71717a', cursor: 'pointer', fontSize: '14px' }}
-                  >
-                    {copiedId === 'clientId' ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Client Secret */}
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Client Secret</label>
-                <div style={{ display: 'flex', alignItems: 'center', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', padding: '10px 16px' }}>
-                  <code style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px', color: '#e4e4e7', letterSpacing: showSecret ? '0' : '2px' }}>
-                    {showSecret ? (data?.clientSecret || '—') : '••••••••••••••••••••••••'}
-                  </code>
-                  <button
-                    onClick={() => setShowSecret(!showSecret)}
-                    style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', fontSize: '13px', marginRight: '16px' }}
-                  >
-                    {showSecret ? 'Hide' : 'Reveal'}
-                  </button>
-                  <button
-                    onClick={() => copyToClipboard(data?.clientSecret || '', 'clientSecret')}
-                    style={{ background: 'none', border: 'none', color: copiedId === 'clientSecret' ? '#22c55e' : '#71717a', cursor: 'pointer', fontSize: '14px' }}
-                  >
-                    {copiedId === 'clientSecret' ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* ── ENGINE SUBSCRIPTION AREA ── */}
-            <div style={{
-              background: '#121212',
-              border: '1px solid #1f1f1f',
-              borderRadius: '12px',
-              padding: '24px'
-            }}>
-              <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Engine Plan</span>
-                <span style={{ fontSize: '12px', color: '#22c55e' }}>{engineSub?.status || 'ACTIVE'}</span>
-              </div>
-
+              {/* Stats Grid */}
               <div style={{
-                background: 'linear-gradient(145deg, #1f1f1f 0%, #121212 100%)',
-                border: '1px solid #27272a',
-                borderRadius: '10px',
-                padding: '20px',
-                marginBottom: '20px'
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 24,
+                marginBottom: 40
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 600, color: '#f4f4f5', marginBottom: '4px' }}>{engineSub?.planName || (data?.currentPlan || 'Loading...')}</div>
-                <div style={{ fontSize: '13px', color: '#a1a1aa' }}>Expire: {engineSub?.expireDate ? new Date(engineSub.expireDate).toLocaleDateString() : 'N/A'}</div>
-
-                <div style={{ marginTop: '20px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 600 }}>₹{engineSub?.amount || data?.planPrice || '0'}</span>
-                  <span style={{ fontSize: '12px', color: '#71717a' }}> / {engineSub?.durationInDays || 30} days</span>
-                </div>
+                {/* Total End Users */}
+                <StatCard
+                  label="Total End Users"
+                  value={stats.total}
+                  icon="users"
+                  iconBg="#eff6ff"
+                  iconColor="#3b82f6"
+                  sparklineColor="#3b82f6"
+                />
+                {/* Active Subscriptions */}
+                <StatCard
+                  label="Active Subscriptions"
+                  value={stats.active}
+                  icon="zap"
+                  iconBg="#ecfdf5"
+                  iconColor="#10b981"
+                  sparklineColor="#10b981"
+                />
+                {/* API Usage */}
+                <StatCard
+                  label="API Usage"
+                  value={dashboard?.apiCallCount || 0}
+                  icon="chart"
+                  iconBg="#f5f3ff"
+                  iconColor="#8b5cf6"
+                  sparklineColor="#8b5cf6"
+                />
+                {/* Plan Days Left */}
+                <StatCard
+                  label="Plan Days Left"
+                  value={dashboard?.daysRemaining || 0}
+                  icon="clock"
+                  iconBg="#fff7ed"
+                  iconColor="#f59e0b"
+                  sparklineColor="#f59e0b"
+                />
               </div>
 
-              <button
-                onClick={() => handleUpgrade(engineSub?.id === 1 ? 2 : 3)}
-                style={{
-                  width: '100%',
-                  background: 'rgba(162, 89, 255, 0.1)',
-                  color: '#a259ff',
-                  border: '1px solid rgba(162, 89, 255, 0.2)',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer'
-                }}
-              >
-                Upgrade License
-              </button>
-            </div>
-          </div>
-        </div>
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
+                {/* Recent Activity */}
+                <section style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #f1f5f9", padding: 24 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700 }}>Recent Activity</h3>
+                    <button style={{ background: "none", border: "none", color: "#4f46e5", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>View all</button>
+                  </div>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <th style={{ paddingBottom: 16 }}>User</th>
+                        <th style={{ paddingBottom: 16 }}>Plan</th>
+                        <th style={{ paddingBottom: 16 }}>Amount</th>
+                        <th style={{ paddingBottom: 16 }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ fontSize: 14 }}>
+                        <td colSpan="4" style={{ padding: "40px 0", textAlign: "center", color: "#94a3b8" }}>No recent activity to show.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </section>
 
-        <Footer />
-      </div>
+                {/* User Status Mix */}
+                <section style={{ background: "#ffffff", borderRadius: 16, border: "1px solid #f1f5f9", padding: 24 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>User Status Mix</h3>
+                  <div style={{ marginTop: 24 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 8 }}>
+                      <span style={{ fontWeight: 600 }}>Active</span>
+                      <span style={{ color: "#94a3b8" }}>NaN%</span>
+                    </div>
+                    <div style={{ height: 6, background: "#f1f5f9", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", background: "#10b981", width: "0%" }} />
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </>
+          )}
+
+          {activeTab !== 'overview' && (
+            <div style={{ padding: 40, textAlign: "center", background: "#ffffff", borderRadius: 16, border: "1px solid #f1f5f9" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700 }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Section</h2>
+              <p style={{ color: "#64748b", marginTop: 8 }}>This section is currently being architected.</p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
-};
+}
 
-export default Dashboard;
+function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
+  return (
+    <div style={{
+      background: "#ffffff",
+      borderRadius: 16,
+      border: "1px solid #f1f5f9",
+      padding: 24,
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 10, background: iconBg,
+          display: "flex", alignItems: "center", justifyContent: "center"
+        }}>
+          <Icon name={icon} color={iconColor} />
+        </div>
+        <Sparkline color={sparklineColor} />
+      </div>
+
+      <div style={{ fontSize: 32, fontWeight: 800, color: "#0f172a", marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 500, color: "#64748b" }}>{label}</div>
+    </div>
+  );
+}

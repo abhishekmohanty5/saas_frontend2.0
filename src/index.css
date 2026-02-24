@@ -5,11 +5,29 @@
 ═══════════════════════════════════════════════════════════ */
 
 /* ── FONTS ── */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* ── DESIGN TOKENS ── */
 :root {
-  /* Colors - Modern Azure & Slate */
+  /* Colors - SubSphere Light Theme */
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface2: #f1f5f9;
+  --border: #e2e8f0;
+  --border2: #cbd5e1;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #4f46e5;
+  --accent2: #0ea5e9;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --purple: #8b5cf6;
+  --ink: #0f172a;
+  --sand: #f1f5f9;
+  --stone: #475569;
+
+  /* Legacy Colors - (Keeping for compatibility with existing components) */
   --white: #FFFFFF;
   --cream: #F8FAFC;
   --sand: #F1F5F9;
@@ -17,25 +35,16 @@
   --ink: #020617;
   --ink2: #0F172A;
   --ink3: #1E293B;
-  --muted: #64748B;
-  --muted2: #475569;
-
   --gold: #2563EB;
-  /* Primary Azure Blue */
   --gold2: #3B82F6;
   --gold-dim: rgba(37, 99, 235, 0.1);
-
-  --emerald: #059669;
   --emerald2: #10B981;
-  --sky: #0EA5E9;
-  --rose: #E11D48;
 
   /* Typography */
-  --ff-h: 'Outfit', system-ui, sans-serif;
-  --ff-sans: 'Inter', system-ui, sans-serif;
-  --ff-mono: ui-monospace, 'Geist Mono', 'Courier New', monospace;
-  --ff-serif: 'Outfit', system-ui, sans-serif;
-  /* Fallback for existing serif refs */
+  --ff-h: 'Inter', system-ui, sans-serif;
+  --ff-serif: 'Inter', system-ui, sans-serif;
+  --ff-sans: 'Inter', 'Manrope', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Spacing */
   --r: 10px;
