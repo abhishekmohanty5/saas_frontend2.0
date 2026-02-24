@@ -128,23 +128,60 @@ const ConsoleSidebar = ({
             {/* Logo Section */}
             <div style={{ padding: "0 24px 32px", display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
-                    width: 36, height: 36, background: "#0f172a",
-                    borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+                    position: 'relative',
+                    width: '42px',
+                    height: '42px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     flexShrink: 0
                 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    <div style={{
+                        position: 'absolute',
+                        inset: '-4px',
+                        background: 'radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(192,132,252,0.15) 50%, transparent 70%)',
+                        borderRadius: '50%',
+                        zIndex: -1,
+                        filter: 'blur(8px)'
+                    }} />
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <defs>
+                            <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#1E293B" />
+                                <stop offset="100%" stopColor="#000000" />
+                            </linearGradient>
+                            <filter id="shardGlow">
+                                <feGaussianBlur stdDeviation="1.2" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="#3B82F6" strokeWidth="0.8" opacity="0.3" strokeDasharray="4 4" />
+                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)" />
+                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)" />
+                        <path d="M20 10L32 20L20 30L8 20L20 10Z" fill="url(#crystalGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
+                        <circle cx="20" cy="20" r="2.5" fill="none" stroke="#60A5FA" strokeWidth="1" />
+                        <circle cx="20" cy="20" r="1" fill="white" />
+                        <circle cx="32" cy="20" r="1.5" fill="#3B82F6" />
+                        <circle cx="8" cy="20" r="1.5" fill="#A259FF" />
+                        <circle cx="20" cy="8" r="1" fill="#FF3B82" />
+                        <circle cx="20" cy="32" r="1" fill="#10B981" />
                     </svg>
                 </div>
-                {sidebarOpen && <span style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.5px" }}>SubSphere</span>}
+                {sidebarOpen && <span style={{ fontSize: 22, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-1.4px", fontFamily: 'var(--ff-sans)' }}>Aegis Infra</span>}
             </div>
 
             {/* Workspace Section */}
             {sidebarOpen && (
-                <div style={{ margin: "0 16px 8px", padding: "16px", borderRadius: "12px", background: "#f8fafc" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", marginBottom: 12, textTransform: "uppercase" }}>Workspace</div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b" }}>{tenantName || 'Acme SaaS'}</div>
-                    <div className="plan-badge">{currentPlan || 'FREE'}</div>
+                <div style={{
+                    margin: "0 16px 24px",
+                    padding: "16px",
+                    borderRadius: "16px",
+                    background: "rgba(99, 102, 241, 0.05)",
+                    border: "1px solid rgba(99, 102, 241, 0.1)"
+                }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Workspace</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1e1b4b" }}>{tenantName || 'Acme SaaS'}</div>
+                    <div className="plan-badge" style={{ background: "#6366f1", color: "white", marginTop: 8 }}>{currentPlan || 'FREE'}</div>
                 </div>
             )}
 

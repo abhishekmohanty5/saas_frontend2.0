@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
@@ -79,7 +79,7 @@ const PricingPage = () => {
     }
   }, [loading, plans, selectedPlanNameParam, selectedPlanParam]);
 
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = useCallback(async (plan) => {
     if (!plan?.id) return;
 
     if (!user) {
@@ -116,7 +116,11 @@ const PricingPage = () => {
     } finally {
       setSubscribingPlanId(null);
     }
-  };
+  }, [user, billingInterval, navigate, toast]);
+
+  const filteredPlans = useMemo(() => {
+    return plans.filter(p => Number(p.price) > 0);
+  }, [plans]);
 
   if (loading) {
     return (
@@ -138,71 +142,100 @@ const PricingPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--white)' }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff' }}>
       <Navbar />
 
-      {/* Hero */}
-      <div style={{ padding: '140px 48px 60px', maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '20px' }}>
-          Pricing
-        </div>
-        <h1 style={{
-          fontFamily: 'var(--ff-h)',
-          fontSize: 'clamp(28px, 4vw, 44px)',
-          lineHeight: 1.1,
-          letterSpacing: '-1px',
-          color: 'var(--ink)',
-          fontWeight: 700,
-          maxWidth: '680px',
-          marginBottom: '20px'
-        }}>
-          Simple, transparent <span style={{ color: 'var(--gold)' }}>pricing</span>
-        </h1>
-        <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, maxWidth: '560px', marginTop: '20px' }}>
-          All plans include the full API, JWT auth, automated scheduler, and admin dashboard.
-        </p>
+      {/* Unified Pricing Section Header */}
+      <section style={{
+        padding: '80px 24px 40px',
+        maxWidth: '1400px',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: '#3b82f6', marginBottom: '16px' }}>
+            Subscription Plans
+          </div>
+          <h1 style={{
+            fontFamily: 'var(--ff-h)',
+            fontSize: 'clamp(32px, 5vw, 56px)',
+            lineHeight: 1,
+            letterSpacing: '-2px',
+            color: '#0f172a',
+            fontWeight: 900,
+            maxWidth: '900px',
+            marginBottom: '20px'
+          }}>
+            Simple, transparent <span style={{
+              background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>pricing</span>
+          </h1>
+          <p style={{ fontSize: '18px', color: '#64748b', lineHeight: 1.6, maxWidth: '600px', fontWeight: 400 }}>
+            All plans include the full API suite, multi-tenant JWT auth, and automated dev consoles.
+          </p>
 
-        {/* Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '32px', fontSize: '14px', color: 'var(--muted)' }}>
-          <span>Monthly</span>
-          <button
-            type="button"
-            onClick={() => setBillingInterval((v) => (v === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.MONTHLY : BILLING_INTERVALS.ANNUAL))}
-            style={{
-              width: '44px',
-              height: '24px',
-              borderRadius: '12px',
-              background: billingInterval === BILLING_INTERVALS.ANNUAL ? 'var(--ink)' : 'var(--sand)',
-              cursor: 'pointer',
-              position: 'relative',
-              transition: 'background 0.2s',
-              flexShrink: 0,
-              border: 'none'
-            }}
+          {/* Toggle */}
+          <div
+            role="group"
+            aria-label="Billing frequency toggle"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '32px', fontSize: '15px', color: '#64748b' }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '3px',
-              left: billingInterval === BILLING_INTERVALS.ANNUAL ? '23px' : '3px',
-              width: '18px',
-              height: '18px',
-              borderRadius: '50%',
-              background: 'white',
-              transition: 'left 0.2s',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-            }} />
-          </button>
-          <span>Annual <span style={{
-            display: 'inline-block',
-            background: 'rgba(64,145,108,0.1)',
-            color: 'var(--emerald2)',
-            fontSize: '12px',
-            fontWeight: 600,
-            padding: '2px 8px',
-            borderRadius: '20px'
-          }}>Save 20%</span></span>
+            <span style={{ fontWeight: 600 }}>Monthly</span>
+            <button
+              type="button"
+              aria-pressed={billingInterval === BILLING_INTERVALS.ANNUAL}
+              onClick={() => setBillingInterval((v) => (v === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.MONTHLY : BILLING_INTERVALS.ANNUAL))}
+              style={{
+                width: '48px',
+                height: '26px',
+                borderRadius: '13px',
+                background: billingInterval === BILLING_INTERVALS.ANNUAL ? '#3b82f6' : '#e2e8f0',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                flexShrink: 0,
+                border: 'none'
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: '3px',
+                left: billingInterval === BILLING_INTERVALS.ANNUAL ? '25px' : '3px',
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                background: 'white',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }} />
+            </button>
+            <span style={{ fontWeight: 600, color: billingInterval === BILLING_INTERVALS.ANNUAL ? '#0f172a' : '#64748b' }}>
+              Annual <span style={{
+                display: 'inline-block',
+                background: 'rgba(59,130,246,0.1)',
+                color: '#3b82f6',
+                fontSize: '11px',
+                fontWeight: 800,
+                padding: '2px 10px',
+                borderRadius: '20px',
+                marginLeft: '8px',
+                border: '1px solid rgba(59,130,246,0.1)'
+              }}>Save 20%</span>
+            </span>
+          </div>
         </div>
+      </section>
 
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto 100px',
+        position: 'relative',
+        padding: '0 24px'
+      }}>
         {error && (
           <div
             onClick={() => {
@@ -217,20 +250,19 @@ const PricingPage = () => {
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
               color: '#FF3B30',
-              padding: '16px 24px',
-              borderRadius: '16px',
-              marginTop: '32px',
-              fontSize: '15px',
+              padding: '12px 20px',
+              borderRadius: '12px',
+              marginBottom: '40px',
+              fontSize: '14px',
               fontWeight: 500,
-              maxWidth: '500px',
-              margin: '32px auto 0',
+              maxWidth: '450px',
+              margin: '0 auto 40px',
               cursor: error.toLowerCase().includes('login') ? 'pointer' : 'default',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
               boxShadow: '0 8px 32px rgba(255, 59, 48, 0.12)',
-              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
             onMouseEnter={(e) => {
               if (error.toLowerCase().includes('login')) {
@@ -249,12 +281,17 @@ const PricingPage = () => {
             {error}
           </div>
         )}
-      </div>
 
-      {/* Cards */}
-      <div style={{ padding: '0 48px 100px', maxWidth: '1280px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '48px', alignItems: 'start' }}>
-          {plans.map((plan) => (
+        {/* Cards Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '32px',
+          alignItems: 'stretch',
+          perspective: '1200px',
+          paddingBottom: '40px'
+        }}>
+          {filteredPlans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}

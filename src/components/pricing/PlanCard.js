@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, memo } from 'react';
 import { BILLING_INTERVALS } from './pricingData';
 
 const roundPrice = (value) => {
@@ -21,7 +21,7 @@ const defaultButtonLabel = (plan) => {
   return `Upgrade to ${plan?.name || 'Plus'}`;
 };
 
-export default function PlanCard({
+const PlanCard = memo(({
   plan,
   billingInterval = BILLING_INTERVALS.MONTHLY,
   onAction,
@@ -29,8 +29,7 @@ export default function PlanCard({
   disabled,
   subscribing,
   showMostPopularBadge = true,
-}) {
-  const [isHovered, setIsHovered] = useState(false);
+}) => {
   const featured = !!plan?.featured;
   const isFree = roundPrice(plan?.price) === 0;
 
@@ -43,40 +42,63 @@ export default function PlanCard({
   const isDisabled = !!disabled || !!subscribing || plan?.active === false;
 
   return (
-    <div
+    <article
       id={plan?.id ? `plan-${plan.id}` : undefined}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`pricing-card-3d ${featured ? 'featured' : ''}`}
+      aria-label={`${plan?.name} pricing plan`}
       style={{
-        background: 'rgba(255, 255, 255, 0.7)',
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        borderRadius: '24px',
-        padding: '32px 32px',
-        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        background: 'rgba(255, 255, 255, 0.75)',
+        backdropFilter: 'blur(20px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(200%)',
+        border: '1px solid rgba(255, 255, 255, 0.8)',
+        borderRadius: '32px',
+        padding: '36px',
+        transition: 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
         position: 'relative',
-        transform: isHovered ? 'translateY(-6px)' : 'translateY(0)',
-        boxShadow: isHovered
-          ? '0 32px 64px -16px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)'
-          : '0 4px 12px rgba(0, 0, 0, 0.03)',
+        transformStyle: 'preserve-3d',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         opacity: plan?.active === false ? 0.6 : 1,
+        willChange: 'transform, box-shadow'
       }}
     >
+      <style>{`
+        .pricing-card-3d {
+          box-shadow: 
+            0 10px 30px -10px rgba(0, 0, 0, 0.08), 
+            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+        .pricing-card-3d:hover {
+          transform: translateY(-24px) rotateX(8deg) rotateY(-6deg) translateZ(20px);
+          background: rgba(255, 255, 255, 0.9);
+          box-shadow: 
+            0 45px 100px -20px rgba(0, 0, 0, 0.2), 
+            0 25px 50px -25px rgba(0, 0, 0, 0.25),
+            inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+        }
+        .pricing-card-3d:hover .pop-up {
+           transform: translateZ(40px);
+        }
+        .pricing-card-3d:hover .pop-up-far {
+           transform: translateZ(60px);
+        }
+      `}</style>
+
       {/* Header Row: Title & Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', transformStyle: 'preserve-3d' }}>
         <div
+          className="pop-up"
           style={{
             fontFamily: 'var(--ff-sans)',
-            fontSize: '28px',
-            fontWeight: 600,
-            background: featured ? 'linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%)' : 'var(--ink)',
+            fontSize: '24px',
+            fontWeight: 900,
+            background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#1e1b4b',
             WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: featured ? 'transparent' : 'initial',
-            letterSpacing: '-0.5px',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '-0.8px',
+            display: 'inline-block',
+            transition: 'transform 0.5s ease',
           }}
         >
           {plan?.name || 'Plus'}
@@ -87,18 +109,26 @@ export default function PlanCard({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              background: 'rgba(37, 99, 235, 0.05)',
-              color: 'var(--gold)',
-              fontSize: '11px',
-              fontWeight: 700,
-              letterSpacing: '0.5px',
+              gap: '6px',
+              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 900,
+              letterSpacing: '1px',
               textTransform: 'uppercase',
-              padding: '6px 12px',
+              padding: '6px 14px',
               borderRadius: '20px',
-              border: '1px solid rgba(37,99,235,0.1)',
+              border: 'none',
+              boxShadow: '0 4px 15px rgba(14, 165, 233, 0.4)',
+              animation: 'popularPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
             }}
           >
+            <style>{`
+              @keyframes popularPulse {
+                0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); }
+                50% { transform: scale(1.05); box-shadow: 0 4px 25px rgba(14, 165, 233, 0.6); }
+              }
+            `}</style>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
@@ -110,9 +140,9 @@ export default function PlanCard({
       {/* Description */}
       <p
         style={{
-          fontSize: '15px',
+          fontSize: '14px',
           color: '#667085',
-          marginBottom: '24px',
+          marginBottom: '16px',
           fontFamily: 'var(--ff-sans)',
         }}
       >
@@ -120,12 +150,12 @@ export default function PlanCard({
       </p>
 
       {/* Price */}
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '16px' }}>
+      <div className="pop-up" style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '12px', transition: 'transform 0.5s ease' }}>
         {isFree ? (
           <span
             style={{
               fontFamily: 'var(--ff-sans)',
-              fontSize: '48px',
+              fontSize: '38px',
               fontWeight: 700,
               color: '#1A1714',
               lineHeight: 1,
@@ -139,7 +169,7 @@ export default function PlanCard({
             <span
               style={{
                 fontFamily: 'var(--ff-sans)',
-                fontSize: '48px',
+                fontSize: '38px',
                 fontWeight: 800,
                 color: 'var(--ink)',
                 lineHeight: 1,
@@ -148,7 +178,7 @@ export default function PlanCard({
             >
               ₹{displayPrice}
             </span>
-            <span style={{ fontSize: '15px', color: 'var(--stone)', fontWeight: 500, marginLeft: '4px' }}>
+            <span style={{ fontSize: '14px', color: 'var(--stone)', fontWeight: 500, marginLeft: '4px' }}>
               /mo
             </span>
           </>
@@ -156,7 +186,7 @@ export default function PlanCard({
       </div>
 
       {/* Value prop text */}
-      <p style={{ fontSize: '14px', color: '#475467', lineHeight: 1.5, marginBottom: '24px' }}>
+      <p style={{ fontSize: '13px', color: '#475467', lineHeight: 1.4, marginBottom: '20px' }}>
         Level up productivity and creativity with expanded access
       </p>
 
@@ -165,20 +195,21 @@ export default function PlanCard({
         type="button"
         onClick={() => onAction?.(plan)}
         disabled={isDisabled}
+        className="pop-up-far"
         style={{
           width: '100%',
-          padding: '16px',
+          padding: '14px',
           borderRadius: '12px',
-          fontSize: '15px',
+          fontSize: '14px',
           fontWeight: 600,
           fontFamily: 'var(--ff-sans)',
           border: 'none',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.2s',
-          marginBottom: '32px',
+          transition: 'all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)',
+          marginBottom: '24px',
           background: subscribing ? 'var(--stone)' : 'var(--ink)',
           color: '#ffffff',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.06)',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
         }}
         onMouseEnter={(e) => {
           if (!disabled && !subscribing) e.currentTarget.style.transform = 'translateY(-1px)';
@@ -191,7 +222,7 @@ export default function PlanCard({
       </button>
 
       {/* Features */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
         {(plan?.features || [
           'Advanced reporting',
           'Call recording',
@@ -237,6 +268,8 @@ export default function PlanCard({
           );
         })}
       </div>
-    </div>
+    </article>
   );
-}
+});
+
+export default PlanCard;

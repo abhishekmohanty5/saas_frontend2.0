@@ -59,13 +59,13 @@ export const getDefaultFeaturesForPlan = (planName) => {
 // Real Aegis Infra plans matching /api/public
 export const DEFAULT_PLANS = [
   {
-    id: 1,
-    name: 'Free Trial',
-    price: 0,
-    durationInDays: 14,
+    id: 10,
+    name: 'Starter',
+    price: 499,
+    durationInDays: 30,
     active: true,
-    description: '14 days to explore the full Aegis Infra engine — no credit card required.',
-    features: getDefaultFeaturesForPlan('free trial'),
+    description: 'Perfect for small projects needing professional infrastructure.',
+    features: getDefaultFeaturesForPlan('starter'),
   },
   {
     id: 2,
