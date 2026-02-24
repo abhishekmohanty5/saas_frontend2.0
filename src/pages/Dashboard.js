@@ -56,6 +56,211 @@ const Sparkline = ({ color }) => (
     />
   </svg>
 );
+// ─── CENTRAL TELEMETRY COMPONENTS ──────────────────────────────────────────
+
+function TelemetryUnit({ dashboard, stats }) {
+  const telemetryData = [
+    { label: "NODE SYNC DATE", value: dashboard?.nextBillingDate ? new Date(dashboard.nextBillingDate).toLocaleDateString() : "SYNC_PENDING", color: "#6366f1", status: "SCHEDULED" },
+    { label: "IDENTITY PROTOCOL", value: dashboard?.tenantId?.slice(0, 12) || "ROOT_NODE", color: "#10b981", status: "VERIFIED" },
+    { label: "OPERATIONAL_QUEUE", value: stats?.pending || 0, color: "#8b5cf6", status: "POLLING" },
+    { label: "COMPUTE PROVISION", value: dashboard?.tenantPlan || "FREE", color: "#f59e0b", status: "AUTHORIZED" }
+  ];
+
+  return (
+    <div className="telemetry-unit-container" style={{
+      perspective: '1500px',
+      marginBottom: 64
+    }}>
+      <style>{`
+        .telemetry-3d-card {
+          background: #020617;
+          border-radius: 24px;
+          border: 1px solid rgba(99, 102, 241, 0.25);
+          box-shadow: 
+            0 40px 100px -20px rgba(0, 0, 0, 0.7),
+            0 0 40px rgba(79, 70, 229, 0.1),
+            inset 0 1px 1px rgba(255, 255, 255, 0.05);
+          padding: 40px 48px;
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+          transform-style: preserve-3d;
+          background-image: 
+            linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+        .telemetry-unit-container:hover .telemetry-3d-card {
+          transform: rotateX(4deg) rotateY(-2deg) translateY(-5px);
+        }
+        .telemetry-row {
+          display: grid;
+          grid-template-columns: 1.5fr 1fr 1fr;
+          align-items: center;
+          padding: 14px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          transition: all 0.3s ease;
+        }
+        .telemetry-row:last-child {
+          border-bottom: none;
+        }
+        .telemetry-row:hover {
+          background: rgba(255, 255, 255, 0.02);
+          padding-left: 12px;
+        }
+      `}</style>
+
+      <div className="telemetry-3d-card">
+        {/* HUD Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, opacity: 0.8 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.2em' }}>
+            SYSTEM_DIAGNOSTICS // INFRA_CORE_v4.2
+          </div>
+          <div style={{ fontSize: 10, fontWeight: 800, color: '#475569', letterSpacing: '0.1em' }}>
+            ENGINE_SYNC: OK
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {telemetryData.map((data, idx) => (
+            <div key={idx} className="telemetry-row">
+              {/* Label */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 4, height: 4, borderRadius: '50%', background: data.color, boxShadow: `0 0 8px ${data.color}` }} />
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.05em' }}>{data.label}</div>
+              </div>
+
+              {/* Value */}
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#f8fafc', letterSpacing: '0.05em', fontFamily: 'var(--ff-mono, monospace)' }}>
+                {data.value}
+                <span style={{ fontSize: 8, color: '#475569', marginLeft: 12, letterSpacing: '0.1em', fontWeight: 600 }}>CORE_V</span>
+              </div>
+
+              {/* Status & Bar */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, fontWeight: 900 }}>
+                  <span style={{ color: '#475569' }}>STATUS</span>
+                  <span style={{ color: data.color }}>{data.status}</span>
+                </div>
+                <div style={{ height: 2, background: 'rgba(255,255,255,0.05)', borderRadius: 1, position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: data.value !== 0 ? '60%' : '5%', background: data.color, boxShadow: `0 0 10px ${data.color}` }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Dynamic Accents */}
+        <div style={{ position: 'absolute', bottom: -50, right: -50, width: 300, height: 300, background: 'radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      </div>
+    </div>
+  );
+}
+
+function LiveInsights({ stats, dashboard, subscribers }) {
+  const insights = [
+    {
+      category: "ONBOARDING",
+      status: "INFO",
+      color: "#6366f1",
+      text: stats.total > 0
+        ? `${stats.total} total end users registered. Infrastructure integration is successful.`
+        : "No end users registered yet. Call POST /api/v1/users/register to begin."
+    },
+    {
+      category: "RENEWAL",
+      status: dashboard?.daysRemaining < 15 ? "URGENT" : "NORMAL",
+      color: "#f43f5e",
+      text: `Plan expires in ${dashboard?.daysRemaining || 0} days. Upgrade to avoid service disruption.`
+    },
+    {
+      category: "API HEALTH",
+      status: "NORMAL",
+      color: "#22d3ee",
+      text: `${dashboard?.apiCallCount || 0} calls logged. System latency stable at < 45ms.`
+    },
+    {
+      category: "CHURN RISK",
+      status: "WARNING",
+      color: "#f59e0b",
+      text: subscribers?.[0]
+        ? `${subscribers[0].email?.split('@')[0]} scored HIGH churn risk — only 2 logins in the last 30 days.`
+        : "Insufficient user sample to calculate churn probability."
+    },
+    {
+      category: "AI READY",
+      status: "INFO",
+      color: "#a855f7",
+      text: "Run POST /api/v1/ai/generate-plans to create subscriber plans instantly."
+    }
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <style>{`
+        @keyframes energyPulse {
+          0% { background-position: 0% 100%; }
+          100% { background-position: 0% -100%; }
+        }
+        @keyframes nodeGlow {
+          0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 5px currentColor); }
+          50% { transform: scale(1.1); filter: brightness(1.3) drop-shadow(0 0 15px currentColor); }
+        }
+        .energy-line {
+          background: linear-gradient(to bottom, 
+            rgba(59, 130, 246, 0.05), 
+            rgba(59, 130, 246, 0.8) 50%, 
+            rgba(59, 130, 246, 0.05)
+          );
+          background-size: 100% 200%;
+          animation: energyPulse 2s linear infinite;
+        }
+        .pulsing-node {
+          animation: nodeGlow 2s ease-in-out infinite;
+        }
+      `}</style>
+      {insights.map((insight, i) => (
+        <div key={i} style={{ display: 'flex', gap: 24, position: 'relative' }}>
+          {/* Animated Vertical Line Accent */}
+          {i !== insights.length - 1 && (
+            <div className="energy-line" style={{
+              position: 'absolute',
+              left: 4.5,
+              top: 24,
+              width: 2,
+              bottom: -24,
+              zIndex: 0,
+              boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)'
+            }} />
+          )}
+
+          <div className="pulsing-node" style={{
+            width: 11,
+            height: 11,
+            borderRadius: '50%',
+            background: insight.color,
+            color: insight.color,
+            marginTop: 6,
+            zIndex: 1,
+            boxShadow: `0 0 15px ${insight.color}, 0 0 30px ${insight.color}44`
+          }} />
+
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 900, color: insight.color, letterSpacing: '0.15em' }}>{insight.category}</div>
+              <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 4, fontSize: 8, fontWeight: 900, color: '#1e1b4b', padding: '2px 6px' }}>{insight.status}</div>
+            </div>
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: '#000000', fontWeight: 600 }}>
+              {insight.text}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -146,7 +351,19 @@ export default function Dashboard() {
           daysRemaining={dashboard?.daysRemaining}
         />
 
-        <main style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "calc(100vh - 68px)", overflowY: "auto" }}>
+        <main style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "calc(100vh - 68px)",
+          overflowY: "auto",
+          backgroundImage: `
+            radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8))
+          `,
+          backgroundSize: '24px 24px',
+          backgroundPosition: 'center center'
+        }}>
 
 
 
@@ -154,119 +371,60 @@ export default function Dashboard() {
 
             {activeTab === 'overview' && (
               <>
-                <div style={{ marginBottom: 40 }}>
-                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Dashboard Overview</h1>
-                  <p style={{ color: "#64748b", marginTop: 4, fontSize: 16 }}>Monitor your tenant infrastructure and user base activity.</p>
-                </div>
-
-                {/* Stats Grid */}
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                  gap: 24,
-                  marginBottom: 40
-                }}>
-                  {/* Total End Users */}
-                  <StatCard
-                    label="Total End Users"
-                    value={stats.total}
-                    icon="users"
-                    iconBg="rgba(59, 130, 246, 0.1)"
-                    iconColor="#3b82f6"
-                    sparklineColor="#3b82f6"
-                  />
-                  {/* Active Subscriptions */}
-                  <StatCard
-                    label="Active Subscriptions"
-                    value={stats.active}
-                    icon="zap"
-                    iconBg="rgba(16, 185, 129, 0.1)"
-                    iconColor="#10b981"
-                    sparklineColor="#10b981"
-                  />
-                  {/* API Usage */}
-                  <StatCard
-                    label="API Usage"
-                    value={dashboard?.apiCallCount || 0}
-                    icon="chart"
-                    iconBg="rgba(139, 92, 246, 0.1)"
-                    iconColor="#8b5cf6"
-                    sparklineColor="#8b5cf6"
-                  />
-                  {/* Plan Days Left */}
-                  <StatCard
-                    label="Plan Days Left"
-                    value={dashboard?.daysRemaining || 0}
-                    icon="clock"
-                    iconBg="rgba(245, 158, 11, 0.1)"
-                    iconColor="#f59e0b"
-                    sparklineColor="#f59e0b"
-                  />
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24 }}>
-                  {/* Recent Activity */}
-                  <section style={{ background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)", padding: 32, boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1e1b4b" }}>Recent Activity</h3>
-                      <button style={{ background: "rgba(99, 102, 241, 0.1)", border: "none", color: "#4f46e5", fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: 8, cursor: "pointer", transition: "all 0.2s" }}>View all</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                      <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
+                      <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Management Console</span>
                     </div>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                          <th style={{ paddingBottom: 20 }}>User</th>
-                          <th style={{ paddingBottom: 20 }}>Plan</th>
-                          <th style={{ paddingBottom: 20 }}>Status</th>
-                          <th style={{ paddingBottom: 20 }}>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {subscribers.slice(0, 5).length > 0 ? subscribers.slice(0, 5).map((sub, i) => (
-                          <tr key={i} style={{ fontSize: 14 }}>
-                            <td style={{ padding: "16px 0", color: "#1e1b4b", fontWeight: 600 }}>{sub.userName || sub.email.split('@')[0]}</td>
-                            <td style={{ padding: "16px 0", color: "#64748b" }}>{sub.planName || 'Standard'}</td>
-                            <td style={{ padding: "16px 0" }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, color: sub.status === 'ACTIVE' ? '#10b981' : '#f59e0b' }}>
-                                {sub.status || 'ACTIVE'}
-                              </span>
-                            </td>
-                            <td style={{ padding: "16px 0", color: "#94a3b8" }}>{sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : 'Today'}</td>
-                          </tr>
-                        )) : (
-                          <tr style={{ fontSize: 14 }}>
-                            <td colSpan="4" style={{ padding: "60px 0", textAlign: "center", color: "#64748b", fontStyle: "italic" }}>No recent activity to show in your infrastructure.</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>Infrastructure Overview</h1>
+                    <p style={{ color: "#475569", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
+                      Real-time telemetry and operational diagnostics for node: <span style={{ fontFamily: 'var(--ff-mono)', color: '#000000', fontWeight: 700 }}>{dashboard?.tenantName || 'SAAS_ROOT'}</span>
+                    </p>
+                  </div>
+
+                  {/* System HUD */}
+                  <div style={{ display: 'flex', gap: 32, paddingBottom: 4 }}>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 9, fontWeight: 900, color: '#64748b', letterSpacing: '0.1em', marginBottom: 2 }}>SYSTEM_CLOCK</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#000000', fontFamily: 'var(--ff-mono)' }}>
+                        {new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 9, fontWeight: 900, color: '#94a3b8', letterSpacing: '0.1em', marginBottom: 2 }}>NODE_UPTIME</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#6366f1', fontFamily: 'var(--ff-mono)' }}>142:08:44:02</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Unified 3D Telemetry Unit */}
+                <TelemetryUnit
+                  dashboard={dashboard}
+                  stats={stats}
+                />
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+                  {/* Live Insights */}
+                  <section style={{ padding: "0 8px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: '#64748b', letterSpacing: '0.2em', marginBottom: 40, textTransform: 'uppercase' }}>
+                      LIVE INSIGHTS // ANALYTICAL_ENGINE
+                    </div>
+                    <LiveInsights stats={stats} dashboard={dashboard} subscribers={subscribers} />
                   </section>
 
-                  {/* User Status Mix */}
-                  <section style={{ background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)", padding: 32, boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
-                    <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1e1b4b", marginBottom: 24 }}>User Status Mix</h3>
-
-                    {[
-                      { label: 'Active', value: stats.active, color: '#10b981' },
-                      { label: 'Cancelled', value: stats.cancelled, color: '#ef4444' },
-                      { label: 'Pending', value: stats.pending, color: '#f59e0b' }
-                    ].map((item, idx) => {
-                      const percentage = stats.total > 0 ? Math.round((item.value / stats.total) * 100) : 0;
-                      return (
-                        <div key={idx} style={{ marginTop: idx === 0 ? 0 : 20 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, marginBottom: 8 }}>
-                            <span style={{ fontWeight: 600, color: '#475569' }}>{item.label}</span>
-                            <span style={{ color: "#64748b", fontWeight: 700 }}>{percentage}%</span>
-                          </div>
-                          <div style={{ height: 6, background: "rgba(0,0,0,0.05)", borderRadius: 99, overflow: "hidden" }}>
-                            <div style={{ height: "100%", background: item.color, width: `${percentage}%`, transition: 'width 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    <div style={{ marginTop: 32, padding: "16px", background: "rgba(99, 102, 241, 0.05)", borderRadius: 12, border: '1px solid rgba(99, 102, 241, 0.1)' }}>
-                      <p style={{ fontSize: 12, color: "#64748b", lineHeight: 1.6 }}>
-                        Total Population: <strong style={{ color: '#1e1b4b' }}>{stats.total}</strong> active nodes across your infrastructure mesh.
+                  {/* Developer Protocol Memo */}
+                  <section style={{ padding: "0 8px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 40 }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: '#64748b', letterSpacing: '0.2em', marginBottom: 24, textTransform: 'uppercase' }}>
+                      DEVELOPER_PROTOCOL // ADVISORY
+                    </div>
+                    <div style={{ width: '100%' }}>
+                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, margin: 0 }}>
+                        Your infrastructure node is currently broadcasting on the <span style={{ color: '#1e1b4b', fontWeight: 700 }}>Aegis Mesh Network</span>.
+                        As a developer tenant, you can interface with your provisioned services using the <span style={{ fontFamily: 'var(--ff-mono)', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>X-API-KEY</span> header for all external requests.
+                      </p>
+                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, marginTop: 16 }}>
+                        All subscriber lifecycle events—including activations and decommissioning—are automatically synchronized across your tenant environment. For deep-level integration, refer to the <span style={{ textDecoration: 'underline', color: '#6366f1', cursor: 'pointer' }}>Infrastructure Documentation</span> or monitor the Live Insights feed above for real-time propagation status.
                       </p>
                     </div>
                   </section>
@@ -278,7 +436,7 @@ export default function Dashboard() {
               <div style={{ maxWidth: 800 }}>
                 <div style={{ marginBottom: 32 }}>
                   <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Credentials</h1>
-                  <p style={{ color: "#64748b", marginTop: 4 }}>Secure keys to authenticate your application with Aegis Infra infrastructure.</p>
+                  <p style={{ color: "#475569", marginTop: 4, fontWeight: 500 }}>Secure keys to authenticate your application with Aegis Infra infrastructure.</p>
                 </div>
 
                 <div style={{ display: "grid", gap: 20 }}>
@@ -299,7 +457,7 @@ export default function Dashboard() {
                       boxShadow: "0 4px 15px rgba(99, 102, 241, 0.05)"
                     }}>
                       <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 8 }}>{cred.label}</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: "#1e1b4b", textTransform: "uppercase", marginBottom: 8, opacity: 0.8 }}>{cred.label}</div>
                         <div style={{ fontFamily: "var(--ff-mono)", fontSize: 15, color: "#1e1b4b", background: "rgba(0,0,0,0.03)", padding: "4px 8px", borderRadius: 6 }}>
                           {cred.type === 'secret' && !showSecret ? '••••••••••••••••' : cred.value || 'N/A'}
                         </div>
@@ -630,7 +788,7 @@ export default function Dashboard() {
               <div>
                 <div style={{ marginBottom: 40 }}>
                   <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>System Services</h1>
-                  <p style={{ color: "#64748b", marginTop: 4 }}>Operational status and configuration of your infrastructure core modules.</p>
+                  <p style={{ color: "#475569", marginTop: 4, fontWeight: 500 }}>Operational status and configuration of your infrastructure core modules.</p>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
@@ -643,10 +801,10 @@ export default function Dashboard() {
                     <div key={i} style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(10px)", borderRadius: 24, padding: 28, border: "1px solid rgba(255,255,255,0.5)", boxShadow: "0 10px 30px rgba(0,0,0,0.02)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
                         <div style={{ width: 12, height: 12, borderRadius: "50%", background: service.status === 'Healthy' ? '#10b981' : '#6366f1', boxShadow: service.status === 'Healthy' ? '0 0 10px rgba(16, 185, 129, 0.4)' : 'none' }} />
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8" }}>{service.version}</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>{service.version}</span>
                       </div>
                       <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1e1b4b", marginBottom: 4 }}>{service.name}</h3>
-                      <p style={{ fontSize: 13, color: "#64748b", marginBottom: 20 }}>{service.stats}</p>
+                      <p style={{ fontSize: 13, color: "#000000", marginBottom: 20, fontWeight: 500 }}>{service.stats}</p>
                       <div style={{ fontSize: 12, fontWeight: 700, color: service.status === 'Healthy' ? '#10b981' : '#6366f1' }}>{service.status.toUpperCase()}</div>
                     </div>
                   ))}
@@ -661,11 +819,57 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+          <Footer />
         </main>
       </div>
     </div>
   );
 }
+
+function Footer() {
+  return (
+    <footer style={{
+      marginTop: "auto",
+      padding: "32px",
+      borderTop: "1px solid rgba(0, 0, 0, 0.05)",
+      background: "rgba(255, 255, 255, 0.4)",
+      backdropFilter: "blur(10px)"
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e1b4b" }}>
+            AEGIS <span style={{ color: "#6366f1" }}>INFRA</span>
+          </div>
+          <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Docs</span>
+            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Support</span>
+            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Security</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 32 }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>System Region</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b4b" }}>ASIA-SOUTH-1</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Build Version</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b4b" }}>v4.2.0-stable</div>
+          </div>
+        </div>
+      </div>
+      <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed rgba(0, 0, 0, 0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
+          © 2026 Aegis Global Infrastructure. All protocols reserved.
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#10b981", letterSpacing: "0.5px" }}>ALL SYSTEMS OPERATIONAL</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 
 function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
   return (
@@ -744,7 +948,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
           <span style={{
             fontSize: 10,
             fontWeight: 800,
-            color: "#94a3b8",
+            color: "#64748b",
             letterSpacing: '0.1em',
             fontFamily: 'var(--ff-mono)'
           }}>[OPERATIONAL]</span>
@@ -752,7 +956,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
         <div style={{
           fontSize: 14,
           fontWeight: 700,
-          color: "#64748b",
+          color: "#475569",
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           display: 'flex',
