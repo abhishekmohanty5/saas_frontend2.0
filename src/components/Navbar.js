@@ -110,8 +110,9 @@ const Navbar = () => {
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '2px'
+                gap: '4px'
             }}>
+                <NavLink onClick={() => navigate('/')}>Home</NavLink>
                 <NavLink onClick={() => scrollToSection('features')}>Features</NavLink>
                 <NavLink onClick={() => scrollToSection('how-it-works')}>How It Works</NavLink>
                 <NavLink onClick={() => navigate('/pricing')}>Pricing</NavLink>
@@ -128,25 +129,42 @@ const Navbar = () => {
                     <>
                         <div style={{
                             display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'flex-end',
-                            marginRight: '8px'
+                            alignItems: 'center',
+                            marginRight: '12px',
+                            background: 'rgba(0,0,0,0.03)',
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            border: '1px solid rgba(0,0,0,0.05)',
+                            gap: '10px'
                         }}>
+                            <div style={{
+                                width: '6px',
+                                height: '6px',
+                                background: '#10b981',
+                                borderRadius: '50%',
+                                boxShadow: '0 0 10px rgba(16, 185, 129, 0.8)',
+                                animation: 'pulse 2s infinite'
+                            }} />
                             <span style={{
-                                fontSize: '12px',
-                                fontWeight: 600,
+                                fontSize: '13px',
+                                fontWeight: 700,
                                 color: 'var(--ink)',
-                                fontFamily: 'var(--ff-sans)'
+                                fontFamily: 'var(--ff-sans)',
+                                letterSpacing: '-0.2px'
                             }}>
-                                {user?.email?.split('@')[0]}
+                                {(() => {
+                                    const rawName = user?.name || user?.email?.split('@')[0];
+                                    const cleanName = rawName?.split(/[._\s\d]/)[0]; // Split by dot, underscore, space, or digit
+                                    return cleanName ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) : '';
+                                })()}
                             </span>
-                            <span style={{
-                                fontSize: '10px',
-                                color: 'var(--muted)',
-                                fontFamily: 'var(--ff-sans)'
-                            }}>
-                                Logged in
-                            </span>
+                            <style>{`
+                                @keyframes pulse {
+                                    0% { opacity: 1; transform: scale(1); }
+                                    50% { opacity: 0.5; transform: scale(1.3); }
+                                    100% { opacity: 1; transform: scale(1); }
+                                }
+                            `}</style>
                         </div>
                         <button
                             onClick={handleLogout}
@@ -267,8 +285,8 @@ const NavLink = ({ children, onClick }) => {
             onMouseLeave={() => setIsHovered(false)}
             style={{
                 fontSize: '14px',
-                fontWeight: 500,
-                color: isHovered ? 'var(--ink)' : 'var(--muted)',
+                fontWeight: 700,
+                color: isHovered ? 'var(--ink)' : 'rgba(15, 23, 42, 0.7)',
                 padding: '8px 14px',
                 borderRadius: '8px',
                 cursor: 'pointer',

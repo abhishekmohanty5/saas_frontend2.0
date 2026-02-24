@@ -153,7 +153,11 @@ const RegisterPage = () => {
             const token = res.data?.data?.token;
             if (token) {
                 localStorage.setItem('token', token);
-                const user = { email: res.data?.data?.email || form.email, role: 'ROLE_TENANT_ADMIN' }; // Registry creates Tenant Admin by default
+                const user = {
+                    email: res.data?.data?.email || form.email,
+                    name: form.userName.trim(),
+                    role: 'ROLE_TENANT_ADMIN'
+                };
                 localStorage.setItem('user', JSON.stringify(user));
                 navigate(decodeURIComponent(redirectTo));
             } else {

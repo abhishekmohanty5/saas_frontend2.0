@@ -59,8 +59,8 @@ const ConsoleSidebar = ({
             flexDirection: "column",
             transition: "width .3s cubic-bezier(0.4, 0, 0.2, 1)",
             position: "sticky",
-            top: 0,
-            height: "100vh",
+            top: 68,
+            height: "calc(100vh - 68px)",
             zIndex: 100,
             padding: "24px 0"
         }}>

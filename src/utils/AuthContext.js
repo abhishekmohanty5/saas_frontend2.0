@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      const { token, email: userEmail, role } = data;
+      const { token, email: userEmail, role, name } = data;
 
       // Store token
       localStorage.setItem('token', token);
@@ -43,7 +43,8 @@ export const AuthProvider = ({ children }) => {
       // Create user object
       const userData = {
         email: userEmail,
-        role: role // Use role directly from backend: ROLE_SUPER_ADMIN, ROLE_TENANT_ADMIN, ROLE_USER
+        name: name || userEmail.split('@')[0],
+        role: role.startsWith('ROLE_') ? role : `ROLE_${role}`
       };
 
       localStorage.setItem('user', JSON.stringify(userData));

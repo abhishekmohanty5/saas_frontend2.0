@@ -47,10 +47,8 @@ const PlanCard = memo(({
       className={`pricing-card-3d ${featured ? 'featured' : ''}`}
       aria-label={`${plan?.name} pricing plan`}
       style={{
-        background: 'rgba(255, 255, 255, 0.75)',
-        backdropFilter: 'blur(20px) saturate(200%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(200%)',
-        border: '1px solid rgba(255, 255, 255, 0.8)',
+        background: '#0a0a0a',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: '32px',
         padding: '36px',
         transition: 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
@@ -66,22 +64,64 @@ const PlanCard = memo(({
       <style>{`
         .pricing-card-3d {
           box-shadow: 
-            0 10px 30px -10px rgba(0, 0, 0, 0.08), 
-            inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+            0 10px 40px -10px rgba(0, 0, 0, 0.4), 
+            inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
         .pricing-card-3d:hover {
-          transform: translateY(-24px) rotateX(8deg) rotateY(-6deg) translateZ(20px);
-          background: rgba(255, 255, 255, 0.9);
+          transform: translateY(-24px) rotateX(8deg) rotateY(-6deg) translateZ(30px);
+          background: #000000;
           box-shadow: 
-            0 45px 100px -20px rgba(0, 0, 0, 0.2), 
-            0 25px 50px -25px rgba(0, 0, 0, 0.25),
-            inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+            0 55px 110px -25px rgba(0, 0, 0, 0.5), 
+            0 35px 70px -30px rgba(0, 0, 0, 0.6),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.2);
         }
         .pricing-card-3d:hover .pop-up {
-           transform: translateZ(40px);
+           transform: translateZ(50px);
         }
         .pricing-card-3d:hover .pop-up-far {
-           transform: translateZ(60px);
+           transform: translateZ(80px);
+        }
+        
+        .glassy-cta {
+          position: relative;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .glassy-cta::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(
+            to right,
+            transparent,
+            rgba(255, 255, 255, 0.15),
+            transparent
+          );
+          transform: skewX(-25deg);
+          transition: 0.7s;
+        }
+        
+        .glassy-cta:hover {
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(14, 165, 233, 0.5);
+          box-shadow: 0 12px 40px 0 rgba(14, 165, 233, 0.25);
+          transform: translateY(-2px) scale(1.02);
+        }
+        
+        .glassy-cta:hover::before {
+          left: 150%;
+        }
+        
+        .glassy-cta:active {
+          transform: scale(0.98);
         }
       `}</style>
 
@@ -93,7 +133,7 @@ const PlanCard = memo(({
             fontFamily: 'var(--ff-sans)',
             fontSize: '24px',
             fontWeight: 900,
-            background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#1e1b4b',
+            background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#ffffff',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             letterSpacing: '-0.8px',
@@ -141,7 +181,7 @@ const PlanCard = memo(({
       <p
         style={{
           fontSize: '14px',
-          color: '#667085',
+          color: '#94a3b8',
           marginBottom: '16px',
           fontFamily: 'var(--ff-sans)',
         }}
@@ -157,7 +197,7 @@ const PlanCard = memo(({
               fontFamily: 'var(--ff-sans)',
               fontSize: '38px',
               fontWeight: 700,
-              color: '#1A1714',
+              color: '#ffffff',
               lineHeight: 1,
               letterSpacing: '-1.5px',
             }}
@@ -171,14 +211,14 @@ const PlanCard = memo(({
                 fontFamily: 'var(--ff-sans)',
                 fontSize: '38px',
                 fontWeight: 800,
-                color: 'var(--ink)',
+                color: '#ffffff',
                 lineHeight: 1,
                 letterSpacing: '-2.5px',
               }}
             >
               ₹{displayPrice}
             </span>
-            <span style={{ fontSize: '14px', color: 'var(--stone)', fontWeight: 500, marginLeft: '4px' }}>
+            <span style={{ fontSize: '14px', color: '#94a3b8', fontWeight: 500, marginLeft: '4px' }}>
               /mo
             </span>
           </>
@@ -186,7 +226,7 @@ const PlanCard = memo(({
       </div>
 
       {/* Value prop text */}
-      <p style={{ fontSize: '13px', color: '#475467', lineHeight: 1.4, marginBottom: '20px' }}>
+      <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.4, marginBottom: '20px' }}>
         Level up productivity and creativity with expanded access
       </p>
 
@@ -195,30 +235,46 @@ const PlanCard = memo(({
         type="button"
         onClick={() => onAction?.(plan)}
         disabled={isDisabled}
-        className="pop-up-far"
+        className="pop-up-far glassy-cta"
         style={{
           width: '100%',
-          padding: '14px',
-          borderRadius: '12px',
-          fontSize: '14px',
-          fontWeight: 600,
+          padding: '16px',
+          borderRadius: '14px',
+          fontSize: '13px',
+          fontWeight: 800,
           fontFamily: 'var(--ff-sans)',
-          border: 'none',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)',
-          marginBottom: '24px',
-          background: subscribing ? 'var(--stone)' : 'var(--ink)',
+          marginBottom: '28px',
           color: '#ffffff',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled && !subscribing) e.currentTarget.style.transform = 'translateY(-1px)';
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled && !subscribing) e.currentTarget.style.transform = 'translateY(0)';
+          textTransform: 'uppercase',
+          letterSpacing: '1.5px',
+          outline: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
         }}
       >
-        {subscribing ? 'Processing...' : buttonText}
+        {subscribing ? (
+          <div style={{
+            width: '16px',
+            height: '16px',
+            border: '2px solid rgba(255,255,255,0.3)',
+            borderTopColor: '#ffffff',
+            borderRadius: '50%',
+            animation: 'ctaSpin 0.8s linear infinite'
+          }}>
+            <style>{`@keyframes ctaSpin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        ) : (
+          <>
+            {buttonText}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </>
+        )}
       </button>
 
       {/* Features */}
@@ -248,22 +304,21 @@ const PlanCard = memo(({
             >
               <div
                 style={{
-                  width: '20px',
-                  height: '20px',
-                  flexShrink: 0,
+                  width: '18px',
+                  height: '18px',
+                  borderRadius: '50%',
+                  background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : 'rgba(255, 255, 255, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: included ? 'var(--gold)' : 'var(--sand)',
+                  transition: 'all 0.3s ease',
                 }}
               >
-                {/* Standard check icon mimicking the reference image style */}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <span style={{ opacity: included ? 1 : 0.5 }}>{featureText}</span>
+              <span style={{ fontSize: '13px', color: '#e2e8f0', opacity: included ? 1 : 0.5 }}>{featureText}</span> {/* Adjusted opacity for included/excluded features */}
             </div>
           );
         })}
