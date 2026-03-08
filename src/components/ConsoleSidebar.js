@@ -38,7 +38,6 @@ const ConsoleSidebar = ({
         { id: "credentials", label: "Credentials", icon: "key" },
         { id: "plans", label: "Plans", icon: "zap" },
         { id: "subscribers", label: "Subscribers", icon: "users" },
-        { id: "license", label: "License", icon: "shield" },
         { id: "services", label: "Services", icon: "services" },
     ];
 

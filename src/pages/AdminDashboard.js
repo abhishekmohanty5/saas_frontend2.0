@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminAPI, subscriptionAPI } from '../services/api';
+import { adminAPI, subscriptionAPI, aiAPI } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import Footer from '../components/Footer';
+
+// Simple Icon component for Admin Dashboard
+const Icon = ({ name, size = 18, color = "currentColor" }) => {
+  const icons = {
+    zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+    close: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      {icons[name]}
+    </svg>
+  );
+};
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -11,6 +25,10 @@ const AdminDashboard = () => {
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreatePlan, setShowCreatePlan] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDescription, setAiDescription] = useState("");
+  const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
   const [newPlan, setNewPlan] = useState({
     name: '',
     price: '',
@@ -30,8 +48,8 @@ const AdminDashboard = () => {
       const [usersRes, plansRes, tenantsRes] = await Promise.all([
         adminAPI.getAllUsers(),
         subscriptionAPI.getAllPlans(),
-        fetch(`${API_BASE_URL}/admin/tenants`, {
-          headers: { Authorization: `Bearer ${token}` }
+        fetch(`${API_BASE_URL} /admin/tenants`, {
+          headers: { Authorization: `Bearer ${token} ` }
         }).then(r => r.json())
       ]);
 
@@ -180,12 +198,20 @@ const AdminDashboard = () => {
             <div style={{ background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Pricing Plans</h2>
-                <button
-                  onClick={() => setShowCreatePlan(!showCreatePlan)}
-                  style={{ background: '#ededed', color: '#0a0a0a', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  + New Plan
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={() => { setAiSuggestedResult(null); setAiDescription(""); setShowAiModal(true); }}
+                    style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Icon name="zap" size={14} /> AI Insights
+                  </button>
+                  <button
+                    onClick={() => setShowCreatePlan(!showCreatePlan)}
+                    style={{ background: '#ededed', color: '#0a0a0a', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    + New Plan
+                  </button>
+                </div>
               </div>
 
               {showCreatePlan && (
@@ -275,6 +301,126 @@ const AdminDashboard = () => {
           </div>
 
         </div>
+
+        {/* --- AI STRATEGY MODAL --- */}
+        {showAiModal && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)'
+          }}>
+            <div style={{
+              width: '100%', maxWidth: '500px', background: '#121212',
+              borderRadius: '24px', padding: '40px', position: 'relative',
+              border: '1px solid #1f1f1f', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+            }}>
+              <button
+                onClick={() => setShowAiModal(false)}
+                style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', cursor: 'pointer', color: '#71717a' }}
+              >
+                <Icon name="close" size={24} />
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="zap" size={28} color="#3b82f6" />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>AI Market Intelligence</h2>
+                  <p style={{ color: '#a1a1aa', fontSize: '14px', margin: 0 }}>Generate optimal pricing strategies for tenants.</p>
+                </div>
+              </div>
+
+              {!aiSuggestedResult && !aiLoading && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#71717a', marginBottom: '12px', textTransform: 'uppercase' }}>Describe the Business Domain</label>
+                  <textarea
+                    value={aiDescription}
+                    onChange={(e) => setAiDescription(e.target.value)}
+                    placeholder="e.g. A global fintech platform needing high-security infrastructure..."
+                    style={{
+                      width: '100%', height: '140px', padding: '16px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid #27272a',
+                      fontSize: '14px', color: '#fff', outline: 'none', resize: 'none', marginBottom: '24px', lineHeight: '1.6'
+                    }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!aiDescription.trim()) { toast.error("Missing Info", "Please describe the domain first"); return; }
+                      setAiLoading(true);
+                      try {
+                        const res = await aiAPI.generatePlans(aiDescription);
+                        setAiSuggestedResult(res.data.data);
+                      } catch (e) {
+                        const errorMsg = e.response?.data?.message || "Failed to generate strategies. Please try again.";
+                        toast.error("AI Error", errorMsg);
+                      } finally {
+                        setAiLoading(false);
+                      }
+                    }}
+                    style={{
+                      width: '100%', background: '#3b82f6', color: '#fff', borderRadius: '10px', border: 'none',
+                      padding: '16px', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
+                      boxShadow: '0 10px 15px -3px rgba(59,130,246,0.3)', transition: 'all 0.2s'
+                    }}
+                  >
+                    Analyze & Generate Models
+                  </button>
+                </div>
+              )}
+
+              {aiLoading && (
+                <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                  <div style={{ width: '40px', height: '40px', border: "3px solid #1f1f1f", borderTopColor: "#3b82f6", borderRadius: "50%", animation: "spinAi 1s linear infinite", margin: '0 auto 20px' }} />
+                  <p style={{ fontSize: '14px', color: '#a1a1aa' }}>Computing market-aligned subscription models...</p>
+                  <style>{`@keyframes spinAi { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              )}
+
+              {aiSuggestedResult && (
+                <div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>ALGORITHMIC RECOMMENDATIONS</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {aiSuggestedResult.map((p, i) => (
+                      <div
+                        key={i}
+                        onClick={() => {
+                          setNewPlan({
+                            ...newPlan,
+                            name: p.name,
+                            price: p.price.toString(),
+                            duration: p.billingCycle === 'YEARLY' ? '365' : '30',
+                            features: p.features
+                          });
+                          setShowAiModal(false);
+                          setShowCreatePlan(true);
+                        }}
+                        style={{
+                          padding: '16px 20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid #27272a',
+                          cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}
+                        onMouseOver={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#121212'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.borderColor = '#27272a'; e.currentTarget.style.background = '#0a0a0a'; }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{p.name}</div>
+                          <div style={{ fontSize: '12px', color: '#71717a' }}>{p.description}</div>
+                        </div>
+                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#3b82f6' }}>₹{p.price}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setAiSuggestedResult(null)}
+                    style={{ width: '100%', background: 'transparent', border: '1px solid #1f1f1f', color: '#a1a1aa', borderRadius: '10px', padding: '12px', marginTop: '24px', cursor: 'pointer', fontSize: '13px' }}
+                  >
+                    &larr; Refine Analysis
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <Footer />
       </div>
     </div>

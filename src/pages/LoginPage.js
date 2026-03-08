@@ -13,77 +13,15 @@ const BackgroundElements = () => {
             overflow: 'hidden',
             zIndex: 0,
             pointerEvents: 'none',
-            background: '#F0F9FF', // Slightly more blue-tinted base
+            background: '#FFFFFF', // Pure White
         }}>
-            {/* SVG Noise Filter */}
-            <svg style={{ visibility: 'hidden', position: 'absolute' }}>
-                <filter id="noiseFilter">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch" />
-                </filter>
-            </svg>
-
-            {/* Grid Pattern Layer */}
+            {/* Very subtle grid for texture */}
             <div style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: `linear-gradient(rgba(37,99,235,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.05) 1px, transparent 1px)`,
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px)`,
                 backgroundSize: '40px 40px',
                 zIndex: 1,
-            }} />
-
-            {/* Noise Overlay - More visible */}
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                opacity: 0.05,
-                filter: 'url(#noiseFilter)',
-                zIndex: 4,
-            }} />
-
-            {/* Mesh Gradient Blobs - More Saturated */}
-            <div style={{
-                position: 'absolute',
-                top: '-10%', left: '-5%',
-                width: '65vw', height: '65vw',
-                background: 'radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 70%)',
-                filter: 'blur(70px)',
-                borderRadius: '50%',
-                animation: 'driftBlob 20s infinite alternate ease-in-out',
-                zIndex: 2,
-            }} />
-            <div style={{
-                position: 'absolute',
-                bottom: '-15%', right: '-5%',
-                width: '60vw', height: '60vw',
-                background: 'radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, transparent 70%)',
-                filter: 'blur(90px)',
-                borderRadius: '50%',
-                animation: 'driftBlob 18s infinite alternate-reverse ease-in-out',
-                zIndex: 2,
-            }} />
-            <div style={{
-                position: 'absolute',
-                top: '30%', right: '10%',
-                width: '45vw', height: '45vw',
-                background: 'radial-gradient(circle, rgba(96, 165, 250, 0.15) 0%, transparent 70%)',
-                filter: 'blur(50px)',
-                borderRadius: '50%',
-                animation: 'driftBlob 25s infinite alternate ease-in-out',
-                zIndex: 2,
-            }} />
-
-            {/* Floating Abstract Geometry */}
-            <FloatingGeometry delay="0s" size="400px" top="5%" left="2%" rotate="15deg" />
-            <FloatingGeometry delay="7s" size="500px" bottom="2%" right="-5%" rotate="-15deg" />
-
-            {/* Global glass layer - Slightly lighter to keep colors vibrant */}
-            <div style={{
-                position: 'absolute',
-                top: 0, left: 0, right: 0, bottom: 0,
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                zIndex: 3,
             }} />
         </div>
     );
@@ -269,57 +207,54 @@ const LoginPage = () => {
 
 const styles = {
     page: {
+        width: '100%',
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '110px 24px 80px',
-        fontFamily: "var(--ff-sans)",
+        padding: '90px 24px 60px',
+        fontFamily: "Inter, sans-serif",
         position: 'relative',
         zIndex: 10,
-        perspective: '1200px', // Added for 3D depth
     },
     card: {
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(40px)',
-        WebkitBackdropFilter: 'blur(40px)',
+        background: '#FFFFFF', // Creamy White
         width: '100%',
-        maxWidth: '460px',
-        padding: '48px 40px',
-        borderRadius: '24px',
-        boxShadow: '0 32px 64px -16px rgba(0,0,0,0.1), 0 16px 32px -8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)',
+        maxWidth: '480px',
+        padding: '48px 52px',
+        borderRadius: '32px',
+        boxShadow: '0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02)',
         textAlign: 'left',
-        border: '1px solid rgba(255, 255, 255, 0.5)',
-        transform: 'rotateX(5deg) rotateY(-2deg) translateZ(0)', // Subtle 3D tilt
-        transformStyle: 'preserve-3d',
-        transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+        position: 'relative',
+        zIndex: 5,
+        transition: 'all 0.3s ease',
     },
     heading: {
-        fontFamily: 'var(--ff-h)',
-        fontSize: '28px', // Slightly reduced from 32px
-        fontWeight: 700,
-        color: '#111827',
-        letterSpacing: '-1px',
-        marginBottom: '4px',
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '32px',
+        fontWeight: 800,
+        color: '#1e293b',
+        letterSpacing: '-1.5px',
+        marginBottom: '8px',
     },
     subtext: {
         fontSize: '15px',
-        color: '#6B7280',
-        marginBottom: '20px',
+        color: '#64748b',
+        marginBottom: '24px',
     },
     switchLink: {
-        color: 'var(--gold)',
+        color: '#3b82f6',
         textDecoration: 'none',
         fontWeight: 600,
     },
     inputWrapper: (hasError) => ({
         display: 'flex',
         alignItems: 'center',
-        padding: '0 16px',
-        border: `1px solid ${hasError ? '#EF4444' : '#E5E7EB'}`,
+        padding: '0 20px',
+        border: `1px solid ${hasError ? '#ef4444' : '#E2E8F0'}`,
         borderRadius: '12px',
-        background: '#fff',
-        height: '54px',
+        background: '#F8FAFC',
+        height: '56px',
         transition: 'all 0.2s',
     }),
     inputIcon: {
@@ -333,8 +268,10 @@ const styles = {
         height: '100%',
         border: 'none',
         outline: 'none',
-        fontSize: '15px',
-        color: '#111827',
+        fontSize: '16px',
+        fontWeight: '500',
+        color: '#1e293b',
+        background: 'transparent',
     },
     eyeBtn: {
         background: 'none',
@@ -350,35 +287,34 @@ const styles = {
         fontWeight: 500,
     },
     forgotLink: {
-        fontSize: '14px',
-        color: 'var(--gold)',
+        fontSize: '15px',
+        color: '#3b82f6',
         textDecoration: 'none',
-        fontWeight: 500,
+        fontWeight: 600,
     },
     submitBtn: {
         width: '100%',
-        height: '52px',
-        background: 'rgba(15, 23, 42, 0.9)', // Deep slate with transparency
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        color: '#fff',
-        borderRadius: '26px',
-        fontSize: '16px',
-        fontWeight: 600,
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+        height: '56px',
+        background: '#1e293b',
+        color: '#ffffff',
+        borderRadius: '32px',
+        fontSize: '18px',
+        fontWeight: 700,
+        border: 'none',
         cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-        boxShadow: '0 10px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1)'
+        transition: 'all 0.2s',
+        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+        marginTop: '8px',
     },
     dividerContainer: {
         display: 'flex',
         alignItems: 'center',
-        margin: '32px 0 24px',
+        margin: '24px 0 16px', // Compacted margin
     },
     line: {
         flex: 1,
         height: '1px',
-        background: '#E5E7EB',
+        background: '#E2E8F0',
     },
     dividerText: {
         color: '#9CA3AF',
@@ -388,10 +324,12 @@ const styles = {
     },
     socialPrompt: {
         textAlign: 'center',
-        color: '#4B5563',
-        fontSize: '14px',
-        fontWeight: 500,
-        marginBottom: '20px',
+        color: '#64748b',
+        fontSize: '12px',
+        fontWeight: 600,
+        marginBottom: '16px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
     },
     socialRow: {
         display: 'flex',
@@ -399,26 +337,27 @@ const styles = {
         gap: '16px',
     },
     socialBtn: {
-        width: '50px',
-        height: '50px',
-        borderRadius: '50%',
-        border: '1px solid #E5E7EB',
-        background: '#fff',
+        width: '52px',
+        height: '52px',
+        borderRadius: '32px',
+        border: '1px solid #E2E8F0',
+        background: '#FFFFFF',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
         transition: 'all 0.2s',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
     },
     legalText: {
         textAlign: 'center',
         fontSize: '12px',
         color: '#6B7280',
-        marginTop: '60px',
+        marginTop: '40px', // Compacted footer margin
         lineHeight: 1.6,
     },
     legalLink: {
-        color: '#2563EB',
+        color: '#3b82f6',
         textDecoration: 'none',
         fontWeight: 600,
     }

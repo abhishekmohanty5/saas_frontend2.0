@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import ConsoleSidebar from '../components/ConsoleSidebar';
 import Navbar from '../components/Navbar';
 import { useToast } from '../components/ToastProvider';
-import api from '../services/api';
+import api, { aiAPI } from '../services/api';
 
 // ─── ICONS (SVG inline) ───────────────────────────────────────────────────
 const Icon = ({ name, size = 20, color = "#64748b" }) => {
@@ -13,11 +13,13 @@ const Icon = ({ name, size = 20, color = "#64748b" }) => {
     chart: <><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></>,
     clock: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></>,
     check: <><polyline points="20 6 9 17 4 12" /></>,
-    close: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>
+    close: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
+    edit: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></>,
+    trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></>
   };
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       {icons[name]}
     </svg>
   );
@@ -708,6 +710,10 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSecret, setShowSecret] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
+  const [aiDescription, setAiDescription] = useState("");
   const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState(null);
   const [newPlan, setNewPlan] = useState({
@@ -954,21 +960,74 @@ export default function Dashboard() {
             )}
 
             {activeTab === 'plans' && (
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+              <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+                <div className="neural-grid" />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40, padding: '0 8px', position: 'relative', zIndex: 1 }}>
                   <div>
-                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Subscription Plans</h1>
-                    <p style={{ color: "#64748b", marginTop: 4 }}>Define and manage plans available for your end-users.</p>
+                    <h1 style={{ fontSize: 32, fontWeight: 950, color: "#1e1b4b", letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "var(--ff-h)", marginBottom: 8 }}>Subscription Plans</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
+                      <p style={{ color: "#64748b", fontSize: 15, fontWeight: 500, margin: 0 }}>Define and manage plans available for your end-users.</p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setShowPlanModal(true)}
-                    style={{ background: "#6366f1", color: "#FFF", borderRadius: 10, border: "none", padding: "12px 24px", fontWeight: 600, cursor: "pointer", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}
-                  >
-                    + Create New Plan
-                  </button>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <button
+                      onClick={() => {
+                        setAiSuggestedResult(null);
+                        setAiDescription("");
+                        setShowAiModal(true);
+                      }}
+                      style={{
+                        background: "rgba(99, 102, 241, 0.05)",
+                        color: "#6366f1",
+                        borderRadius: 14,
+                        border: "1px solid rgba(99, 102, 241, 0.15)",
+                        padding: "12px 24px",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        cursor: "pointer",
+                        transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    >
+                      <Icon name="zap" size={14} color="#6366f1" />
+                      AI Insights
+                    </button>
+
+                    <button
+                      onClick={() => setShowPlanModal(true)}
+                      style={{
+                        background: "#0a0a0a",
+                        color: "#FFF",
+                        borderRadius: 14,
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        padding: "12px 24px",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        cursor: "pointer",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                        transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)'; e.currentTarget.style.background = '#000'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)'; e.currentTarget.style.background = '#0a0a0a'; }}
+                    >
+                      + Create New Plan
+                    </button>
+                  </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 32 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
                   {plans.length > 0 ? plans.map((plan, i) => (
                     <PlanCard
                       key={i}
@@ -998,24 +1057,150 @@ export default function Dashboard() {
                       }}
                     />
                   )) : (
-                    <div style={{ gridColumn: "1/-1", padding: 60, textAlign: "center", background: "rgba(255, 255, 255, 0.4)", borderRadius: 24 }}>
-                      <p style={{ color: "#64748b" }}>No plans created yet. Start by adding your first subscription tier.</p>
+                    <div style={{ gridColumn: "1/-1", padding: 100, textAlign: "center", background: "rgba(255, 255, 255, 0.4)", borderRadius: 40, border: '2px dashed rgba(0,0,0,0.05)' }}>
+                      <p style={{ color: "#64748b", fontSize: 16, fontWeight: 500 }}>No plans created yet. Start by adding your first subscription tier.</p>
                     </div>
                   )}
                 </div>
 
-                {/* Create/Edit Plan Modal */}
+                {/* AI Recommendation Modal */}
+                {showAiModal && (
+                  <div style={{
+                    position: 'fixed', inset: 0, zIndex: 1000,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)',
+                    perspective: '1000px'
+                  }}>
+                    <div style={{
+                      width: '100%', maxWidth: '480px', background: '#FFFFFF',
+                      borderRadius: 32, padding: '40px', position: 'relative',
+                      boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                      animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                      border: '1px solid rgba(0,0,0,0.03)',
+                      transform: 'rotateX(2deg)'
+                    }}>
+                      <button
+                        onClick={() => { setShowAiModal(false); setAiSuggestedResult(null); }}
+                        style={{ position: 'absolute', top: 24, right: 24, background: '#f8fafc', border: 'none', cursor: 'pointer', color: '#64748b', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Icon name="close" size={18} />
+                      </button>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Icon name="zap" size={24} color="#6366f1" />
+                        </div>
+                        <div>
+                          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1e1b4b', margin: 0 }}>AI Market Intelligence</h2>
+                          <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>Smart infrastructure pricing strategies.</p>
+                        </div>
+                      </div>
+
+                      {!aiSuggestedResult && !aiLoading && (
+                        <div>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Describe Your Business</label>
+                          <textarea
+                            value={aiDescription}
+                            onChange={(e) => setAiDescription(e.target.value)}
+                            placeholder="e.g. A cloud-native storage platform for creative agencies looking for high availability..."
+                            style={{
+                              width: '100%', height: 120, padding: '16px', borderRadius: 16, border: '1px solid #e2e8f0',
+                              fontSize: 14, outline: 'none', resize: 'none', marginBottom: 20, color: '#1e1b4b',
+                              lineHeight: 1.5
+                            }}
+                          />
+                          <button
+                            onClick={async () => {
+                              if (!aiDescription.trim()) { toast.error("Missing Info", "Please describe your business first"); return; }
+                              setAiLoading(true);
+                              try {
+                                const res = await aiAPI.generatePlans(aiDescription);
+                                setAiSuggestedResult(res.data.data);
+                              } catch (e) {
+                                const errorMsg = e.response?.data?.message || "Failed to generate strategies. Please try again.";
+                                toast.error("AI Error", errorMsg);
+                              } finally {
+                                setAiLoading(false);
+                              }
+                            }}
+                            style={{
+                              width: '100%', background: '#6366f1', color: '#FFF', borderRadius: 14, border: 'none',
+                              padding: '16px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                              boxShadow: '0 10px 20px -5px rgba(99,102,241,0.4)',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                          >
+                            Generate AI Strategies
+                          </button>
+                        </div>
+                      )}
+
+                      {aiLoading ? (
+                        <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                          <div style={{ width: 40, height: 40, border: "3px solid #f1f5f9", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 1s linear infinite", margin: '0 auto 16px' }} />
+                          <p style={{ fontSize: 14, color: '#64748b', fontWeight: 600 }}>Analyzing market volatility & node costs...</p>
+                        </div>
+                      ) : aiSuggestedResult && (
+                        <div>
+                          <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>SUGGESTED INFRASTRUCTURE TIERS</div>
+                          <div style={{ display: 'grid', gap: 12 }}>
+                            {aiSuggestedResult.map((p, i) => (
+                              <div
+                                key={i}
+                                onClick={() => {
+                                  setNewPlan({
+                                    ...newPlan,
+                                    name: p.name,
+                                    price: p.price.toString(),
+                                    description: p.description,
+                                    billingCycle: p.billingCycle || "MONTHLY",
+                                    features: p.features
+                                  });
+                                  setShowAiModal(false);
+                                  setShowPlanModal(true);
+                                }}
+                                style={{
+                                  padding: '16px 20px', borderRadius: 16, border: '1px solid #e2e8f0', cursor: 'pointer',
+                                  transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.background = 'rgba(99, 102, 241, 0.02)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'transparent'; }}
+                              >
+                                <div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1e1b4b' }}>{p.name}</div>
+                                  <div style={{ fontSize: 12, color: '#64748b' }}>{p.description}</div>
+                                </div>
+                                <div style={{ fontSize: 15, fontWeight: 800, color: '#6366f1' }}>₹{p.price}</div>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={() => setAiSuggestedResult(null)}
+                            style={{ width: '100%', background: 'none', border: '1px solid #e2e8f0', color: '#64748b', borderRadius: 14, padding: '12px', marginTop: 20, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                          >
+                            &larr; Back to description
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {showPlanModal && (
                   <div style={{
                     position: 'fixed', inset: 0, zIndex: 1000,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)'
+                    background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)',
+                    perspective: '1000px'
                   }}>
                     <div style={{
-                      width: '100%', maxWidth: '500px', background: '#FFFFFF',
-                      borderRadius: 32, padding: 40, position: 'relative',
-                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                      animation: 'modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                      width: '100%', maxWidth: '440px', background: '#FFFFFF',
+                      borderRadius: 32, padding: '32px 40px 40px', position: 'relative',
+                      boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,1)',
+                      animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                      border: '1px solid rgba(0,0,0,0.03)',
+                      transform: 'rotateX(2deg)'
                     }}>
                       <button
                         onClick={() => {
@@ -1023,37 +1208,39 @@ export default function Dashboard() {
                           setEditingPlanId(null);
                           setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
                         }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                        style={{ position: 'absolute', top: 24, right: 24, background: '#f8fafc', border: 'none', cursor: 'pointer', color: '#64748b', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                        onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
+                        onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
                       >
-                        <Icon name="close" size={24} />
+                        <Icon name="close" size={18} />
                       </button>
 
-                      <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e1b4b', marginBottom: 8 }}>{editingPlanId ? 'Update Infrastructure Node' : 'Create New Plan'}</h2>
-                      <p style={{ color: '#64748b', marginBottom: 32 }}>{editingPlanId ? 'Modify configuration for this subscription tier.' : 'Develop a new subscription tier for your infrastructure.'}</p>
+                      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1e1b4b', marginBottom: 6, letterSpacing: '-0.5px' }}>{editingPlanId ? 'Reconfigure Node' : 'Create New Plan'}</h2>
+                      <p style={{ color: '#64748b', marginBottom: 28, fontSize: 14, fontWeight: 500, lineHeight: 1.5 }}>{editingPlanId ? 'Modify infrastructure tier protocols.' : 'Deploy a new subscription tier to your ecosystem.'}</p>
 
-                      <div style={{ display: 'grid', gap: 20 }}>
+                      <div style={{ display: 'grid', gap: 18 }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e1b4b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Name</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Name</label>
                           <input
                             type="text" placeholder="e.g. Pro, Enterprise, Free"
                             value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 15 }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, color: '#1e1b4b' }}
                           />
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e1b4b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price (INR)</label>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price (INR)</label>
                             <input
                               type="number" placeholder="0"
                               value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 15 }}
+                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, color: '#1e1b4b' }}
                             />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e1b4b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cycle</label>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cycle</label>
                             <select
                               value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 15, background: 'white' }}
+                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, background: 'white', color: '#1e1b4b' }}
                             >
                               <option value="MONTHLY">Monthly</option>
                               <option value="YEARLY">Yearly</option>
@@ -1061,19 +1248,19 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e1b4b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
                           <textarea
                             placeholder="Brief summary of the plan..."
                             value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 15, height: 80, resize: 'none' }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, height: 70, resize: 'none', color: '#1e1b4b' }}
                           />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#1e1b4b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Features (One per line)</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Features (One per line)</label>
                           <textarea
-                            placeholder="JWT Authentication&#10;Cloud Storage&#10;24/7 Support"
+                            placeholder="JWT Authentication&#10;Cloud Storage"
                             value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 15, height: 100, resize: 'none' }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: '#1e1b4b', fontWeight: 400 }}
                           />
                         </div>
 
@@ -1109,9 +1296,26 @@ export default function Dashboard() {
                               setIsSubmittingPlan(false);
                             }
                           }}
-                          style={{ background: '#1e1b4b', color: '#FFF', borderRadius: 12, border: 'none', padding: '16px', fontWeight: 700, fontSize: 16, cursor: 'pointer', marginTop: 12, transition: 'all 0.2s', opacity: isSubmittingPlan ? 0.7 : 1 }}
+                          style={{
+                            background: 'rgba(15, 23, 42, 0.95)',
+                            color: '#FFF',
+                            borderRadius: 14,
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            padding: '16px',
+                            fontWeight: 700,
+                            fontSize: 15,
+                            cursor: 'pointer',
+                            marginTop: 10,
+                            transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                            opacity: isSubmittingPlan ? 0.7 : 1,
+                            boxShadow: '0 10px 20px -5px rgba(0,0,0,0.3)',
+                            backdropFilter: 'blur(10px)',
+                            letterSpacing: '0.02em'
+                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'rgba(15, 23, 42, 0.95)'; }}
                         >
-                          {isSubmittingPlan ? (editingPlanId ? 'Updating...' : 'Creating...') : (editingPlanId ? 'Update Node' : 'Launch Plan')}
+                          {isSubmittingPlan ? (editingPlanId ? 'UPDATING...' : 'CONFIGURING...') : (editingPlanId ? 'UPDATE NODE' : 'LAUNCH PLAN')}
                         </button>
                       </div>
                     </div>
@@ -1371,7 +1575,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
         }
         .stat-card:hover {
             transform: translateY(-8px) rotateX(4deg) rotateY(-2deg);
-            box-shadow: 
+            box-shadow:
                 0 30px 60px -12px rgba(99, 102, 241, 0.15),
                 0 18px 36px -18px rgba(0, 0, 0, 0.2),
                 inset 0 1px 1px rgba(255, 255, 255, 1);
@@ -1384,6 +1588,32 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
             0% { stroke-dashoffset: 200; opacity: 0.8; }
             50% { stroke-dashoffset: 0; opacity: 1; }
             100% { stroke-dashoffset: -200; opacity: 0.8; }
+        }
+        @keyframes scan {
+          0% { top: -10%; opacity: 0; }
+          10% { opacity: 0.5; }
+          90% { opacity: 0.5; }
+          100% { top: 110%; opacity: 0; }
+        }
+        @keyframes neuralPulse {
+          0% { opacity: 0.1; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.05); }
+          100% { opacity: 0.1; transform: scale(1); }
+        }
+        @keyframes blinkHUD {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        .neural-grid {
+          background-image: 
+            linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+          background-size: 40px 40px;
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          mask-image: radial-gradient(circle at center, black, transparent 80%);
         }
       `}</style>
 
@@ -1459,87 +1689,146 @@ function PlanCard({ plan, onDelete, onEdit }) {
 
   return (
     <div style={{
-      background: "rgba(255, 255, 255, 0.75)",
-      backdropFilter: "blur(12px)",
+      background: "#0a0a0a",
       borderRadius: 32,
-      border: "1px solid rgba(255, 255, 255, 0.6)",
-      padding: 40,
+      padding: "32px 32px 40px",
       display: "flex",
       flexDirection: "column",
-      boxShadow: "0 20px 40px rgba(0, 0, 0, 0.04)",
-      transition: "all 0.3s ease",
+      boxShadow: "0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05)",
+      transition: "all 0.5s cubic-bezier(0.19, 1, 0.22, 1)",
       position: 'relative',
+      border: '1px solid rgba(255,255,255,0.05)',
+      cursor: 'default',
+      transformStyle: 'preserve-3d',
+      perspective: '1000px',
       overflow: 'hidden'
-    }} className="management-card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+    }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = 'translateY(-10px) rotateX(4deg) rotateY(-2deg)';
+        e.currentTarget.style.boxShadow = '0 40px 80px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255,255,255,0.2)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'translateY(0) rotateX(0) rotateY(0)';
+        e.currentTarget.style.boxShadow = '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1)';
+      }}
+      className="management-card">
+
+      {/* Decorative HUD Corner */}
+      <div style={{
+        position: 'absolute', bottom: 12, right: 12, width: 20, height: 20,
+        borderRight: '1px solid rgba(255,255,255,0.15)',
+        borderBottom: '1px solid rgba(255,255,255,0.15)',
+        opacity: 0.5
+      }} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, position: 'relative', zIndex: 2 }}>
         <div>
-          <h4 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b" }}>{plan.name}</h4>
-          <span style={{
-            fontSize: 10,
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            background: plan.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-            color: plan.active ? '#10b981' : '#f43f5e',
-            padding: '4px 8px',
-            borderRadius: 6
-          }}>
-            {plan.active ? 'Active Node' : 'Inactive'}
-          </span>
+          <h4 style={{ fontSize: 24, fontWeight: 900, color: "#ffffff", margin: 0, letterSpacing: '-0.5px' }}>{plan.name.toLowerCase()}</h4>
+          <div style={{ display: 'flex', marginTop: 6 }}>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 900,
+              textTransform: 'uppercase',
+              letterSpacing: '0.15em',
+              background: plan.active ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              color: plan.active ? '#10b981' : '#f43f5e',
+              padding: '4px 10px',
+              borderRadius: 6,
+              display: 'inline-flex',
+              alignItems: 'center',
+              border: `1px solid ${plan.active ? '#10b98166' : '#f43f5e66'}`,
+              boxShadow: plan.active ? '0 0 15px rgba(16, 185, 129, 0.2)' : 'none'
+            }}>
+              {plan.active ? 'SECURE NODE' : 'INACTIVE'}
+            </span>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 10 }}>
           <button
             onClick={() => onEdit?.(plan)}
-            style={{ background: 'rgba(99, 102, 241, 0.1)', border: 'none', padding: '8px', borderRadius: 10, cursor: 'pointer', color: '#4f46e5' }}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: 'none',
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              cursor: 'pointer',
+              color: '#94a3b8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              outline: 'none'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#ffffff'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
             title="Edit Plan"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
+            <Icon name="edit" size={16} color="currentColor" />
           </button>
           <button
             onClick={() => onDelete?.(plan.id)}
-            style={{ background: 'rgba(244, 63, 94, 0.1)', border: 'none', padding: '8px', borderRadius: 10, cursor: 'pointer', color: '#f43f5e' }}
+            style={{
+              background: 'rgba(244, 63, 94, 0.05)',
+              border: 'none',
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              cursor: 'pointer',
+              color: '#f43f5e',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              outline: 'none'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.1)'; e.currentTarget.style.color = '#fb7185'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.05)'; e.currentTarget.style.color = '#f43f5e'; }}
             title="Delete Plan"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-            </svg>
+            <Icon name="trash" size={16} color="currentColor" />
           </button>
         </div>
       </div>
 
-      <div style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", marginBottom: 8, letterSpacing: "-2px" }}>
+      <div style={{ fontSize: 42, fontWeight: 950, color: "#ffffff", marginBottom: 12, letterSpacing: "-2px", display: 'flex', alignItems: 'baseline', position: 'relative', zIndex: 2 }}>
         {plan.price === 0 ? "Free" : `₹${plan.price}`}
-        <span style={{ fontSize: 14, color: "#94a3b8", fontWeight: 600, letterSpacing: 0 }}>/{plan.billingCycle.toLowerCase()}</span>
+        <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, letterSpacing: 0, marginLeft: 2 }}>/{plan.billingCycle.toLowerCase()}</span>
       </div>
 
-      <p style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6, minHeight: 44 }}>
+      <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 32, lineHeight: 1.6, fontWeight: 500, position: 'relative', zIndex: 2 }}>
         {plan.description || "Infrastructure tier for standard SaaS operations."}
       </p>
 
-      <div style={{ display: "grid", gap: 14, marginTop: 'auto' }}>
-        <div style={{ fontSize: 11, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 4 }}>Node Capabilities</div>
+      <div style={{ display: "grid", gap: 12, position: 'relative', zIndex: 2 }}>
+        <div style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
         {features.length > 0 ? features.map((feature, idx) => (
           <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
-              width: 18, height: 18, borderRadius: "50%", background: "rgba(99, 102, 241, 0.08)",
+              width: 18, height: 18, borderRadius: "50%", background: "rgba(99, 102, 241, 0.1)",
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
             }}>
-              <Icon name="check" size={10} color="#4f46e5" />
+              <Icon name="check" size={10} color="#6366f1" />
             </div>
-            <span style={{ fontSize: 13, color: "#475569", fontWeight: 600 }}>{feature.trim()}</span>
+            <span style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 600, fontFamily: 'var(--ff-mono)', fontSize: '11px' }}>{feature.trim()}</span>
           </div>
         )) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, opacity: 0.6 }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="check" size={10} color="#94a3b8" />
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="check" size={10} color="#475569" />
             </div>
-            <span style={{ fontSize: 13, color: "#64748b", fontWeight: 500 }}>Base system protocols</span>
+            <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>Base system protocols</span>
           </div>
         )}
+      </div>
+
+      {/* Bottom Technical HUD Bar */}
+      <div style={{
+        marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <div style={{ fontSize: '8px', color: '#475569', fontWeight: 900, letterSpacing: '0.2em' }}>AEGIS_SECURE_LINK</div>
+        <div style={{ width: 30, height: 1, background: 'rgba(99,102,241,0.3)' }} />
       </div>
     </div>
   );

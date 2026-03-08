@@ -149,4 +149,19 @@ export const adminAPI = {
   getAllUsers: () => api.get('/admin/users'),
 };
 
+// ==================== AI ENDPOINTS ====================
+export const aiAPI = {
+  // Generate pricing plans based on business description
+  generatePlans: (businessDescription) =>
+    api.post('/v1/ai/generate-plans', { businessDescription }),
+
+  // Get deep subscription analytics
+  getAnalytics: () =>
+    api.get('/v1/ai/analytics'),
+
+  // Predict churn for a specific user
+  predictChurn: (userId) =>
+    api.get(`/v1/ai/predict-churn/${userId}`),
+};
+
 export default api;
