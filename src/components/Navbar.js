@@ -39,7 +39,7 @@ const Navbar = () => {
             <Link to="/" style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '8px',
                 fontFamily: 'var(--ff-sans)',
                 fontWeight: 900,
                 fontSize: '22px',
@@ -49,46 +49,18 @@ const Navbar = () => {
             }}>
                 <div style={{
                     position: 'relative',
-                    width: '42px',
-                    height: '42px',
+                    width: '24px',
+                    height: '24px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexShrink: 0
+                    flexShrink: 0,
+                    borderRadius: '6px',
+                    overflow: 'hidden'
                 }}>
-                    <div style={{
-                        position: 'absolute',
-                        inset: '-4px',
-                        background: 'radial-gradient(circle, rgba(96,165,250,0.2) 0%, rgba(192,132,252,0.15) 50%, transparent 70%)',
-                        borderRadius: '50%',
-                        zIndex: -1,
-                        filter: 'blur(8px)'
-                    }} />
-
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                        <defs>
-                            <linearGradient id="crystalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#1E293B" />
-                                <stop offset="100%" stopColor="#000000" />
-                            </linearGradient>
-                            <filter id="shardGlow">
-                                <feGaussianBlur stdDeviation="1.2" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
-                        <path d="M20 4L36 20L20 36L4 20L20 4Z" stroke="#3B82F6" strokeWidth="0.8" opacity="0.3" strokeDasharray="4 4" />
-                        <path d="M20 6L30 20L20 12L10 20L20 6Z" fill="#60A5FA" opacity="0.8" filter="url(#shardGlow)" />
-                        <path d="M20 34L30 20L20 28L10 20L20 34Z" fill="#C084FC" opacity="0.8" filter="url(#shardGlow)" />
-                        <path d="M20 10L32 20L20 30L8 20L20 10Z" fill="url(#crystalGrad)" stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
-                        <circle cx="20" cy="20" r="2.5" fill="none" stroke="#60A5FA" strokeWidth="1" />
-                        <circle cx="20" cy="20" r="1" fill="white" />
-                        <circle cx="32" cy="20" r="1.5" fill="#3B82F6" />
-                        <circle cx="8" cy="20" r="1.5" fill="#A259FF" />
-                        <circle cx="20" cy="8" r="1" fill="#FF3B82" />
-                        <circle cx="20" cy="32" r="1" fill="#10B981" />
-                    </svg>
+                    <img src="/logo.jpg" alt="Aegis Infra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
-                Aegis Infra
+                <span style={{ fontSize: '16px', fontWeight: 700, letterSpacing: '-0.3px' }}>Aegis Infra</span>
             </Link>
             {/* Center Navigation */}
             <div style={{

@@ -2,10 +2,11 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
-import { publicAPI, subscriptionAPI } from '../services/api';
+import { publicAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import PlanCard from '../components/pricing/PlanCard';
+import CheckoutModal from '../components/pricing/CheckoutModal';
 import { BILLING_INTERVALS, DEFAULT_PLANS, normalizePlanFromBackend } from '../components/pricing/pricingData';
 
 const PricingPage = () => {
@@ -23,6 +24,8 @@ const PricingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [subscribingPlanId, setSubscribingPlanId] = useState(null);
+  // Checkout modal state
+  const [checkoutPlan, setCheckoutPlan] = useState(null);
   const [billingInterval, setBillingInterval] = useState(
     billingParam === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.ANNUAL : BILLING_INTERVALS.MONTHLY
   );
@@ -41,15 +44,26 @@ const PricingPage = () => {
         const response = await publicAPI.getAllPlans();
 
         if (response.data && response.data.data) {
-          const normalized = response.data.data.map((p) => normalizePlanFromBackend(p));
+          const normalized = response.data.data
+            .map((p) => normalizePlanFromBackend(p))
+            .filter((p) => p.active !== false);
           setPlans(normalized.length > 0 ? normalized : DEFAULT_PLANS);
         } else {
           setPlans(DEFAULT_PLANS);
         }
       } catch (err) {
-        console.error('Error fetching plans:', err);
-        setError(err.response?.data?.message || 'Failed to load plans. Please try again.');
-        setPlans(DEFAULT_PLANS);
+        // Network / connection error — backend is offline, use static fallback silently
+        const isNetworkError = !err.response;
+        if (isNetworkError) {
+          console.warn('Backend offline — using default plans.');
+          setPlans(DEFAULT_PLANS);
+          setError(''); // no banner for offline backend
+        } else {
+          // Real server error (500, 403, etc.) — show message
+          console.error('Error fetching plans:', err);
+          setError(err.response?.data?.message || 'Failed to load plans.');
+          setPlans(DEFAULT_PLANS);
+        }
       } finally {
         setLoading(false);
       }
@@ -83,40 +97,14 @@ const PricingPage = () => {
     if (!plan?.id) return;
 
     if (!user) {
-      // Send user to login and return back to this pricing page with their selection.
       const redirect = `/pricing?plan=${encodeURIComponent(String(plan.id))}&planName=${encodeURIComponent(String(plan.name || ''))}&billing=${encodeURIComponent(billingInterval)}`;
       navigate(`/register?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
-    try {
-      setSubscribingPlanId(plan.id);
-      setError('');
-      await subscriptionAPI.subscribe(plan.id);
-
-      toast.success('Payment success', `Subscribed to ${plan.name} plan`);
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Subscription error:', err);
-
-      let errorMessage = err.response?.data?.message || 'Failed to subscribe.';
-      const status = err.response?.status;
-
-      if (status === 401 || status === 403) {
-        errorMessage = 'Your session has expired. Please login again to subscribe.';
-      } else if (status === 500) {
-        // Often a 500 indicates a backend issue with the user context
-        errorMessage = 'Subscription failed. Please try logging in again to refresh your session.';
-      } else if (!errorMessage || errorMessage === 'Failed to subscribe.') {
-        errorMessage = 'Failed to subscribe. Please try logging in again or contact support.';
-      }
-
-      toast.error('Something went wrong', errorMessage);
-      setError(errorMessage);
-    } finally {
-      setSubscribingPlanId(null);
-    }
-  }, [user, billingInterval, navigate, toast]);
+    // Open the checkout modal instead of directly subscribing
+    setCheckoutPlan(plan);
+  }, [user, billingInterval, navigate]);
 
   const filteredPlans = useMemo(() => {
     return plans.filter(p => Number(p.price) > 0);
@@ -304,6 +292,20 @@ const PricingPage = () => {
       </div>
 
       <Footer />
+
+      {/* Checkout Modal */}
+      {checkoutPlan && (
+        <CheckoutModal
+          plan={checkoutPlan}
+          billingInterval={billingInterval}
+          onClose={() => setCheckoutPlan(null)}
+          onSuccess={() => {
+            setCheckoutPlan(null);
+            toast.success('Subscribed!', `You are now on the ${checkoutPlan.name} plan.`);
+            navigate('/dashboard');
+          }}
+        />
+      )}
 
       <style>{`
         @keyframes spin {

@@ -75,16 +75,32 @@ export const publicAPI = {
 
 // ==================== SUBSCRIPTION ENDPOINTS (Plan-based) ====================
 export const subscriptionAPI = {
-  // Subscribe to a plan
-  subscribe: (planId) => api.post(`/subscriptions/subscribe/${planId}`),
+  /**
+   * Step 1 – Process mock payment.
+   * Returns { transactionId } on success.
+   * paymentData: { paymentMethod: 'CARD'|'UPI', cardNumber, cardExpiry, cardCvv, cardHolderName, upiId, amount, planId }
+   */
+  processPayment: (paymentData) =>
+    api.post('/tenant-admin/engine-subscription/pay', paymentData),
 
-  // Get user's current subscription
-  getUserSubscription: () => api.get('/subscriptions'),
+  /**
+   * Step 2 – Activate the plan. Requires a valid transactionId from step 1.
+   * billingInterval: 'MONTHLY' | 'ANNUAL'
+   */
+  subscribe: (planId, billingInterval, transactionId) =>
+    api.post('/tenant-admin/engine-subscription/upgrade', {
+      targetPlanId: planId,
+      billingInterval: billingInterval || 'MONTHLY',
+      transactionId,
+    }),
+
+  // Get current engine subscription for logged-in tenant
+  getUserSubscription: () => api.get('/tenant-admin/engine-subscription'),
 
   // Cancel subscription
   cancelSubscription: () => api.put('/subscriptions/cancel'),
 
-  // Get all plans
+  // Get all plans (admin)
   getAllPlans: () => api.get('/admin/plan'),
 };
 

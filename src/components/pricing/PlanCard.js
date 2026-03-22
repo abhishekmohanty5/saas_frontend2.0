@@ -50,7 +50,7 @@ const PlanCard = memo(({
         background: '#0a0a0a',
         border: '1px solid rgba(255, 255, 255, 0.15)',
         borderRadius: '32px',
-        padding: '36px',
+        padding: '24px',
         transition: 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
         position: 'relative',
         transformStyle: 'preserve-3d',
@@ -66,58 +66,51 @@ const PlanCard = memo(({
           box-shadow: 
             0 10px 40px -10px rgba(0, 0, 0, 0.4), 
             inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+          overflow: hidden;
+        }
+        .pricing-card-3d::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(255,255,255,0.06), transparent 40%);
+          opacity: 0;
+          transition: opacity 0.5s;
+          pointer-events: none;
+        }
+        .pricing-card-3d:hover::after {
+          opacity: 1;
         }
         .pricing-card-3d:hover {
-          transform: translateY(-24px) rotateX(8deg) rotateY(-6deg) translateZ(30px);
-          background: #000000;
+          transform: translateY(-8px) rotateX(3deg) rotateY(-2deg);
+          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 300px), #030303 !important;
+          border-color: rgba(255, 255, 255, 0.25) !important;
           box-shadow: 
-            0 55px 110px -25px rgba(0, 0, 0, 0.5), 
-            0 35px 70px -30px rgba(0, 0, 0, 0.6),
+            0 35px 70px -15px rgba(0, 0, 0, 0.6), 
             inset 0 0 0 1px rgba(255, 255, 255, 0.2);
         }
         .pricing-card-3d:hover .pop-up {
-           transform: translateZ(50px);
+            transform: translateZ(30px);
         }
         .pricing-card-3d:hover .pop-up-far {
-           transform: translateZ(80px);
+            transform: translateZ(45px);
         }
         
         .glassy-cta {
           position: relative;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .glassy-cta::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 50%;
-          height: 100%;
-          background: linear-gradient(
-            to right,
-            transparent,
-            rgba(255, 255, 255, 0.15),
-            transparent
-          );
-          transform: skewX(-25deg);
-          transition: 0.7s;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .glassy-cta:hover {
-          background: rgba(255, 255, 255, 0.12);
-          border-color: rgba(14, 165, 233, 0.5);
-          box-shadow: 0 12px 40px 0 rgba(14, 165, 233, 0.25);
-          transform: translateY(-2px) scale(1.02);
-        }
-        
-        .glassy-cta:hover::before {
-          left: 150%;
+          background: #ffffff;
+          color: #000000 !important;
+          border-color: #ffffff;
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
         }
         
         .glassy-cta:active {
@@ -131,12 +124,16 @@ const PlanCard = memo(({
           className="pop-up"
           style={{
             fontFamily: 'var(--ff-sans)',
-            fontSize: '24px',
-            fontWeight: 900,
-            background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : '#ffffff',
+            fontSize: '28px',
+            fontWeight: 800,
+            background: plan?.name?.toLowerCase() === 'pro' 
+              ? 'linear-gradient(135deg, #38bdf8, #6366f1)' 
+              : plan?.name?.toLowerCase() === 'enterprise'
+                ? 'linear-gradient(135deg, #a78bfa, #c084fc)'
+                : '#ffffff',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.8px',
+            letterSpacing: '-1.2px',
             display: 'inline-block',
             transition: 'transform 0.5s ease',
           }}
@@ -190,45 +187,69 @@ const PlanCard = memo(({
       </p>
 
       {/* Price */}
-      <div className="pop-up" style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '12px', transition: 'transform 0.5s ease' }}>
+      <div className="pop-up" style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '16px', transition: 'transform 0.5s ease' }}>
         {isFree ? (
           <span
             style={{
               fontFamily: 'var(--ff-sans)',
-              fontSize: '38px',
-              fontWeight: 700,
+              fontSize: '44px',
+              fontWeight: 800,
               color: '#ffffff',
               lineHeight: 1,
-              letterSpacing: '-1.5px',
+              letterSpacing: '-2px',
             }}
           >
             Free
           </span>
         ) : (
           <>
+            <span style={{ fontSize: '24px', color: '#8289a0', fontWeight: 600, marginRight: '2px' }}>₹</span>
             <span
               style={{
                 fontFamily: 'var(--ff-sans)',
-                fontSize: '38px',
+                fontSize: '44px',
                 fontWeight: 800,
                 color: '#ffffff',
                 lineHeight: 1,
-                letterSpacing: '-2.5px',
+                letterSpacing: '-3px',
               }}
             >
-              ₹{displayPrice}
+              {displayPrice}
             </span>
-            <span style={{ fontSize: '14px', color: '#94a3b8', fontWeight: 500, marginLeft: '4px' }}>
+            <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500, marginLeft: '4px' }}>
               /mo
             </span>
           </>
         )}
       </div>
 
-      {/* Value prop text */}
-      <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.4, marginBottom: '20px' }}>
-        Level up productivity and creativity with expanded access
-      </p>
+      {/* Premium Metric Badge */}
+      <div style={{ marginBottom: '24px' }}>
+         <div style={{
+           display: 'inline-flex',
+           alignItems: 'center',
+           gap: '6px',
+           background: featured ? 'rgba(56, 189, 248, 0.08)' : 'rgba(255, 255, 255, 0.04)',
+           color: featured ? '#38bdf8' : '#e2e8f0',
+           padding: '8px 14px',
+           borderRadius: '12px',
+           fontSize: '12.5px',
+           fontWeight: 600,
+           fontFamily: 'var(--ff-mono, monospace)',
+           border: featured ? '1px solid rgba(56, 189, 248, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
+           boxShadow: featured ? '0 0 12px rgba(56, 189, 248, 0.1)' : 'none'
+         }}>
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+           </svg>
+           {plan?.name?.toLowerCase() === 'starter' && '5,000 API calls'}
+           {plan?.name?.toLowerCase() === 'pro' && '20,000 API calls'}
+           {plan?.name?.toLowerCase() === 'enterprise' && '100,000 API calls'}
+           {plan?.name?.toLowerCase() === 'free' && '100 API calls'}
+         </div>
+      </div>
+
+      {/* Value prop text removed for minimalism */}
 
       {/* CTA */}
       <button
@@ -277,52 +298,7 @@ const PlanCard = memo(({
         )}
       </button>
 
-      {/* Features */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-        {(plan?.features || [
-          'Advanced reporting',
-          'Call recording',
-          'Business phone services',
-          'Video meeting',
-          'Screen share & file share',
-          'Advanced data privacy'
-        ]).map((feature, i) => {
-          const featureText = typeof feature === 'string' ? feature : feature.text;
-          const included = typeof feature === 'string' ? true : feature.included;
-
-          return (
-            <div
-              key={`${featureText}-${i}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                fontSize: '14px',
-                color: '#344054',
-                fontWeight: 500,
-              }}
-            >
-              <div
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  background: featured ? 'linear-gradient(135deg, #0ea5e9, #6366f1)' : 'rgba(255, 255, 255, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s ease',
-                }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <span style={{ fontSize: '13px', color: '#e2e8f0', opacity: included ? 1 : 0.5 }}>{featureText}</span> {/* Adjusted opacity for included/excluded features */}
-            </div>
-          );
-        })}
-      </div>
+      {/* Features list removed for minimalism */}
     </article>
   );
 });

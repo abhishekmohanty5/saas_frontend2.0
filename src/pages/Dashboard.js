@@ -1463,25 +1463,93 @@ export default function Dashboard() {
             {activeTab === 'services' && (
               <div>
                 <div style={{ marginBottom: 40 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Aegis Infra Modules</span>
+                  </div>
                   <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>System Services</h1>
-                  <p style={{ color: "#475569", marginTop: 4, fontWeight: 500 }}>Operational status and configuration of your infrastructure core modules.</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
+                    <p style={{ color: "#64748b", fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: '#1e1b4b' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
+                  </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
+                  {/* Dynamic Services Logic based on Plan */}
                   {[
-                    { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime' },
-                    { name: 'Subscription Mesh', status: 'Healthy', version: 'v1.1.0', stats: 'Active' },
-                    { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency' },
-                    { name: 'Edge Analytics', status: 'Provisioning', version: 'BETA', stats: 'Coming Soon' },
+                    // Base Services for ALL plans
+                    { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: '#10b981', icon: 'shield' },
+                    { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#10b981', icon: 'zap' },
+
+                    // Specific to Starter and above
+                    { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : '#94a3b8'), icon: 'layers' },
+
+                    // Specific to Growth/Enterprise
+                    { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : '#94a3b8'), icon: 'activity' },
+                    { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : '#94a3b8'), icon: 'cpu' }
                   ].map((service, i) => (
-                    <div key={i} style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(10px)", borderRadius: 24, padding: 28, border: "1px solid rgba(255,255,255,0.5)", boxShadow: "0 10px 30px rgba(0,0,0,0.02)" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
-                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: service.status === 'Healthy' ? '#10b981' : '#6366f1', boxShadow: service.status === 'Healthy' ? '0 0 10px rgba(16, 185, 129, 0.4)' : 'none' }} />
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "#64748b" }}>{service.version}</span>
+                    <div key={i} style={{
+                      background: service.status === 'Locked' ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)",
+                      backdropFilter: "blur(20px)",
+                      borderRadius: 24,
+                      padding: 32,
+                      border: "1px solid rgba(255,255,255,0.8)",
+                      boxShadow: service.status === 'Locked' ? 'none' : "0 20px 40px -15px rgba(0,0,0,0.05)",
+                      transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      cursor: service.status === 'Locked' ? 'not-allowed' : 'pointer',
+                      filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.7)' : 'none'
+                    }}
+                      onMouseEnter={(e) => {
+                        if (service.status !== 'Locked') {
+                          e.currentTarget.style.transform = 'translateY(-4px)';
+                          e.currentTarget.style.boxShadow = `0 25px 50px -12px ${service.color}33`;
+                          e.currentTarget.style.borderColor = `${service.color}44`;
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (service.status !== 'Locked') {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = "0 20px 40px -15px rgba(0,0,0,0.05)";
+                          e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
+                        }
+                      }}>
+
+                      {/* Top decorative gradient line */}
+                      {service.status !== 'Locked' && (
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }} />
+                      )}
+
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: 'flex-start' }}>
+                        <div style={{
+                          width: 44, height: 44, borderRadius: 12,
+                          background: `${service.color}15`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: service.color
+                        }}>
+                          <Icon name={service.icon} size={20} />
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: 11, fontWeight: 900, color: "#94a3b8", fontFamily: 'var(--ff-mono)', letterSpacing: '0.05em' }}>{service.version}</span>
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: 6, marginTop: 6,
+                            background: `${service.color}10`, padding: '4px 8px', borderRadius: 6
+                          }}>
+                            <div style={{
+                              width: 6, height: 6, borderRadius: "50%",
+                              background: service.color,
+                              boxShadow: `0 0 10px ${service.color}`
+                            }} />
+                            <span style={{ fontSize: 10, fontWeight: 800, color: service.color, letterSpacing: '0.1em' }}>{service.status.toUpperCase()}</span>
+                          </div>
+                        </div>
                       </div>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, color: "#1e1b4b", marginBottom: 4 }}>{service.name}</h3>
-                      <p style={{ fontSize: 13, color: "#000000", marginBottom: 20, fontWeight: 500 }}>{service.stats}</p>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: service.status === 'Healthy' ? '#10b981' : '#6366f1' }}>{service.status.toUpperCase()}</div>
+
+                      <h3 style={{ fontSize: 19, fontWeight: 800, color: "#1e1b4b", marginBottom: 8, letterSpacing: '-0.3px' }}>{service.name}</h3>
+                      <p style={{ fontSize: 14, color: "#475569", margin: 0, fontWeight: 500, lineHeight: 1.5 }}>{service.stats}</p>
+
                     </div>
                   ))}
                 </div>

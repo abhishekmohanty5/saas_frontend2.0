@@ -53,18 +53,15 @@ const Footer = () => {
                             marginBottom: '24px'
                         }}>
                             <div style={{
-                                width: '36px',
-                                height: '36px',
-                                background: 'linear-gradient(135deg, #0ea5e9, #2563eb)',
-                                borderRadius: '10px',
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '8px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                boxShadow: '0 0 20px rgba(14, 165, 233, 0.4)'
+                                overflow: 'hidden'
                             }}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                                </svg>
+                                <img src="/logo.jpg" alt="Aegis Infra" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                             </div>
                             Aegis Infra
                         </div>
