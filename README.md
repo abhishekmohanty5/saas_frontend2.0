@@ -1,191 +1,298 @@
-# SaaS Subscription Management Frontend
+# Aegis Infra — SaaS Subscription Management Frontend
 
-A modern React-based frontend for managing SaaS subscriptions with Spring Boot backend integration.
+A production-grade React application for managing SaaS subscriptions, built with role-based access control, JWT authentication, AI-powered analytics, and a fully integrated Spring Boot backend deployed on Railway.
 
-## 🚀 Features
+---
 
-- **Landing Page** - Attractive homepage with features and CTA
-- **Authentication** - Login & Registration with JWT
-- **Pricing Page** - Display subscription plans
-- **User Dashboard** - View and manage subscriptions
-- **Admin Dashboard** - Manage users and plans
-- **Protected Routes** - Role-based access control
-- **Responsive Design** - Works on all devices
+## Table of Contents
 
-## 📁 Project Structure
+- [Overview](#overview)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Application Routes](#application-routes)
+- [API Integration](#api-integration)
+- [Authentication Flow](#authentication-flow)
+- [Deployment](#deployment)
+- [Backend Requirements](#backend-requirements)
+
+---
+
+## Overview
+
+Aegis Infra is a full-stack SaaS platform enabling businesses to offer tiered subscription plans to their tenants. The frontend provides:
+
+- A public-facing landing and pricing page for plan discovery
+- Secure authentication with JWT-based session management
+- A user dashboard for managing personal SaaS subscriptions with analytics and renewal tracking
+- A tenant-level engine subscription management portal (upgrade, pay, cancel)
+- An admin panel for creating, activating, and deleting subscription plans
+- AI-assisted plan generation and churn prediction
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| UI Framework | React 18 |
+| Routing | React Router DOM v6 |
+| HTTP Client | Axios |
+| Animation | Framer Motion |
+| Icons | Lucide React |
+| Styling | Tailwind CSS v3, Custom CSS |
+| Build Tool | Create React App (react-scripts) |
+| Deployment | Vercel |
+
+---
+
+## Project Structure
 
 ```
 saas-frontend/
+├── public/
+│   └── index.html
 ├── src/
-│   ├── components/          # Reusable components
-│   │   └── ProtectedRoute.js
-│   ├── pages/              # Page components
-│   │   ├── LandingPage.js
-│   │   ├── AuthPage.js
-│   │   ├── PricingPage.js
-│   │   ├── Dashboard.js
-│   │   └── AdminDashboard.js
-│   ├── services/           # API integration
-│   │   └── api.js
-│   ├── utils/              # Utilities
-│   │   └── AuthContext.js
-│   ├── App.js              # Main app component
+│   ├── components/
+│   │   └── ProtectedRoute.js       # Role-aware route guard
+│   ├── pages/
+│   │   ├── LandingPage.js          # Public homepage
+│   │   ├── LoginPage.js            # Login form
+│   │   ├── RegisterPage.js         # Registration form
+│   │   ├── AuthPage.js             # Combined auth entry
+│   │   ├── PricingPage.js          # Public plan listing
+│   │   ├── Dashboard.js            # User subscription dashboard
+│   │   ├── SubscriptionsPage.js    # Personal subscription tracker
+│   │   ├── MySubscriptionsPage.js  # Subscription detail view
+│   │   └── AdminDashboard.js       # Admin plan management
+│   ├── services/
+│   │   └── api.js                  # Axios instances and API modules
+│   ├── utils/
+│   │   └── AuthContext.js          # Global auth state (Context API)
+│   ├── styles/                     # Shared stylesheets
+│   ├── App.js                      # Route definitions
 │   ├── App.css
 │   ├── index.js
 │   └── index.css
-├── public/
-│   └── index.html
+├── vercel.json                     # SPA rewrite rule for Vercel
+├── tailwind.config.js
+├── postcss.config.js
 └── package.json
 ```
 
-## 🛠️ Installation & Setup
+---
+
+## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- Spring Boot backend running on `http://localhost:8080`
 
-### Step 1: Install Dependencies
+- Node.js v16 or higher
+- npm v8 or higher
+- Backend service running (local or remote)
+
+### Installation
+
 ```bash
+# Clone the repository
+git clone <repository-url>
 cd saas-frontend
+
+# Install dependencies
 npm install
 ```
 
-### Step 2: Configure Backend URL
-Open `src/services/api.js` and update the backend URL if needed:
-```javascript
-const API_BASE_URL = 'http://localhost:8080/api';
-```
+### Running Locally
 
-### Step 3: Start Development Server
 ```bash
 npm start
 ```
 
-The app will open at `http://localhost:3000`
+The development server starts at `http://localhost:3000`.
 
-## 🔗 Backend Integration
+### Production Build
 
-### API Endpoints Used
+```bash
+npm run build
+```
 
-#### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
+Output is generated in the `build/` directory.
 
-#### Subscriptions
-- `GET /api/subscription/plans` - Get all plans
-- `POST /api/subscription/subscribe` - Subscribe to plan
-- `GET /api/subscription/user` - Get user subscription
-- `POST /api/subscription/cancel` - Cancel subscription
-- `PUT /api/subscription/upgrade` - Upgrade subscription
+---
 
-#### Admin
-- `POST /admin/plans` - Create new plan
-- `PUT /admin/plans/{id}` - Update plan
-- `DELETE /admin/plans/{id}` - Delete plan
-- `GET /admin/users` - Get all users
+## Environment Variables
 
-## 📱 Pages & Routes
+Create a `.env` file in the project root:
 
-| Route | Component | Access | Description |
-|-------|-----------|--------|-------------|
-| `/` | LandingPage | Public | Homepage |
-| `/login` | AuthPage | Public | Login/Register |
-| `/pricing` | PricingPage | Public | View plans |
-| `/dashboard` | Dashboard | Protected | User dashboard |
-| `/admin` | AdminDashboard | Admin Only | Admin panel |
+```env
+REACT_APP_API_URL=http://localhost:8080/api
+```
 
-## 🎨 Styling
+If this variable is not set, the application defaults to the production Railway backend:
 
-- Custom CSS with modern gradients
-- Responsive design (mobile-first)
-- Smooth animations and transitions
-- Professional color scheme
+```
+https://saassubscription-production.up.railway.app/api
+```
 
-## 🔐 Authentication Flow
+---
 
-1. User registers/logs in
-2. Backend returns JWT token
-3. Token stored in localStorage
-4. Token sent in Authorization header for protected requests
-5. AuthContext manages user state globally
+## Application Routes
 
-## 📦 Dependencies
+| Route | Component | Access Level | Description |
+|---|---|---|---|
+| `/` | LandingPage | Public | Marketing homepage |
+| `/login` | LoginPage | Public | User login |
+| `/register` | RegisterPage | Public | New user registration |
+| `/pricing` | PricingPage | Public | Available subscription plans |
+| `/dashboard` | Dashboard | Authenticated | User and engine subscription management |
+| `/subscriptions` | SubscriptionsPage | Authenticated | Personal subscription tracker |
+| `/my-subscriptions` | MySubscriptionsPage | Authenticated | Subscription detail and renewal view |
+| `/admin` | AdminDashboard | Admin Only | Plan creation and user management |
 
-- **react** - UI framework
-- **react-router-dom** - Routing
-- **axios** - HTTP client
+Protected routes are enforced through `ProtectedRoute.js` which validates the JWT token and user role stored in `localStorage`.
 
-## 🚦 Usage
+---
 
-### For Users:
-1. Visit landing page
-2. Click "Get Started" → View pricing
-3. Register/Login
-4. Subscribe to a plan
-5. Manage subscription in dashboard
+## API Integration
 
-### For Admins:
-1. Login with admin credentials
-2. Access `/admin` route
-3. Create/Delete plans
-4. View all users
+All HTTP communication is centralised in `src/services/api.js`. Two Axios instances are used:
 
-## 🔧 Development
+- **`api`** — Authenticated instance. Automatically attaches the `Authorization: Bearer <token>` header and redirects to `/login` on a `401` response.
+- **`publicApi`** — Unauthenticated instance. Used for registration, login, and public plan listing to prevent redirect loops.
 
-### Available Scripts
-- `npm start` - Start development server
-- `npm build` - Build for production
-- `npm test` - Run tests
+### Auth Endpoints
 
-## 🌐 Backend Requirements
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/register` | Register a new user |
+| POST | `/auth/login` | Authenticate and receive JWT |
 
-Your Spring Boot backend should have:
-- CORS enabled for `http://localhost:3000`
-- JWT authentication
-- All API endpoints listed above
+### Public Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/public` | Retrieve all available plans (no auth) |
+
+### Engine Subscription Endpoints (Tenant)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/tenant-admin/engine-subscription/pay` | Process mock payment |
+| POST | `/tenant-admin/engine-subscription/upgrade` | Activate or upgrade a plan |
+| GET | `/tenant-admin/engine-subscription` | Get current engine subscription |
+| PUT | `/subscriptions/cancel` | Cancel active subscription |
+
+### User Subscription Endpoints (Personal Tracker)
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/user-Subscriptions` | Create a personal subscription record |
+| GET | `/user-Subscriptions` | List all personal subscriptions |
+| GET | `/user-Subscriptions/active` | List active subscriptions only |
+| GET | `/user-Subscriptions/category/:id` | Filter by category |
+| PUT | `/user-Subscriptions/update/:id` | Update subscription details |
+| PUT | `/user-Subscriptions/cancel/:id` | Cancel a specific subscription |
+| GET | `/user-Subscriptions/upcoming?days=7` | Upcoming renewals |
+| GET | `/user-Subscriptions/stats` | Aggregated subscription statistics |
+| GET | `/user-Subscriptions/insights` | Smart spending insights |
+
+### Admin Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/admin/plan` | List all plans |
+| POST | `/admin/plan` | Create a new plan |
+| PUT | `/admin/plan/:id/activate` | Activate a plan |
+| PUT | `/admin/plan/:id/deactivate` | Deactivate a plan |
+| DELETE | `/admin/plan/:id` | Delete a plan |
+| GET | `/admin/users` | Retrieve all registered users |
+
+### AI Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/v1/ai/generate-plans` | Generate plans from a business description |
+| GET | `/v1/ai/analytics` | Deep subscription analytics |
+| GET | `/v1/ai/predict-churn/:userId` | Churn prediction for a specific user |
+
+---
+
+## Authentication Flow
+
+1. User submits credentials via `LoginPage` or `RegisterPage`.
+2. The `publicApi` instance sends the request to `/auth/login` or `/auth/register`.
+3. On success, the backend returns a JWT token and user object.
+4. The token and user data are stored in `localStorage`.
+5. `AuthContext` makes the user state globally available across components.
+6. The authenticated `api` instance reads the token from `localStorage` and attaches it to every subsequent request via a request interceptor.
+7. A response interceptor monitors for `401 Unauthorized` responses. If detected outside an auth page, the session is cleared and the user is redirected to `/login`.
+
+---
+
+## Deployment
+
+The application is deployed on **Vercel** with a single-page application rewrite rule defined in `vercel.json`:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+This ensures all client-side routes are handled by React Router without returning a 404 from the server.
+
+To deploy:
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel --prod
+```
+
+Set `REACT_APP_API_URL` as an environment variable in the Vercel project dashboard to point to your production backend.
+
+---
+
+## Backend Requirements
+
+The Spring Boot backend must have:
+
+- CORS configured to allow requests from the frontend origin
+- JWT-based authentication returning a Bearer token on login
+- All API endpoints listed in the integration section above
 
 Example CORS configuration:
+
 ```java
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedOrigins("http://localhost:3000", "https://your-vercel-app.vercel.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }
 ```
 
-## 📸 Screenshots
+The production backend is deployed on Railway at:
 
-### Landing Page
-Modern hero section with features grid and CTA
-
-### Pricing Page
-Beautiful pricing cards with feature lists
-
-### Dashboard
-Clean user dashboard with subscription details
-
-### Admin Dashboard
-Comprehensive admin panel for management
-
-## 🤝 Contributing
-
-Feel free to fork and submit PRs!
-
-## 📄 License
-
-MIT License
-
-## 👨‍💻 Author
-
-Built for SaaS Subscription Management System
+```
+https://saassubscription-production.up.railway.app
+```
 
 ---
 
-**Note**: Make sure your Spring Boot backend is running before starting the frontend!
+## License
+
+This project is developed as part of an MCA end-semester project.
