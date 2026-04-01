@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Backend base URL
 // Backend base URL - Dynamic
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backendasservice-production.up.railway.app/';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backendasservice-production.up.railway.app/api';
 
 // Create axios instance
 const api = axios.create({
