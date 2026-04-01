@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import '../styles/ApiCredentialsSection.css';
 
-const ApiCredentialsSection = () => {
+const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initialClientSecret }) => {
   const [credentials, setCredentials] = useState({
-    clientId: 'sb_8c92539935d064df0',
-    clientSecret: 'sk_2cda39f1d2a14952a4e724f743c9ec30',
+    clientId: initialClientId || 'NOT_PROVISIONED',
+    clientSecret: initialClientSecret || 'NOT_PROVISIONED',
   });
+
+  // Update when props change
+  React.useEffect(() => {
+    setCredentials({
+      clientId: initialClientId || 'NOT_PROVISIONED',
+      clientSecret: initialClientSecret || 'NOT_PROVISIONED',
+    });
+  }, [initialClientId, initialClientSecret]);
 
   const [revealed, setRevealed] = useState({
     clientId: false,

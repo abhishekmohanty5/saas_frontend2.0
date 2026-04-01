@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ConsoleSidebar from '../components/ConsoleSidebar';
 import Navbar from '../components/Navbar';
+import ApiCredentialsSection from '../components/ApiCredentialsSection';
 import { useToast } from '../components/ToastProvider';
 import api, { aiAPI } from '../services/api';
 
@@ -867,64 +868,10 @@ export default function Dashboard() {
 
             {activeTab === 'credentials' && (
               <div style={{ maxWidth: 880 }}>
-                {/* Section Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                      <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
-                      <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Security & Access</span>
-                    </div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>API Credentials</h1>
-                    <p style={{ color: "#475569", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
-                      Secure keys to authenticate your application with the Aegis Mesh network.
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: "grid", gap: 32 }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                    {[
-                      { label: "CLIENT ID", value: dashboard?.clientId, type: "public" },
-                      { label: "CLIENT SECRET", value: dashboard?.clientSecret, type: "secret" }
-                    ].map((cred, i) => (
-                      <div key={i}>
-                        <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 10, paddingLeft: 4 }}>{cred.label}</div>
-                        <div style={{
-                          background: "rgba(0,0,0,0.02)",
-                          border: "1px solid rgba(0,0,0,0.05)",
-                          borderRadius: 12,
-                          padding: '14px 18px',
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          fontFamily: "var(--ff-mono)",
-                          position: 'relative',
-                          transition: 'all 0.2s'
-                        }}>
-                          <div style={{ fontSize: 14, color: "#1e1b4b", letterSpacing: '-0.3px', fontWeight: 600 }}>
-                            {cred.type === 'secret' && !showSecret ? 'jh_live_sk_••••••••••••••••' : (cred.value || 'NOT_PROVISIONED')}
-                          </div>
-
-                          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                            {cred.type === 'secret' && (
-                              <button
-                                onClick={() => setShowSecret(!showSecret)}
-                                style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                              >
-                                {showSecret ? 'HIDE' : 'SHOW'}
-                              </button>
-                            )}
-                            <button
-                              onClick={() => { navigator.clipboard.writeText(cred.value); toast.success("Copied", `${cred.label} copied`); }}
-                              style={{ background: 'transparent', border: 'none', color: '#6366f1', fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                            >
-                              COPY
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <ApiCredentialsSection 
+                  clientId={dashboard?.clientId} 
+                  clientSecret={dashboard?.clientSecret} 
+                />
 
                   {/* Quick Start Module */}
                   <div style={{
