@@ -902,7 +902,6 @@ export default function Dashboard() {
                       &#125;)
                     </pre>
                   </div>
-                </div>
               </div>
             )}
 
