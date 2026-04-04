@@ -90,27 +90,6 @@ const HeroSubSphere = () => {
                 pointerEvents: 'none'
             }} />
 
-            {/* Drifting 3D Glass Shards */}
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: -1 }}>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                    <div key={i} style={{
-                        position: 'absolute',
-                        top: `${(i * 123) % 100}%`,
-                        left: `${(i * 456) % 100}%`,
-                        width: `${40 + (i % 3) * 30}px`,
-                        height: `${100 + (i % 2) * 50}px`,
-                        background: 'rgba(255, 255, 255, 0.3)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.5)',
-                        borderRadius: '4px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
-                        transform: `translate3d(${tilt.x * (i * 0.3)}px, ${tilt.y * (i * 0.3)}px, ${i * 60}px) rotateX(${tilt.y * 0.5}deg) rotateY(${tilt.x * 0.5}deg)`,
-                        opacity: 0.15 + (i * 0.05),
-                        transition: 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1)'
-                    }} />
-                ))}
-            </div>
-
             {/* ═ THE AEGIS SPATIAL GLOBE (Pure CSS 3D - Setup for Perf) ═ */}
             <div style={{
                 position: 'absolute',
@@ -219,10 +198,10 @@ const HeroSubSphere = () => {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '12px',
-                    background: 'rgba(255, 255, 255, 0.8)',
+                    background: 'var(--badge-bg)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(0,0,0,0.05)',
+                    border: '1px solid var(--badge-border)',
                     borderRadius: '100px',
                     padding: '10px 24px',
                     fontSize: '11px',
@@ -264,7 +243,7 @@ const HeroSubSphere = () => {
                     fontWeight: 450,
                     animation: 'fadeSlideUp 0.8s 0.2s ease both'
                 }}>
-                    Aegis Infra is the high-velocity core powering the next generation of SaaS.
+                    Aegis is the high-velocity core powering the next generation of SaaS.
                     Unified auth and subscription lifecycles in one spatial engine.
                 </p>
 
@@ -279,7 +258,7 @@ const HeroSubSphere = () => {
                         onClick={() => navigate('/register')}
                         style={{
                             background: 'var(--ink)',
-                            color: 'white',
+                            color: 'var(--btn-primary-text)',
                             fontSize: '15px',
                             fontWeight: 800,
                             padding: '18px 48px',
@@ -361,12 +340,12 @@ const FloatingGlassBadge = ({ top, bottom, left, right, label, iconColor, tilt, 
         position: 'absolute', top, bottom, left, right,
         display: 'inline-flex', alignItems: 'center', gap: '8px',
         padding: '10px 20px',
-        background: 'rgba(255, 255, 255, 0.6)',
+        background: 'var(--glass-bg)',
         backdropFilter: 'blur(24px)',
         WebkitBackdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.8)',
+        border: '1px solid var(--glass-border)',
         borderRadius: '100px',
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.4)',
+        boxShadow: `0 20px 40px -10px rgba(0,0,0,0.05), var(--glass-shadow-inner)`,
         /* Parallax + Float */
         transform: `translate3d(${tilt.x * 0.2}px, ${tilt.y * 0.2}px, 0)`,
         transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',

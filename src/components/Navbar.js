@@ -1,11 +1,22 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
+import ThemeSwitcher from './ThemeSwitcher';
+import { Home, LayoutDashboard, CreditCard } from 'lucide-react'; // Added icons
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { isAuthenticated, user, logout } = useAuth();
+    const [isScrolled, setIsScrolled] = React.useState(false);
+
+    React.useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const handleLogout = () => {
         logout();
@@ -19,70 +30,71 @@ const Navbar = () => {
     };
 
     return (
-        <nav style={{
+        <div style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
+            top: isScrolled ? '16px' : '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
             zIndex: 200,
-            padding: '0 48px',
-            height: '68px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'rgba(250,250,248,0.92)',
-            backdropFilter: 'blur(24px) saturate(180%)',
-            borderBottom: '1px solid rgba(36,32,27,0.08)',
-            transition: 'background 0.3s'
+            width: '90%',
+            maxWidth: '1200px',
+            transition: 'top 0.3s ease'
         }}>
-            {/* Logo */}
-            <Link to="/" style={{
+            <nav style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                fontFamily: 'var(--ff-sans)',
-                fontWeight: 900,
-                fontSize: '22px',
-                color: 'var(--ink)',
-                letterSpacing: '-1.4px',
-                textDecoration: 'none'
+                justifyContent: 'space-between',
+                padding: isScrolled ? '10px 20px' : '12px 24px',
+                borderRadius: '9999px',
+                background: isScrolled ? 'var(--nav-glass-bg, rgba(255,255,255,0.08))' : 'var(--nav-glass-bg-idle, rgba(255,255,255,0.03))',
+                backdropFilter: 'saturate(180%) blur(20px)',
+                WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+                border: isScrolled ? '1px solid var(--nav-glass-border, rgba(255,255,255,0.1))' : '1px solid transparent',
+                boxShadow: isScrolled ? '0 10px 40px -10px rgba(0,0,0,0.2)' : 'none',
+                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)'
             }}>
+                {/* Logo and Center Nav Wrapper to flex them similarly to the image */}
+                <div style={{ flex: 1 }}>
+                    {/* Logo */}
+                    <Link to="/" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontFamily: 'var(--ff-sans)',
+                        fontWeight: 900,
+                        fontSize: '18px',
+                        color: 'var(--theme-text)',
+                        letterSpacing: '-1.2px',
+                        textDecoration: 'none'
+                    }}>
+                        <span style={{ fontSize: '17.5px', fontWeight: 800, letterSpacing: '-0.3px' }}>Aegis <span style={{ color: '#3b82f6' }}>I</span>nfra</span>
+                    </Link>
+                </div>
+
+                {/* Center Navigation - Truly Centered */}
                 <div style={{
-                    position: 'relative',
-                    width: '24px',
-                    height: '24px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexShrink: 0,
-                    borderRadius: '6px',
-                    overflow: 'hidden'
+                    gap: '8px',
+                    flex: 1
                 }}>
-                    <img src="/logo.jpg" alt="Aegis Infra Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <NavLink onClick={() => navigate('/')} icon={<Home size={18} />}>Home</NavLink>
+                    <NavLink onClick={() => scrollToSection('how-it-works')} icon={<LayoutDashboard size={18} />}>How It Works</NavLink>
+                    <NavLink onClick={() => navigate('/pricing')} icon={<CreditCard size={18} />}>Pricing</NavLink>
                 </div>
-                <span style={{ fontSize: '16px', fontWeight: 700, letterSpacing: '-0.3px' }}>Aegis Infra</span>
-            </Link>
-            {/* Center Navigation */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-            }}>
-                <NavLink onClick={() => navigate('/')}>Home</NavLink>
-                <NavLink onClick={() => scrollToSection('features')}>Features</NavLink>
-                <NavLink onClick={() => scrollToSection('how-it-works')}>How It Works</NavLink>
-                <NavLink onClick={() => navigate('/pricing')}>Pricing</NavLink>
-                <NavLink onClick={() => scrollToSection('api-docs')}>API Docs</NavLink>
-            </div>
 
-            {/* Right Actions */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-            }}>
-                {isAuthenticated ? (
-                    <>
+                {/* Right Actions */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: '16px',
+                    flex: 1
+                }}>
+                    <ThemeSwitcher />
+                    {isAuthenticated ? (
+                        <>
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -104,7 +116,7 @@ const Navbar = () => {
                             <span style={{
                                 fontSize: '13px',
                                 fontWeight: 700,
-                                color: 'var(--ink)',
+                                color: 'var(--theme-text)',
                                 fontFamily: 'var(--ff-sans)',
                                 letterSpacing: '-0.2px'
                             }}>
@@ -130,19 +142,17 @@ const Navbar = () => {
                                 padding: '8px 16px',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
-                                border: '1px solid var(--sand)',
-                                background: 'var(--white)',
-                                color: 'var(--ink)',
+                                border: '1px solid var(--theme-border)',
+                                background: 'transparent',
+                                color: 'var(--theme-text)',
                                 transition: 'all 0.15s',
                                 fontFamily: 'var(--ff-sans)'
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--cream)';
-                                e.target.style.borderColor = 'var(--stone)';
+                                e.target.style.background = 'var(--muted)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'var(--white)';
-                                e.target.style.borderColor = 'var(--sand)';
+                                e.target.style.background = 'transparent';
                             }}
                         >
                             Log out
@@ -150,17 +160,27 @@ const Navbar = () => {
                         <button
                             onClick={() => navigate('/dashboard')}
                             style={{
-                                fontSize: '13px',
+                                fontSize: '14px',
                                 fontWeight: 600,
-                                padding: '8px 16px',
-                                borderRadius: '8px',
+                                padding: '8px 24px',
+                                borderRadius: '100px',
                                 cursor: 'pointer',
-                                border: 'none',
-                                background: 'var(--ink)',
-                                color: 'var(--white)',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                                transition: 'all 0.15s',
+                                border: '1px solid var(--theme-border)',
+                                background: 'transparent',
+                                backdropFilter: 'blur(10px)',
+                                color: 'var(--theme-text)',
+                                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                 fontFamily: 'var(--ff-sans)'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(128,128,128,0.1)';
+                                e.target.style.transform = 'translateY(-1px)';
+                                e.target.style.boxShadow = '0 10px 20px -10px rgba(0,0,0,0.1)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = 'none';
                             }}
                         >
                             Developer Console →
@@ -176,20 +196,20 @@ const Navbar = () => {
                                 padding: '8px 22px',
                                 borderRadius: '100px',
                                 cursor: 'pointer',
-                                border: '1px solid rgba(0,0,0,0.05)',
-                                background: 'rgba(255,255,255,0.4)',
+                                border: '1px solid var(--theme-border)',
+                                background: 'transparent',
                                 backdropFilter: 'blur(10px)',
-                                color: 'var(--ink)',
+                                color: 'var(--theme-text)',
                                 transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                 fontFamily: 'var(--ff-sans)'
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'rgba(255,255,255,0.8)';
+                                e.target.style.background = 'rgba(128,128,128,0.1)';
                                 e.target.style.transform = 'translateY(-1px)';
                                 e.target.style.boxShadow = '0 10px 20px -10px rgba(0,0,0,0.1)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'rgba(255,255,255,0.4)';
+                                e.target.style.background = 'transparent';
                                 e.target.style.transform = 'translateY(0)';
                                 e.target.style.boxShadow = 'none';
                             }}
@@ -204,10 +224,10 @@ const Navbar = () => {
                                 padding: '8px 24px',
                                 borderRadius: '100px',
                                 cursor: 'pointer',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                background: 'linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,1) 100%)',
+                                border: '1px solid var(--theme-border)',
+                                background: 'var(--theme-text)',
                                 backdropFilter: 'blur(10px)',
-                                color: 'var(--white)',
+                                color: 'var(--bg)',
                                 boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
                                 transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                 fontFamily: 'var(--ff-sans)'
@@ -226,12 +246,13 @@ const Navbar = () => {
                     </>
                 )}
             </div >
-        </nav >
+            </nav >
+        </div >
     );
 };
 
 // NavLink Component
-const NavLink = ({ children, onClick }) => {
+const NavLink = ({ children, onClick, icon }) => {
     const [isHovered, setIsHovered] = React.useState(false);
 
     return (
@@ -240,20 +261,23 @@ const NavLink = ({ children, onClick }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             style={{
-                fontSize: '14px',
-                fontWeight: 700,
-                color: isHovered ? 'var(--ink)' : 'rgba(15, 23, 42, 0.7)',
-                padding: '8px 14px',
-                borderRadius: '8px',
+                fontSize: '15px',
+                fontWeight: 600,
+                color: isHovered ? 'var(--theme-text)' : 'var(--muted)',
+                padding: '8px 16px',
+                borderRadius: '9999px',
                 cursor: 'pointer',
                 border: 'none',
-                background: isHovered ? 'rgba(0,0,0,0.03)' : 'none',
-                backdropFilter: isHovered ? 'blur(4px)' : 'none',
+                background: isHovered ? 'var(--theme-border)' : 'transparent',
                 transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
-                fontFamily: 'var(--ff-sans)'
+                fontFamily: 'var(--ff-sans)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
             }}
         >
+            {icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
             {children}
         </button>
     );

@@ -4,6 +4,7 @@ import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SuccessModal from '../components/SuccessModal';
 
 const BackgroundElements = () => {
     return (
@@ -13,13 +14,13 @@ const BackgroundElements = () => {
             overflow: 'hidden',
             zIndex: 0,
             pointerEvents: 'none',
-            background: '#FFFFFF', // Pure White
+            background: 'var(--bg)', // Dynamic CSS variable
         }}>
             {/* Very subtle grid for texture */}
             <div style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px)`,
+                backgroundImage: `linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)`,
                 backgroundSize: '40px 40px',
                 zIndex: 1,
             }} />
@@ -33,7 +34,7 @@ const FloatingGeometry = ({ delay, size, top, left, right, bottom, rotate }) => 
         top, left, right, bottom,
         width: size,
         height: size,
-        border: '1px solid rgba(37, 99, 235, 0.05)',
+        border: '1px solid var(--border)',
         borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
         animation: `driftBlob 40s infinite linear ${delay}`,
         transform: `rotate(${rotate})`,
@@ -51,6 +52,16 @@ const LoginPage = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPass, setShowPass] = useState(false);
+    const [showVerifyModal, setShowVerifyModal] = useState(false);
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        if (queryParams.get('verified') === 'true') {
+            setShowVerifyModal(true);
+            // Optionally strip the param to prevent it from showing on reload
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [location]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -74,7 +85,7 @@ const LoginPage = () => {
         try {
             const result = await login(form.email.trim(), form.password);
             if (result.success) {
-                toast.success('Login successful', 'Welcome back to Aegis Infra');
+                // The user requested to remove the popup notification that comes after login
                 const user = JSON.parse(localStorage.getItem('user'));
                 if (user?.role === 'ROLE_SUPER_ADMIN') {
                     navigate('/super-admin');
@@ -106,7 +117,13 @@ const LoginPage = () => {
             flexDirection: 'column',
             position: 'relative',
             overflow: 'hidden' // Ensure the background elements don't spill
-        }}>
+        }}>            <SuccessModal 
+                isOpen={showVerifyModal} 
+                onClose={() => setShowVerifyModal(false)}
+                title="Success!"
+                message="Your account has been successfully verified! Please log in to continue."
+                buttonText="Log In"
+            />
             <Navbar />
             <BackgroundElements />
 
@@ -218,28 +235,28 @@ const styles = {
         zIndex: 10,
     },
     card: {
-        background: '#FFFFFF', // Creamy White
+        background: 'var(--surface)',
         width: '100%',
         maxWidth: '480px',
         padding: '48px 52px',
         borderRadius: '32px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.02)',
+        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px var(--border)',
         textAlign: 'left',
         position: 'relative',
         zIndex: 5,
         transition: 'all 0.3s ease',
     },
     heading: {
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: 'var(--ff-sans)',
         fontSize: '32px',
         fontWeight: 800,
-        color: '#1e293b',
+        color: 'var(--ink)',
         letterSpacing: '-1.5px',
         marginBottom: '8px',
     },
     subtext: {
         fontSize: '15px',
-        color: '#64748b',
+        color: 'var(--muted)',
         marginBottom: '24px',
     },
     switchLink: {
@@ -251,17 +268,19 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         padding: '0 20px',
-        border: `1px solid ${hasError ? '#ef4444' : '#E2E8F0'}`,
-        borderRadius: '12px',
-        background: '#F8FAFC',
+        border: `1px solid ${hasError ? '#ef4444' : 'var(--border)'}`,
+        borderRadius: '16px',
+        background: 'var(--bg)',
         height: '56px',
+        overflow: 'hidden',
         transition: 'all 0.2s',
     }),
     inputIcon: {
-        color: '#9CA3AF',
+        color: 'var(--muted)',
         marginRight: '12px',
         display: 'flex',
         alignItems: 'center',
+        zIndex: 2,
     },
     inputField: {
         flex: 1,
@@ -270,14 +289,14 @@ const styles = {
         outline: 'none',
         fontSize: '16px',
         fontWeight: '500',
-        color: '#1e293b',
+        color: 'var(--ink)',
         background: 'transparent',
     },
     eyeBtn: {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        color: '#9CA3AF',
+        color: 'var(--muted)',
         padding: '0 4px',
     },
     fieldError: {
@@ -287,7 +306,7 @@ const styles = {
         fontWeight: 500,
     },
     forgotLink: {
-        fontSize: '15px',
+        fontSize: '14px',
         color: '#3b82f6',
         textDecoration: 'none',
         fontWeight: 600,
@@ -295,15 +314,15 @@ const styles = {
     submitBtn: {
         width: '100%',
         height: '56px',
-        background: '#1e293b',
-        color: '#ffffff',
+        background: 'var(--ink)',
+        color: 'var(--bg)',
         borderRadius: '32px',
         fontSize: '18px',
         fontWeight: 700,
         border: 'none',
         cursor: 'pointer',
         transition: 'all 0.2s',
-        boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+        boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
         marginTop: '8px',
     },
     dividerContainer: {
@@ -314,17 +333,17 @@ const styles = {
     line: {
         flex: 1,
         height: '1px',
-        background: '#E2E8F0',
+        background: 'var(--border)',
     },
     dividerText: {
-        color: '#9CA3AF',
+        color: 'var(--muted)',
         fontSize: '13px',
         margin: '0 16px',
         fontWeight: 500,
     },
     socialPrompt: {
         textAlign: 'center',
-        color: '#64748b',
+        color: 'var(--muted)',
         fontSize: '12px',
         fontWeight: 600,
         marginBottom: '16px',
@@ -340,19 +359,19 @@ const styles = {
         width: '52px',
         height: '52px',
         borderRadius: '32px',
-        border: '1px solid #E2E8F0',
-        background: '#FFFFFF',
+        border: '1px solid var(--border)',
+        background: 'var(--surface)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
         transition: 'all 0.2s',
-        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
+        boxShadow: 'var(--shadow)',
     },
     legalText: {
         textAlign: 'center',
         fontSize: '12px',
-        color: '#6B7280',
+        color: 'var(--muted)',
         marginTop: '40px', // Compacted footer margin
         lineHeight: 1.6,
     },

@@ -4,89 +4,68 @@ import { Link } from 'react-router-dom';
 const Footer = () => {
     return (
         <footer style={{
-            background: '#020617',
-            padding: '100px 48px 40px',
+            background: 'var(--surface)',
+            padding: '60px 48px 30px', // Reduced height
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            borderTop: '1px solid var(--border)'
         }}>
-            {/* Top Glow Divider */}
+            {/* Subtle Top Glow Divider */}
             <div style={{
                 position: 'absolute',
                 top: 0,
-                left: '10%',
-                right: '10%',
+                left: '15%',
+                right: '15%',
                 height: '1px',
-                background: 'linear-gradient(90deg, transparent, #3b82f6, transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent)',
                 opacity: 0.5
             }} />
 
-            {/* Subtle Mesh Background */}
+            {/* Frosty Glow Background */}
             <div style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundImage: 'radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.1), transparent 70%)',
+                backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(59, 130, 246, 0.05), transparent 60%)',
                 pointerEvents: 'none'
             }} />
 
-            <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-                {/* Top Section */}
+            <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+                
+                {/* Main Content Area: Shorter and more focused */}
                 <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '64px',
-                    marginBottom: '80px'
+                    display: 'flex',
+                    flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+                    justifyContent: 'space-between',
+                    gap: '48px',
+                    marginBottom: '48px'
                 }}>
-                    {/* Brand & Stats Column */}
-                    <div style={{ gridColumn: 'span 2' }}>
+                    {/* Left: Brand and Project Info */}
+                    <div style={{ maxWidth: '400px' }}>
                         <div style={{
-                            color: '#ffffff',
-                            fontSize: '24px',
-                            fontWeight: 900,
+                            color: 'var(--ink)',
+                            fontSize: '20px',
+                            fontWeight: 800,
                             fontFamily: 'var(--ff-sans)',
-                            letterSpacing: '-1.5px',
+                            letterSpacing: '-0.3px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '14px',
+                            marginBottom: '16px'
+                        }}>
+                            Aegis <span style={{ color: '#3b82f6', marginLeft: '4px' }}>I</span>nfra
+                        </div>
+                        
+                        <p style={{
+                            color: 'var(--muted)',
+                            fontSize: '15px',
+                            lineHeight: 1.6,
                             marginBottom: '24px'
                         }}>
-                            <div style={{
-                                width: '30px',
-                                height: '30px',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                overflow: 'hidden'
-                            }}>
-                                <img src="/logo.jpg" alt="Aegis Infra" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            </div>
-                            Aegis Infra
-                        </div>
-
-                        {/* Live Status Console */}
-                        <div style={{
-                            background: 'rgba(0, 0, 0, 0.3)',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            maxWidth: '340px',
-                            marginBottom: '32px',
-                            fontFamily: 'monospace',
-                            fontSize: '11px'
-                        }}>
-                            <div style={{ color: '#0ea5e9', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-                                <span>AEGIS_ENGINE_V2_4</span>
-                                <span style={{ color: '#10b981' }}>● LIVE</span>
-                            </div>
-                            <div style={{ color: 'rgba(255, 255, 255, 0.4)', lineHeight: 1.5 }}>
-                                {'>'} CLUSTER: ASIA_EXT_01<br />
-                                {'>'} BANDWIDTH: 4.8 GB/S<br />
-                                {'>'} LATENCY: 12MS_EST
-                            </div>
-                        </div>
+                            The unified spatial engine empowering the next generation of serverless SaaS platforms. 
+                            We engineer high-velocity edge environments, advanced auth protocols, and zero-latency persistent data storage.
+                        </p>
 
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <SocialButton type="github" />
@@ -95,67 +74,66 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    {/* Links Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px', gridColumn: 'span 3' }}>
-                        {/* Product Column */}
+                    {/* Right: Condensed Essential Links */}
+                    <div style={{ display: 'flex', gap: '64px', flexWrap: 'wrap' }}>
+                        {/* Column 1 */}
                         <div>
-                            <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', marginBottom: '28px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                                Core Engine
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '20px', letterSpacing: '0.5px' }}>
+                                Platform
                             </div>
-                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <FooterLink to="/#features">API Gateway</FooterLink>
-                                <FooterLink to="/pricing">Pricing Tiers</FooterLink>
-                                <FooterLink to="/#api-docs">SDK Resources</FooterLink>
-                                <FooterLink to="/dashboard">Admin Console</FooterLink>
+                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <FooterLink to="/#features">Spatial Engine</FooterLink>
+                                <FooterLink to="/pricing">Compute Tiers</FooterLink>
+                                <FooterLink to="/#api-docs">API References</FooterLink>
                             </nav>
                         </div>
 
-                        {/* Company Column */}
+                        {/* Column 2 */}
                         <div>
-                            <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', marginBottom: '28px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                                Infrastructure
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ink)', marginBottom: '20px', letterSpacing: '0.5px' }}>
+                                Resources
                             </div>
-                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <FooterLink to="/">Edge Nodes</FooterLink>
+                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <FooterLink to="/">Global Status</FooterLink>
-                                <FooterLink to="/">Mesh Security</FooterLink>
-                                <FooterLink to="/">Compliance</FooterLink>
-                            </nav>
-                        </div>
-
-                        {/* Support Column */}
-                        <div>
-                            <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', marginBottom: '28px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                                Support
-                            </div>
-                            <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <FooterLink to="/login">Documentation</FooterLink>
-                                <FooterLink to="/register">Developer API</FooterLink>
-                                <FooterLink to="/dashboard">Ticketing</FooterLink>
-                                <FooterLink to="/">Community</FooterLink>
+                                <FooterLink to="/login">Client Console</FooterLink>
+                                <FooterLink to="/">Documentation</FooterLink>
                             </nav>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Section */}
+                {/* Bottom Section: Clean, Apple-like footer bar */}
                 <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    paddingTop: '40px',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                    paddingTop: '24px',
+                    borderTop: '1px solid var(--border)',
                     fontSize: '13px',
-                    color: 'rgba(255, 255, 255, 0.4)',
+                    color: 'var(--muted)',
                     flexWrap: 'wrap',
-                    gap: '24px'
+                    gap: '16px'
                 }}>
-                    <div style={{ fontWeight: 400, letterSpacing: '0.3px' }}>
-                        © 2026 Aegis Infra. Unified SaaS Engine. <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>| All Data Encrypted AES-256</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span>© {new Date().getFullYear()} Aegis Infrastructure Inc.</span>
+                        <span style={{ color: 'var(--border)' }}>|</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px rgba(16, 185, 129, 0.5)' }} />
+                            <span>All systems operational</span>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '32px', fontWeight: 500 }}>
-                        <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 'inherit' }}>Privacy Artifacts</button>
-                        <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: 'inherit' }}>End-User Terms</button>
+                    <div style={{ display: 'flex', gap: '24px' }}>
+                        <span className="footer-bottom-link">Terms of Service</span>
+                        <span className="footer-bottom-link">Privacy Policy</span>
+                        <style>{`
+                            .footer-bottom-link {
+                                cursor: pointer;
+                                transition: color 0.2s;
+                            }
+                            .footer-bottom-link:hover {
+                                color: var(--ink);
+                            }
+                        `}</style>
                     </div>
                 </div>
             </div>
@@ -172,18 +150,24 @@ const FooterLink = ({ to, children }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             style={{
-                fontSize: '14px',
-                color: isHovered ? '#ffffff' : 'rgba(255, 255, 255, 0.5)',
+                fontSize: '13.5px',
+                color: isHovered ? 'var(--ink)' : 'var(--muted)',
                 textDecoration: 'none',
-                transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                transform: isHovered ? 'translateX(6px)' : 'none'
+                gap: '8px'
             }}
         >
-            {isHovered && <div style={{ width: '4px', height: '1px', background: '#3b82f6' }} />}
-            {children}
+            <span style={{ 
+                color: '#3b82f6', 
+                opacity: isHovered ? 1 : 0, 
+                transform: isHovered ? 'translateX(0)' : 'translateX(-8px)',
+                transition: 'all 0.2s ease'
+            }}>›</span>
+            <span style={{ transform: isHovered ? 'translateX(2px)' : 'translateX(-8px)', transition: 'all 0.2s ease' }}>
+                {children}
+            </span>
         </Link>
     );
 };
@@ -195,17 +179,17 @@ const SocialButton = ({ type }) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: isHovered ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                border: `1px solid ${isHovered ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.05)'}`,
+                width: '34px',
+                height: '34px',
+                borderRadius: '8px',
+                background: isHovered ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: `1px solid ${isHovered ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255, 255, 255, 0.05)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                color: isHovered ? '#3b82f6' : 'rgba(255, 255, 255, 0.6)'
+                transition: 'all 0.2s ease',
+                color: isHovered ? '#3b82f6' : '#94A3B8'
             }}
         >
             {type === 'github' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>}

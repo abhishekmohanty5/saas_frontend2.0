@@ -177,7 +177,7 @@ const SubscriptionsPage = () => {
         <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'var(--ff-sans)' }}>
             <ConsoleSidebar />
 
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--cream)', overflow: 'auto' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg)', overflow: 'auto' }}>
 
                 {/* Header */}
                 <header style={styles.header}>
@@ -222,7 +222,7 @@ const SubscriptionsPage = () => {
                                     <span style={{
                                         ...styles.tabCount,
                                         background: activeTab === tab.key ? 'var(--ink)' : 'var(--sand)',
-                                        color: activeTab === tab.key ? '#fff' : 'var(--muted)',
+                                        color: activeTab === tab.key ? 'var(--bg)' : 'var(--muted)',
                                     }}>
                                         {tab.count}
                                     </span>
@@ -279,7 +279,7 @@ const SubscriptionsPage = () => {
                                                     borderRadius: '20px',
                                                     border: '1px solid var(--sand)',
                                                     background: upcomingDays === d ? 'var(--ink)' : 'transparent',
-                                                    color: upcomingDays === d ? '#fff' : 'var(--muted)',
+                                                    color: upcomingDays === d ? 'var(--bg)' : 'var(--muted)',
                                                     cursor: 'pointer',
                                                     fontSize: '12px',
                                                     fontWeight: 600,
@@ -543,10 +543,10 @@ const billingLabel = (c) => ({ WEEKLY: 'Weekly', MONTHLY: 'Monthly', YEARLY: 'Ye
 
 /* ── Styles ── */
 const modalLabel = { display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontFamily: 'var(--ff-sans)' };
-const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--sand)', background: 'var(--white)', fontSize: '14px', fontFamily: 'var(--ff-sans)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' };
+const inputStyle = { width: '100%', padding: '10px 14px', borderRadius: '16px', border: '1px solid var(--sand)', background: 'var(--surface)', fontSize: '14px', fontFamily: 'var(--ff-sans)', color: 'var(--ink)', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' };
 const selectStyle = { ...inputStyle, cursor: 'pointer' };
-const cancelBtnStyle = { padding: '10px 20px', borderRadius: '8px', border: '1px solid var(--sand)', background: 'transparent', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-sans)', color: 'var(--ink)', transition: 'background 0.15s' };
-const saveBtnStyle = { padding: '10px 20px', borderRadius: '8px', border: 'none', background: 'var(--ink)', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: 'var(--ff-sans)', transition: 'background 0.15s' };
+const cancelBtnStyle = { padding: '10px 20px', borderRadius: '16px', border: '1px solid var(--sand)', background: 'transparent', cursor: 'pointer', fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-sans)', color: 'var(--ink)', transition: 'background 0.15s' };
+const saveBtnStyle = { padding: '10px 20px', borderRadius: '16px', border: 'none', background: 'var(--ink)', color: 'var(--bg)', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: 'var(--ff-sans)', transition: 'background 0.15s' };
 
 const spinnerStyle = {
     width: '36px', height: '36px',
@@ -564,17 +564,17 @@ const styles = {
     },
     headerTitle: { fontFamily: 'var(--ff-sans)', fontSize: '15px', fontWeight: 700, color: 'rgba(255,255,255,0.9)' },
     addBtn: {
-        padding: '9px 18px', borderRadius: '8px', border: 'none',
+        padding: '9px 18px', borderRadius: '16px', border: 'none',
         background: 'var(--gold)', color: 'var(--ink)',
         fontSize: '13px', fontWeight: 700, fontFamily: 'var(--ff-sans)',
         cursor: 'pointer', transition: 'background 0.15s',
     },
     toast: {
         position: 'fixed', top: '20px', right: '20px',
-        background: 'var(--ink)', color: '#fff',
+        background: 'var(--ink)', color: 'var(--bg)',
         padding: '12px 20px', borderRadius: '10px',
         fontSize: '13px', fontWeight: 600, fontFamily: 'var(--ff-sans)',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.2)', zIndex: 9999,
+        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)', zIndex: 9999,
     },
     content: { padding: '28px 32px', flex: 1 },
     tabBar: {
@@ -589,7 +589,7 @@ const styles = {
     },
     tabCount: {
         fontSize: '11px', fontWeight: 700, padding: '2px 7px',
-        borderRadius: '12px', transition: 'all 0.15s',
+        borderRadius: '16px', transition: 'all 0.15s',
     },
     warningBanner: {
         display: 'flex', alignItems: 'center', gap: '10px',
@@ -598,13 +598,13 @@ const styles = {
         fontSize: '14px', fontWeight: 600, color: '#E89A3C',
     },
     subCard: {
-        background: 'var(--white)', border: '1px solid var(--sand)', borderRadius: '12px',
+        background: 'var(--surface)', border: '1px solid var(--sand)', borderRadius: '16px',
         padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         transition: 'all 0.15s',
     },
     subIcon: {
         width: '42px', height: '42px', borderRadius: '10px',
-        background: 'var(--cream)', border: '1px solid var(--sand)',
+        background: 'var(--bg)', border: '1px solid var(--sand)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: '20px', flexShrink: 0,
     },
@@ -619,20 +619,20 @@ const styles = {
         gap: '16px', marginBottom: '24px',
     },
     statCard: {
-        background: 'var(--white)', border: '1px solid var(--sand)', borderRadius: '14px',
+        background: 'var(--surface)', border: '1px solid var(--sand)', borderRadius: '14px',
         padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '4px',
     },
     section: {
-        background: 'var(--white)', border: '1px solid var(--sand)',
+        background: 'var(--surface)', border: '1px solid var(--sand)',
         borderRadius: '14px', padding: '24px',
     },
     insightRow: {
         display: 'flex', gap: '10px', alignItems: 'flex-start',
-        padding: '8px 0', borderBottom: '1px solid var(--cream)',
+        padding: '8px 0', borderBottom: '1px solid var(--bg)',
     },
     formError: {
         background: 'rgba(181,70,58,0.08)', border: '1px solid rgba(181,70,58,0.2)',
-        borderRadius: '8px', padding: '10px 14px', color: 'var(--rose)',
+        borderRadius: '16px', padding: '10px 14px', color: 'var(--rose)',
         fontSize: '13px', fontWeight: 500, marginBottom: '16px',
     },
     formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' },
@@ -643,9 +643,9 @@ const styles = {
         zIndex: 1000, padding: '24px',
     },
     modal: {
-        background: 'var(--white)', borderRadius: '20px',
+        background: 'var(--surface)', borderRadius: '20px',
         padding: '32px', width: '100%', maxWidth: '600px',
-        boxShadow: '0 32px 64px rgba(0,0,0,0.2)',
+        boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
         maxHeight: '90vh', overflowY: 'auto',
     },
 };

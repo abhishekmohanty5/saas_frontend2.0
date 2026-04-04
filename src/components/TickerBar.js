@@ -17,36 +17,38 @@ const TickerBar = () => {
     return (
         <div
             style={{
-                background: 'linear-gradient(90deg, #0F172A 0%, #1E293B 50%, #0F172A 100%)', // Midnight Slate
+                background: 'var(--glass-bg)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
                 padding: '28px 0',
                 overflow: 'hidden',
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-                borderTop: '1px solid rgba(37, 99, 235, 0.2)', // Subtle Azure Edge
-                borderBottom: '1px solid rgba(37, 99, 235, 0.2)',
+                boxShadow: 'var(--glass-shadow-inner), 0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+                borderTop: '1px solid var(--theme-border)',
+                borderBottom: '1px solid var(--theme-border)',
                 zIndex: 10,
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* Ambient Azure Glow */}
+            {/* Ambient Responsive Glow */}
             <div style={{
                 position: 'absolute', inset: 0,
-                backgroundImage: `radial-gradient(circle at 50% 130%, rgba(37, 99, 235, 0.15) 0%, transparent 60%)`,
+                backgroundImage: `radial-gradient(circle at 50% 130%, rgba(59, 130, 246, 0.1) 0%, transparent 60%)`,
                 pointerEvents: 'none'
             }} />
 
             {/* Cinematic Masks */}
             <div style={{
                 position: 'absolute', top: 0, bottom: 0, left: 0, width: '250px',
-                background: 'linear-gradient(to right, #0F172A, transparent)',
+                background: 'linear-gradient(to right, var(--bg), transparent)',
                 zIndex: 2, pointerEvents: 'none'
             }} />
             <div style={{
                 position: 'absolute', top: 0, bottom: 0, right: 0, width: '250px',
-                background: 'linear-gradient(to left, #0F172A, transparent)',
+                background: 'linear-gradient(to left, var(--bg), transparent)',
                 zIndex: 2, pointerEvents: 'none'
             }} />
 
@@ -93,7 +95,7 @@ const TickerItem = ({ text, highlight }) => {
                 alignItems: 'center',
                 gap: '14px',
                 fontSize: '11px',
-                color: 'rgba(255, 255, 255, 0.5)',
+                color: 'var(--muted)',
                 fontWeight: 600,
                 padding: '0 65px',
                 cursor: 'default',
@@ -104,19 +106,19 @@ const TickerItem = ({ text, highlight }) => {
         >
             {/* Azure Pulsing Core */}
             <div style={{
-                width: '5px', height: '5px', borderRadius: '50%', background: '#3B82F6',
+                width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor',
                 animation: 'pulseAzure 2s infinite ease-in-out'
             }} />
 
             <span>{text}</span>
 
             <strong style={{
-                color: '#60A5FA', // Light Azure
-                background: 'rgba(37, 99, 235, 0.1)',
+                color: 'var(--accent2)', // Light Azure
+                background: 'var(--gold-dim)',
                 padding: '6px 14px',
                 borderRadius: '4px',
                 fontWeight: 800,
-                border: '1px solid rgba(37, 99, 235, 0.3)',
+                border: '1px solid var(--theme-border)',
                 letterSpacing: '1px'
             }}>
                 {highlight}

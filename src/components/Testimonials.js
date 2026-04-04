@@ -30,16 +30,16 @@ const Testimonials = () => {
 
     return (
         <div style={{
-            background: 'var(--white)', // Unified background
+            background: 'var(--bg)', // Unified background that flips properly
             padding: '120px 48px',
             position: 'relative',
             overflow: 'hidden',
-            borderTop: '1px solid var(--sand)'
+            borderTop: '1px solid var(--theme-border)'
         }}>
             {/* Subtle background texture */}
             <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(200,168,75,0.2), transparent)'
+                background: 'linear-gradient(90deg, transparent, var(--theme-border), transparent)'
             }} />
 
             <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative' }} className="reveal">
@@ -48,7 +48,7 @@ const Testimonials = () => {
                     fontWeight: 800,
                     letterSpacing: '2px',
                     textTransform: 'uppercase',
-                    color: 'var(--gold)',
+                    color: 'var(--gold2)',
                     marginBottom: '20px',
                     textAlign: 'center'
                 }}>
@@ -59,14 +59,14 @@ const Testimonials = () => {
                     fontSize: 'clamp(36px, 5vw, 56px)',
                     lineHeight: 1.1,
                     letterSpacing: '-1.5px',
-                    color: 'var(--ink)',
+                    color: 'var(--theme-text)',
                     fontWeight: 400,
                     maxWidth: '800px',
                     margin: '0 auto',
                     textAlign: 'center'
                 }}>
                     Trusted by engineers <br />
-                    <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>scaling the future.</em>
+                    <em style={{ fontStyle: 'italic', color: 'var(--gold2)' }}>scaling the future.</em>
                 </h2>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px', marginTop: '72px' }}>
@@ -83,32 +83,32 @@ const TestimonialCard = ({ stars, quote, name, role, avatar, gradient }) => {
     return (
         <div
             style={{
-                background: 'white',
-                border: '1px solid rgba(0,0,0,0.05)',
+                background: 'var(--testimonial-bg)',
+                border: '1px solid var(--theme-border)',
                 borderRadius: '24px',
                 padding: '40px',
                 transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-                boxShadow: '0 4px 20px -4px rgba(0,0,0,0.02)'
+                boxShadow: '0 4px 20px -4px rgba(0,0,0,0.05)'
             }}
             onMouseOver={e => {
                 e.currentTarget.style.transform = 'translateY(-8px)';
-                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.08)';
-                e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)';
+                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.15)';
+                e.currentTarget.style.borderColor = 'var(--gold2)';
             }}
             onMouseOut={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px -4px rgba(0,0,0,0.02)';
-                e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)';
+                e.currentTarget.style.boxShadow = '0 4px 20px -4px rgba(0,0,0,0.05)';
+                e.currentTarget.style.borderColor = 'var(--theme-border)';
             }}
         >
-            <div style={{ color: 'var(--gold)', fontSize: '13px', letterSpacing: '2px', marginBottom: '24px' }}>
+            <div style={{ color: 'var(--gold2)', fontSize: '13px', letterSpacing: '2px', marginBottom: '24px' }}>
                 {'★'.repeat(stars)}
             </div>
 
             <div style={{
                 fontFamily: 'var(--ff-serif)',
                 fontSize: '18px',
-                color: 'var(--ink)',
+                color: 'var(--theme-text)',
                 lineHeight: 1.6,
                 fontStyle: 'italic',
                 marginBottom: '32px'
@@ -121,7 +121,7 @@ const TestimonialCard = ({ stars, quote, name, role, avatar, gradient }) => {
                 alignItems: 'center',
                 gap: '16px',
                 paddingTop: '32px',
-                borderTop: '1px solid rgba(0,0,0,0.04)'
+                borderTop: '1px solid var(--theme-border)'
             }}>
                 <div style={{
                     width: '42px',
@@ -133,14 +133,14 @@ const TestimonialCard = ({ stars, quote, name, role, avatar, gradient }) => {
                     justifyContent: 'center',
                     fontSize: '14px',
                     fontWeight: 700,
-                    color: 'white',
+                    color: '#ffffff',
                     background: gradient,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}>
                     {avatar}
                 </div>
                 <div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--ink)' }}>{name}</div>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--theme-text)' }}>{name}</div>
                     <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>{role}</div>
                 </div>
             </div>

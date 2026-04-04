@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './utils/AuthContext';
+import { ThemeProvider } from './utils/ThemeContext';
 import { ToastProvider } from './components/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -17,10 +18,11 @@ import './App.css';
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <Router>
-          <div className="App">
+    <ThemeProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <div className="App">
             <Routes>
               {/* ── Public Routes ── */}
               <Route path="/" element={<LandingPage />} />
@@ -73,6 +75,7 @@ function App() {
         </Router>
       </AuthProvider>
     </ToastProvider>
+  </ThemeProvider>
   );
 }
 

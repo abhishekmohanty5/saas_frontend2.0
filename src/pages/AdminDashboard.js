@@ -116,11 +116,11 @@ const AdminDashboard = () => {
   ];
 
   if (loading) {
-    return <div style={{ background: '#0a0a0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Loading secure admin gateway...</div>;
+    return <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading secure admin gateway...</div>;
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0a0a0a', color: '#ededed', fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)', fontFamily: 'Inter, system-ui, sans-serif' }}>
 
       {/* ── Main layout ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
@@ -128,19 +128,19 @@ const AdminDashboard = () => {
         {/* ── TOP HEADER ── */}
         <header style={{
           height: '64px',
-          borderBottom: '1px solid #1f1f1f',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 32px',
         }}>
           <div style={{ fontSize: '15px', fontWeight: 500, color: '#f5f5f5', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={() => navigate('/dashboard')} style={{ background: '#121212', border: '1px solid #27272a', color: '#a1a1aa', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>&larr; Exit Admin</button>
+            <button onClick={() => navigate('/dashboard')} style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--muted)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>&larr; Exit Admin</button>
             Super Admin Control Panel
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600 }}>SYSTEM ADMIN / {user.email}</span>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }} />
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)' }} />
           </div>
         </header>
 
@@ -150,7 +150,7 @@ const AdminDashboard = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
             <div>
               <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Platform Metrics</h1>
-              <p style={{ color: '#a1a1aa', fontSize: '14px', marginTop: '4px' }}>Global overview of users, active tenants, and revenue models.</p>
+              <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '4px' }}>Global overview of users, active tenants, and revenue models.</p>
             </div>
           </div>
 
@@ -163,15 +163,15 @@ const AdminDashboard = () => {
           }}>
             {METRIC_CARDS.map((card, i) => (
               <div key={i} style={{
-                background: '#121212',
-                border: '1px solid #1f1f1f',
-                borderRadius: '12px',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '16px',
                 padding: '24px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between'
               }}>
-                <div style={{ color: '#a1a1aa', fontSize: '13px', fontWeight: 500, marginBottom: '16px' }}>{card.label}</div>
+                <div style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: 500, marginBottom: '16px' }}>{card.label}</div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                   <div style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-1px' }}>{card.value}</div>
                   <div style={{
@@ -195,7 +195,7 @@ const AdminDashboard = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
             {/* Plans Section */}
-            <div style={{ background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Pricing Plans</h2>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -207,7 +207,7 @@ const AdminDashboard = () => {
                   </button>
                   <button
                     onClick={() => setShowCreatePlan(!showCreatePlan)}
-                    style={{ background: '#ededed', color: '#0a0a0a', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                    style={{ background: 'var(--ink)', color: 'var(--bg)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
                   >
                     + New Plan
                   </button>
@@ -215,51 +215,51 @@ const AdminDashboard = () => {
               </div>
 
               {showCreatePlan && (
-                <form onSubmit={handleCreatePlan} style={{ background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', padding: '20px', marginBottom: '24px' }}>
+                <form onSubmit={handleCreatePlan} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
                   <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                    <input type="text" placeholder="Plan Name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ flex: 1, background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
-                    <input type="number" placeholder="Price (₹)" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })} style={{ width: '100px', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
-                    <input type="number" placeholder="Days" value={newPlan.duration} onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })} style={{ width: '80px', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                    <input type="text" placeholder="Plan Name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                    <input type="number" placeholder="Price (₹)" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })} style={{ width: '100px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
+                    <input type="number" placeholder="Days" value={newPlan.duration} onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })} style={{ width: '80px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
                   </div>
-                  <input type="text" placeholder="Features (comma separated)" value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })} style={{ width: '100%', background: '#121212', border: '1px solid #27272a', color: '#fff', padding: '10px 12px', borderRadius: '6px', outline: 'none', marginBottom: '12px' }} required />
+                  <input type="text" placeholder="Features (comma separated)" value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })} style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none', marginBottom: '12px' }} required />
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                    <button type="button" onClick={() => setShowCreatePlan(false)} style={{ background: 'transparent', color: '#a1a1aa', border: 'none', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-                    <button type="submit" style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Create</button>
+                    <button type="button" onClick={() => setShowCreatePlan(false)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+                    <button type="submit" style={{ background: '#3b82f6', color: 'var(--surface)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Create</button>
                   </div>
                 </form>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {plans.map(plan => (
-                  <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px' }}>
+                  <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
                     <div>
                       <div style={{ fontSize: '15px', fontWeight: 600 }}>{plan.name}</div>
-                      <div style={{ fontSize: '13px', color: '#a1a1aa' }}>₹{plan.price} / {plan.durationInDays} days</div>
+                      <div style={{ fontSize: '13px', color: 'var(--muted)' }}>₹{plan.price} / {plan.durationInDays} days</div>
                     </div>
                     <button onClick={() => handleDeletePlan(plan.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Delete</button>
                   </div>
                 ))}
-                {plans.length === 0 && <div style={{ color: '#71717a', fontSize: '13px' }}>No plans available.</div>}
+                {plans.length === 0 && <div style={{ color: 'var(--muted)', fontSize: '13px' }}>No plans available.</div>}
               </div>
             </div>
 
             {/* Users Section */}
-            <div style={{ background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
               <div style={{ marginBottom: '24px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>User Directory</h2>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#71717a', textTransform: 'uppercase' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase' }}>
                   <span>ID</span>
                   <span>Identity</span>
                   <span>Role</span>
                 </div>
                 {users.map(u => (
-                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', alignItems: 'center', padding: '12px 16px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '8px', fontSize: '14px' }}>
-                    <span style={{ color: '#a1a1aa', fontFamily: 'monospace' }}>#{u.id}</span>
+                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', alignItems: 'center', padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', fontSize: '14px' }}>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>#{u.id}</span>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontWeight: 500 }}>{u.username || 'N/A'}</span>
-                      <span style={{ fontSize: '12px', color: '#71717a' }}>{u.email}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{u.email}</span>
                     </div>
                     <span style={{
                       fontSize: '11px',
@@ -277,26 +277,26 @@ const AdminDashboard = () => {
           </div>
 
           {/* Tenants Section */}
-          <div style={{ marginTop: '32px', background: '#121212', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '24px' }}>
+          <div style={{ marginTop: '32px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
             <div style={{ marginBottom: '24px' }}>
               <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Platform Tenants</h2>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
               {tenants.map(t => (
-                <div key={t.id} style={{ padding: '20px', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: '12px' }}>
+                <div key={t.id} style={{ padding: '20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, color: '#fff' }}>{t.name}</span>
-                    <span style={{ fontSize: '11px', color: '#71717a', fontFamily: 'monospace' }}>ID: {t.id}</span>
+                    <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--surface)' }}>{t.name}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>ID: {t.id}</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#a1a1aa' }}>
-                    Email: <span style={{ color: '#ededed' }}>{t.email}</span>
+                  <div style={{ fontSize: '13px', color: 'var(--muted)' }}>
+                    Email: <span style={{ color: 'var(--ink)' }}>{t.email}</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
-                    Created: <span style={{ color: '#ededed' }}>{new Date(t.createdAt).toLocaleDateString()}</span>
+                  <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
+                    Created: <span style={{ color: 'var(--ink)' }}>{new Date(t.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               ))}
-              {tenants.length === 0 && <div style={{ color: '#71717a', fontSize: '13px' }}>No active tenants found.</div>}
+              {tenants.length === 0 && <div style={{ color: 'var(--muted)', fontSize: '13px' }}>No active tenants found.</div>}
             </div>
           </div>
 
@@ -310,37 +310,37 @@ const AdminDashboard = () => {
             background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)'
           }}>
             <div style={{
-              width: '100%', maxWidth: '500px', background: '#121212',
+              width: '100%', maxWidth: '500px', background: 'var(--surface)',
               borderRadius: '24px', padding: '40px', position: 'relative',
-              border: '1px solid #1f1f1f', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
+              border: '1px solid var(--border)', boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
             }}>
               <button
                 onClick={() => setShowAiModal(false)}
-                style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', cursor: 'pointer', color: '#71717a' }}
+                style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--muted)' }}
               >
                 <Icon name="close" size={24} />
               </button>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Icon name="zap" size={28} color="#3b82f6" />
                 </div>
                 <div>
                   <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>AI Market Intelligence</h2>
-                  <p style={{ color: '#a1a1aa', fontSize: '14px', margin: 0 }}>Generate optimal pricing strategies for tenants.</p>
+                  <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Generate optimal pricing strategies for tenants.</p>
                 </div>
               </div>
 
               {!aiSuggestedResult && !aiLoading && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#71717a', marginBottom: '12px', textTransform: 'uppercase' }}>Describe the Business Domain</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '12px', textTransform: 'uppercase' }}>Describe the Business Domain</label>
                   <textarea
                     value={aiDescription}
                     onChange={(e) => setAiDescription(e.target.value)}
                     placeholder="e.g. A global fintech platform needing high-security infrastructure..."
                     style={{
-                      width: '100%', height: '140px', padding: '16px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid #27272a',
-                      fontSize: '14px', color: '#fff', outline: 'none', resize: 'none', marginBottom: '24px', lineHeight: '1.6'
+                      width: '100%', height: '140px', padding: '16px', borderRadius: '16px', background: 'var(--bg)', border: '1px solid var(--border)',
+                      fontSize: '14px', color: 'var(--surface)', outline: 'none', resize: 'none', marginBottom: '24px', lineHeight: '1.6'
                     }}
                   />
                   <button
@@ -358,9 +358,9 @@ const AdminDashboard = () => {
                       }
                     }}
                     style={{
-                      width: '100%', background: '#3b82f6', color: '#fff', borderRadius: '10px', border: 'none',
+                      width: '100%', background: '#3b82f6', color: 'var(--surface)', borderRadius: '10px', border: 'none',
                       padding: '16px', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
-                      boxShadow: '0 10px 15px -3px rgba(59,130,246,0.3)', transition: 'all 0.2s'
+                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)', transition: 'all 0.2s'
                     }}
                   >
                     Analyze & Generate Models
@@ -370,8 +370,8 @@ const AdminDashboard = () => {
 
               {aiLoading && (
                 <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', border: "3px solid #1f1f1f", borderTopColor: "#3b82f6", borderRadius: "50%", animation: "spinAi 1s linear infinite", margin: '0 auto 20px' }} />
-                  <p style={{ fontSize: '14px', color: '#a1a1aa' }}>Computing market-aligned subscription models...</p>
+                  <div style={{ width: '40px', height: '40px', border: "3px solid var(--border)", borderTopColor: "#3b82f6", borderRadius: "50%", animation: "spinAi 1s linear infinite", margin: '0 auto 20px' }} />
+                  <p style={{ fontSize: '14px', color: 'var(--muted)' }}>Computing market-aligned subscription models...</p>
                   <style>{`@keyframes spinAi { to { transform: rotate(360deg); } }`}</style>
                 </div>
               )}
@@ -395,15 +395,15 @@ const AdminDashboard = () => {
                           setShowCreatePlan(true);
                         }}
                         style={{
-                          padding: '16px 20px', borderRadius: '12px', background: '#0a0a0a', border: '1px solid #27272a',
+                          padding: '16px 20px', borderRadius: '16px', background: 'var(--bg)', border: '1px solid var(--border)',
                           cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                         }}
-                        onMouseOver={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#121212'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.borderColor = '#27272a'; e.currentTarget.style.background = '#0a0a0a'; }}
+                        onMouseOver={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'var(--surface)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
                       >
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>{p.name}</div>
-                          <div style={{ fontSize: '12px', color: '#71717a' }}>{p.description}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--surface)' }}>{p.name}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{p.description}</div>
                         </div>
                         <div style={{ fontSize: '15px', fontWeight: 700, color: '#3b82f6' }}>₹{p.price}</div>
                       </div>
@@ -411,7 +411,7 @@ const AdminDashboard = () => {
                   </div>
                   <button
                     onClick={() => setAiSuggestedResult(null)}
-                    style={{ width: '100%', background: 'transparent', border: '1px solid #1f1f1f', color: '#a1a1aa', borderRadius: '10px', padding: '12px', marginTop: '24px', cursor: 'pointer', fontSize: '13px' }}
+                    style={{ width: '100%', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', borderRadius: '10px', padding: '12px', marginTop: '24px', cursor: 'pointer', fontSize: '13px' }}
                   >
                     &larr; Refine Analysis
                   </button>

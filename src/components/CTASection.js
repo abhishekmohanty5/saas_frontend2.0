@@ -5,9 +5,9 @@ const CTASection = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto', background: 'var(--white)' }} className="reveal">
+        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto', background: 'var(--bg)' }} className="reveal">
             <div style={{
-                background: 'black',
+                background: 'var(--testimonial-bg)',
                 borderRadius: '24px',
                 padding: '80px 80px',
                 display: 'grid',
@@ -16,7 +16,8 @@ const CTASection = () => {
                 alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                border: '1px solid rgba(255,255,255,0.05)'
+                border: '1px solid var(--theme-border)',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)'
             }}>
                 {/* Background decorations */}
                 <div style={{
@@ -42,20 +43,20 @@ const CTASection = () => {
 
                 {/* Left Content */}
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold2)', marginBottom: '16px' }}>
                         Get started today
                     </div>
                     <h2 style={{
                         fontFamily: 'var(--ff-serif)',
                         fontSize: '44px',
-                        color: 'white',
+                        color: 'var(--theme-text)',
                         lineHeight: 1.1,
                         letterSpacing: '-0.5px',
                         fontWeight: 400
                     }}>
-                        Ready to ship your <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>subscription</em> product?
+                        Ready to ship your <em style={{ fontStyle: 'italic', color: 'var(--gold2)' }}>subscription</em> product?
                     </h2>
-                    <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, marginTop: '16px', maxWidth: '460px' }}>
+                    <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.65, marginTop: '16px', maxWidth: '460px' }}>
                         Connect your frontend to the SubSphere backend in minutes. JWT auth, plan management, automated renewals — all ready to go.
                     </p>
 
@@ -66,8 +67,8 @@ const CTASection = () => {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                background: 'var(--ink)',
-                                color: 'var(--white)',
+                                background: 'var(--theme-text)',
+                                color: 'var(--bg)',
                                 fontSize: '15px',
                                 fontWeight: 600,
                                 fontFamily: 'var(--ff-sans)',
@@ -75,18 +76,16 @@ const CTASection = () => {
                                 borderRadius: 'var(--r2)',
                                 border: 'none',
                                 cursor: 'pointer',
-                                boxShadow: '0 2px 6px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08)',
+                                boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
                                 transition: 'all 0.2s'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--ink2)';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'var(--ink)';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.08)';
+                                e.currentTarget.style.boxShadow = '0 4px 14px rgba(0,0,0,0.1)';
                             }}
                         >
                             Start free 14-day trial
@@ -94,7 +93,8 @@ const CTASection = () => {
                                 width: '20px',
                                 height: '20px',
                                 borderRadius: '50%',
-                                background: 'rgba(255,255,255,0.15)',
+                                background: 'rgba(128,128,128,0.2)',
+                                color: 'var(--bg)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -108,17 +108,17 @@ const CTASection = () => {
                                 alignItems: 'center',
                                 gap: '6px',
                                 background: 'none',
-                                color: 'rgba(255,255,255,0.5)',
+                                color: 'var(--muted)',
                                 fontSize: '14px',
-                                fontWeight: 500,
+                                fontWeight: 600,
                                 border: 'none',
                                 cursor: 'pointer',
                                 fontFamily: 'var(--ff-sans)',
-                                padding: '16px 0',
+                                padding: '16px 12px',
                                 transition: 'color 0.15s'
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
-                            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
+                            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--theme-text)'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
                         >
                             View documentation
                         </button>
@@ -144,14 +144,15 @@ const TrustItem = ({ text }) => (
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(128,128,128,0.03)',
+        border: '1px solid var(--theme-border)',
         borderRadius: 'var(--r)',
-        padding: '12px 20px',
-        transition: 'all 0.3s'
+        padding: '16px 20px',
+        transition: 'all 0.3s',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
     }}>
-        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--gold)' }} />
-        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: 500, letterSpacing: '0.2px' }}>{text}</span>
+        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--gold2)' }} />
+        <span style={{ fontSize: '14px', color: 'var(--theme-text)', fontWeight: 600, letterSpacing: '0.2px' }}>{text}</span>
     </div>
 );
 

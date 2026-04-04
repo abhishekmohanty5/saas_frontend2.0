@@ -47,8 +47,8 @@ const PlanCard = memo(({
       className={`pricing-card-3d ${featured ? 'featured' : ''}`}
       aria-label={`${plan?.name} pricing plan`}
       style={{
-        background: '#0a0a0a',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
         borderRadius: '32px',
         padding: '24px',
         transition: 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
@@ -64,15 +64,15 @@ const PlanCard = memo(({
       <style>{`
         .pricing-card-3d {
           box-shadow: 
-            0 10px 40px -10px rgba(0, 0, 0, 0.4), 
-            inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+            0 10px 40px -10px rgba(0, 0, 0, 0.1), 
+            inset 0 0 0 1px var(--border);
           overflow: hidden;
         }
         .pricing-card-3d::after {
           content: '';
           position: absolute;
           inset: 0;
-          background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(255,255,255,0.06), transparent 40%);
+          background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(14, 165, 233, 0.06), transparent 40%);
           opacity: 0;
           transition: opacity 0.5s;
           pointer-events: none;
@@ -82,11 +82,11 @@ const PlanCard = memo(({
         }
         .pricing-card-3d:hover {
           transform: translateY(-8px) rotateX(3deg) rotateY(-2deg);
-          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 300px), #030303 !important;
-          border-color: rgba(255, 255, 255, 0.25) !important;
+          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 300px), var(--surface) !important;
+          border-color: var(--accent2) !important;
           box-shadow: 
-            0 35px 70px -15px rgba(0, 0, 0, 0.6), 
-            inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            0 35px 70px -15px rgba(0, 0, 0, 0.2), 
+            inset 0 0 0 1px var(--border2);
         }
         .pricing-card-3d:hover .pop-up {
             transform: translateZ(30px);
@@ -98,18 +98,19 @@ const PlanCard = memo(({
         .glassy-cta {
           position: relative;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--surface2);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          border: 1px solid var(--border2);
+          color: var(--ink);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
           transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .glassy-cta:hover {
-          background: #ffffff;
-          color: #000000 !important;
-          border-color: #ffffff;
-          box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+          background: var(--ink);
+          color: var(--bg) !important;
+          border-color: var(--ink);
+          box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
           transform: translateY(-2px);
         }
         
@@ -117,7 +118,7 @@ const PlanCard = memo(({
           transform: scale(0.98);
         }
       `}</style>
-
+      
       {/* Header Row: Title & Badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', transformStyle: 'preserve-3d' }}>
         <div
@@ -130,7 +131,7 @@ const PlanCard = memo(({
               ? 'linear-gradient(135deg, #38bdf8, #6366f1)' 
               : plan?.name?.toLowerCase() === 'enterprise'
                 ? 'linear-gradient(135deg, #a78bfa, #c084fc)'
-                : '#ffffff',
+                : 'var(--ink)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             letterSpacing: '-1.2px',
@@ -178,7 +179,7 @@ const PlanCard = memo(({
       <p
         style={{
           fontSize: '14px',
-          color: '#94a3b8',
+          color: 'var(--muted)',
           marginBottom: '16px',
           fontFamily: 'var(--ff-sans)',
         }}
@@ -194,7 +195,7 @@ const PlanCard = memo(({
               fontFamily: 'var(--ff-sans)',
               fontSize: '44px',
               fontWeight: 800,
-              color: '#ffffff',
+              color: 'var(--ink)',
               lineHeight: 1,
               letterSpacing: '-2px',
             }}
@@ -203,20 +204,20 @@ const PlanCard = memo(({
           </span>
         ) : (
           <>
-            <span style={{ fontSize: '24px', color: '#8289a0', fontWeight: 600, marginRight: '2px' }}>₹</span>
+            <span style={{ fontSize: '24px', color: 'var(--muted)', fontWeight: 600, marginRight: '2px' }}>₹</span>
             <span
               style={{
                 fontFamily: 'var(--ff-sans)',
                 fontSize: '44px',
                 fontWeight: 800,
-                color: '#ffffff',
+                color: 'var(--ink)',
                 lineHeight: 1,
                 letterSpacing: '-3px',
               }}
             >
               {displayPrice}
             </span>
-            <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 500, marginLeft: '4px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: 500, marginLeft: '4px' }}>
               /mo
             </span>
           </>
@@ -229,14 +230,14 @@ const PlanCard = memo(({
            display: 'inline-flex',
            alignItems: 'center',
            gap: '6px',
-           background: featured ? 'rgba(56, 189, 248, 0.08)' : 'rgba(255, 255, 255, 0.04)',
-           color: featured ? '#38bdf8' : '#e2e8f0',
+           background: featured ? 'rgba(56, 189, 248, 0.08)' : 'var(--surface2)',
+           color: featured ? '#38bdf8' : 'var(--ink)',
            padding: '8px 14px',
            borderRadius: '12px',
            fontSize: '12.5px',
            fontWeight: 600,
            fontFamily: 'var(--ff-mono, monospace)',
-           border: featured ? '1px solid rgba(56, 189, 248, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
+           border: featured ? '1px solid rgba(56, 189, 248, 0.2)' : '1px solid var(--border2)',
            boxShadow: featured ? '0 0 12px rgba(56, 189, 248, 0.1)' : 'none'
          }}>
            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -266,7 +267,7 @@ const PlanCard = memo(({
           fontFamily: 'var(--ff-sans)',
           cursor: isDisabled ? 'not-allowed' : 'pointer',
           marginBottom: '28px',
-          color: '#ffffff',
+          color: 'var(--ink)',
           textTransform: 'uppercase',
           letterSpacing: '1.5px',
           outline: 'none',
@@ -280,8 +281,8 @@ const PlanCard = memo(({
           <div style={{
             width: '16px',
             height: '16px',
-            border: '2px solid rgba(255,255,255,0.3)',
-            borderTopColor: '#ffffff',
+            border: '2px solid var(--muted)',
+            borderTopColor: 'var(--ink)',
             borderRadius: '50%',
             animation: 'ctaSpin 0.8s linear infinite'
           }}>

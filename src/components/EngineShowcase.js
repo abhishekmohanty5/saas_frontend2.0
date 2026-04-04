@@ -243,7 +243,7 @@ const EngineShowcase = () => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid rgba(37,99,235,0.22)', background: 'rgba(37,99,235,0.03)' }}>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2DD4BF', boxShadow: '0 0 6px #2DD4BF', animation: 'blink 1.4s infinite' }} />
-                                <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', color: 'var(--gold)', letterSpacing: '2px', fontWeight: 600 }}>AEGIS INFRA · LIVE ENGINE</span>
+                                <span style={{ fontFamily: 'var(--ff-mono)', fontSize: '9px', color: 'var(--gold)', letterSpacing: '2px', fontWeight: 600 }}>AEGIS. CORE RUNTIME</span>
                             </div>
                             <span style={{ fontSize: '9px', color: '#475569', fontFamily: 'var(--ff-mono)' }}>NODE_CLUSTER: ASIA_EXT_01</span>
                         </div>

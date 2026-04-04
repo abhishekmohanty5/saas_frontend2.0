@@ -47,7 +47,7 @@ const HowItWorks = () => {
 
     return (
         <div id="how-it-works" style={{
-            background: 'var(--cream)',
+            background: 'var(--bg)',
             padding: '140px 48px',
             position: 'relative',
             overflow: 'hidden',
@@ -71,7 +71,7 @@ const HowItWorks = () => {
                     fontSize: 'clamp(36px, 5vw, 56px)',
                     lineHeight: 1.05,
                     letterSpacing: '-1.5px',
-                    color: 'var(--ink)',
+                    color: 'var(--theme-text)',
                     fontWeight: 400,
                     textAlign: 'center',
                     marginBottom: '100px'
@@ -151,9 +151,9 @@ const HowItWorks = () => {
 
             <style>{`
                 @keyframes pulse3D {
-                    0% { transform: scale(1) translateZ(60px) rotateY(-10deg); box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2), 0 0 0 0 rgba(37,99,235,0.4); }
-                    50% { transform: scale(1.05) translateZ(75px) rotateY(-8deg); box-shadow: 0 60px 120px -30px rgba(0,0,0,0.25), 0 0 0 20px rgba(37,99,235,0); }
-                    100% { transform: scale(1) translateZ(60px) rotateY(-10deg); box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2), 0 0 0 0 rgba(37,99,235,0); }
+                    0% { transform: scale(1) translateZ(60px) rotateY(-10deg); box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2), 0 0 0 0 rgba(14,165,233,0.4); }
+                    50% { transform: scale(1.05) translateZ(75px) rotateY(-8deg); box-shadow: 0 60px 120px -30px rgba(0,0,0,0.25), 0 0 0 20px rgba(14,165,233,0); }
+                    100% { transform: scale(1) translateZ(60px) rotateY(-10deg); box-shadow: 0 40px 100px -20px rgba(0,0,0,0.2), 0 0 0 0 rgba(14,165,233,0); }
                 }
                 @keyframes subtleEntry {
                     from { opacity: 0; transform: translateY(20px) translateZ(-50px); }
@@ -182,18 +182,21 @@ const StepCard = ({ number, title, children, active }) => (
             width: '80px',
             height: '80px',
             borderRadius: '24px',
-            background: active ? 'var(--ink)' : 'var(--white)',
-            border: active ? '3px solid var(--gold)' : '1px solid var(--sand)',
+            background: active ? 'var(--ink)' : 'var(--glass-bg)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: active ? '3px solid var(--accent2)' : '1px solid var(--glass-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: 'var(--ff-serif)',
             fontSize: '32px',
-            color: active ? 'var(--white)' : 'var(--ink)',
+            color: active ? 'var(--bg)' : 'var(--theme-text)',
             margin: '0 auto 32px',
             boxShadow: active ? '0 20px 40px -10px rgba(0,0,0,0.3)' : '0 10px 20px rgba(0,0,0,0.05)',
             transform: 'translateZ(20px)',
-            position: 'relative'
+            position: 'relative',
+            transition: 'all 0.4s'
         }}>
             {number}
             {/* Depth Edge */}
@@ -211,7 +214,7 @@ const StepCard = ({ number, title, children, active }) => (
         <div style={{
             fontSize: '18px',
             fontWeight: 800,
-            color: active ? 'var(--ink)' : 'var(--stone)',
+            color: active ? 'var(--theme-text)' : 'var(--muted)',
             marginBottom: '16px',
             transition: 'color 0.4s',
             transform: 'translateZ(10px)'
@@ -225,10 +228,13 @@ const StepCard = ({ number, title, children, active }) => (
             maxWidth: '240px',
             margin: '0 auto',
             transform: 'translateZ(5px)',
-            background: active ? 'rgba(255,255,255,0.4)' : 'transparent',
-            padding: active ? '12px' : '0',
+            background: active ? 'var(--glass-bg)' : 'transparent',
+            backdropFilter: active ? 'blur(12px)' : 'none',
+            padding: active ? '16px 12px' : '16px 0',
             borderRadius: '12px',
-            border: active ? '1px solid rgba(255,255,255,0.8)' : '1px solid transparent'
+            border: active ? '1px solid var(--glass-border)' : '1px solid transparent',
+            boxShadow: active ? 'var(--glass-shadow-inner)' : 'none',
+            transition: 'all 0.4s'
         }}>
             {children}
         </div>
@@ -238,11 +244,13 @@ const StepCard = ({ number, title, children, active }) => (
 const codeStyle = {
     fontFamily: 'var(--ff-mono)',
     fontSize: '11px',
-    background: 'rgba(37,99,235,0.1)',
-    padding: '2px 4px',
-    borderRadius: '4px',
-    color: 'var(--ink)',
-    fontWeight: 600
+    background: 'var(--shard-bg)',
+    backdropFilter: 'blur(4px)',
+    border: '1px solid var(--shard-border)',
+    padding: '2px 6px',
+    borderRadius: '6px',
+    color: 'var(--theme-text)',
+    fontWeight: 700
 };
 
 export default HowItWorks;

@@ -40,16 +40,109 @@
   --gold-dim: rgba(37, 99, 235, 0.1);
   --emerald2: #10B981;
 
+  /* Theme Switcher Variables for Light Page */
+  --switcher-active-bg: #1a1a1a;
+  --switcher-active-text: #ffffff;
+
+  /* Glass and Component Variables */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow-inner: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  
+  --shard-bg: rgba(255, 255, 255, 0.3);
+  --shard-border: rgba(255, 255, 255, 0.5);
+  
+  --badge-bg: rgba(255, 255, 255, 0.8);
+  --badge-border: rgba(0, 0, 0, 0.05);
+
+  --btn-primary-text: #ffffff;
+  --btn-secondary-text: #020617;
+
+  /* Custom Testimonial Cards */
+  --testimonial-bg: #FCFbf9; /* Creamy off-white */
+
+  /* Footer Theme Variables */
+  --footer-bg: #F8FAFC;
+  --footer-border: rgba(0,0,0,0.06);
+  --footer-text-main: #020617;
+  --footer-text-muted: #64748B;
+  --footer-glow: rgba(59, 130, 246, 0.05);
+
   /* Typography */
   --ff-h: 'Inter', system-ui, sans-serif;
   --ff-serif: 'Inter', system-ui, sans-serif;
   --ff-sans: 'Inter', 'Manrope', system-ui, sans-serif;
   --ff-mono: 'JetBrains Mono', ui-monospace, monospace;
 
+  /* Theme variables for easy toggling */
+  --theme-background-transparent: rgba(250, 250, 248, 0.7);
+  --theme-border: rgba(36, 32, 27, 0.08);
+  --theme-text: #020617;
+
   /* Spacing */
   --r: 10px;
   --r2: 16px;
   --r3: 24px;
+}
+
+/* ── DARK THEME ── */
+.dark-theme {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: rgba(255, 255, 255, 0.1);
+  --border2: #475569;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --accent: #818cf8;
+  --accent2: #60a5fa;
+  --green: #34d399;
+  --red: #f87171;
+  --yellow: #fbbf24;
+  --purple: #a78bfa;
+  --ink: #f8fafc;
+  --sand: #1e293b;
+  --stone: #cbd5e1;
+
+  --white: #020617;
+  --cream: #0f172a;
+  --ink2: #f1f5f9;
+  --ink3: #e2e8f0;
+  --gold: #60a5fa;
+  --gold2: #3b82f6;
+  --gold-dim: rgba(96, 165, 250, 0.1);
+  
+  --theme-background-transparent: rgba(15, 23, 42, 0.8);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-text: #f8fafc;
+
+  /* Theme Switcher Variables for Dark Page */
+  --switcher-active-bg: #ffffff;
+  --switcher-active-text: #0d1117;
+
+  /* Glass and Component Variables for Dark Page */
+  --glass-bg: rgba(30, 41, 59, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow-inner: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  
+  --shard-bg: rgba(255, 255, 255, 0.03);
+  --shard-border: rgba(255, 255, 255, 0.05);
+
+  --badge-bg: rgba(30, 41, 59, 0.6);
+  --badge-border: rgba(255, 255, 255, 0.05);
+
+  --btn-primary-text: #020617;
+  --btn-secondary-text: #f8fafc;
+
+  /* Custom Testimonial Cards */
+  --testimonial-bg: #111111; /* Matte black */
+
+  /* Footer Theme Variables */
+  --footer-bg: #030712;
+  --footer-border: rgba(255,255,255,0.06);
+  --footer-text-main: #f8fafc;
+  --footer-text-muted: rgba(255,255,255,0.45);
+  --footer-glow: rgba(59, 130, 246, 0.15);
 }
 
 /* ── RESET ── */

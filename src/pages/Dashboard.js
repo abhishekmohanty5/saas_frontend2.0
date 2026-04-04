@@ -192,7 +192,7 @@ function TelemetryUnit({ dashboard }) {
 
       <div className="telemetry-3d-card">
         {/* IDE Title Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#161b22', borderBottom: '1px solid #1e293b' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: 'var(--surface)', borderBottom: '1px solid #1e293b' }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e' }} />
@@ -201,7 +201,7 @@ function TelemetryUnit({ dashboard }) {
           <div style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "var(--ff-mono)" }}>
             STREAMING_RESPONSE.JSON
           </div>
-          <div style={{ fontSize: 9, fontWeight: 800, color: '#475569', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: 'var(--muted)', letterSpacing: '0.05em' }}>
             {flow.method} {flow.endpoint}
           </div>
         </div>
@@ -218,7 +218,7 @@ function TelemetryUnit({ dashboard }) {
           fontWeight: 500,
           lineHeight: '1.8',
           WebkitFontSmoothing: 'antialiased',
-          background: '#07070a'
+          background: 'var(--bg)'
         }}>
           {visibleSteps.map((vs, vi) => (
             <div key={vi} style={{ marginBottom: 16, animation: 'fadeIn 0.3s ease both' }}>
@@ -271,18 +271,18 @@ function TelemetryUnit({ dashboard }) {
         {/* IDE Status Bar */}
         <div style={{
           padding: '14px 24px',
-          background: '#07070a',
+          background: 'var(--bg)',
           borderTop: '1px solid #10b98122',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: '0 -10px 30px rgba(0,0,0,0.5)'
+          boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
               background: '#ef4444',
-              boxShadow: '0 0 12px #ef4444',
+              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
               animation: 'pulse 1.2s infinite'
             }} />
             <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 900, letterSpacing: '0.15em' }}>
@@ -301,9 +301,9 @@ function TelemetryUnit({ dashboard }) {
             }}>
               <span style={{ fontSize: 10, fontWeight: 900, color: '#ef4444', letterSpacing: '0.05em' }}>{flow.method}</span>
               <div style={{ width: 1, height: 10, background: 'rgba(239, 68, 68, 0.3)' }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: '#f8fafc', fontFamily: "var(--ff-mono)" }}>{flow.endpoint}</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--ink)', fontFamily: "var(--ff-mono)" }}>{flow.endpoint}</span>
             </div>
-            <div style={{ fontSize: 9, color: '#475569', fontWeight: 800, paddingLeft: 10 }}>LN: {lineIdx + 1}</div>
+            <div style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 800, paddingLeft: 10 }}>LN: {lineIdx + 1}</div>
           </div>
         </div>
 
@@ -386,7 +386,7 @@ function LiveInsights({ stats, dashboard, subscribers }) {
               width: 2,
               bottom: -24,
               zIndex: 0,
-              boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)'
+              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
             }} />
           )}
 
@@ -404,9 +404,9 @@ function LiveInsights({ stats, dashboard, subscribers }) {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 900, color: insight.color, letterSpacing: '0.15em' }}>{insight.category}</div>
-              <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 4, fontSize: 8, fontWeight: 900, color: '#1e1b4b', padding: '2px 6px' }}>{insight.status}</div>
+              <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 4, fontSize: 8, fontWeight: 900, color: 'var(--ink)', padding: '2px 6px' }}>{insight.status}</div>
             </div>
-            <div style={{ fontSize: 13, lineHeight: 1.6, color: '#000000', fontWeight: 600 }}>
+            <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--ink)', fontWeight: 600 }}>
               {insight.text}
             </div>
           </div>
@@ -813,20 +813,20 @@ export default function Dashboard() {
                     </div>
                     <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>Infrastructure Overview</h1>
                     <p style={{ color: "#475569", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
-                      Real-time telemetry and operational diagnostics for node: <span style={{ fontFamily: 'var(--ff-mono)', color: '#000000', fontWeight: 700 }}>{dashboard?.tenantName || 'SAAS_ROOT'}</span>
+                      Real-time telemetry and operational diagnostics for node: <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--ink)', fontWeight: 700 }}>{dashboard?.tenantName || 'SAAS_ROOT'}</span>
                     </p>
                   </div>
 
                   {/* System HUD */}
                   <div style={{ display: 'flex', gap: 32, paddingBottom: 4 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, fontWeight: 900, color: '#64748b', letterSpacing: '0.1em', marginBottom: 2 }}>SYSTEM_CLOCK</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#000000', fontFamily: 'var(--ff-mono)' }}>
+                      <div style={{ fontSize: 9, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 2 }}>SYSTEM_CLOCK</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
                         {new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, fontWeight: 900, color: '#94a3b8', letterSpacing: '0.1em', marginBottom: 2 }}>NODE_UPTIME</div>
+                      <div style={{ fontSize: 9, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 2 }}>NODE_UPTIME</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#6366f1', fontFamily: 'var(--ff-mono)' }}>142:08:44:02</div>
                     </div>
                   </div>
@@ -841,7 +841,7 @@ export default function Dashboard() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
                   {/* Live Insights */}
                   <section style={{ padding: "0 8px" }}>
-                    <div style={{ fontSize: 11, fontWeight: 900, color: '#64748b', letterSpacing: '0.2em', marginBottom: 40, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.2em', marginBottom: 40, textTransform: 'uppercase' }}>
                       LIVE INSIGHTS // ANALYTICAL_ENGINE
                     </div>
                     <LiveInsights stats={stats} dashboard={dashboard} subscribers={subscribers} />
@@ -849,12 +849,12 @@ export default function Dashboard() {
 
                   {/* Developer Protocol Memo */}
                   <section style={{ padding: "0 8px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 40, marginTop: 40 }}>
-                    <div style={{ fontSize: 11, fontWeight: 900, color: '#64748b', letterSpacing: '0.2em', marginBottom: 24, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.2em', marginBottom: 24, textTransform: 'uppercase' }}>
                       DEVELOPER_PROTOCOL // ADVISORY
                     </div>
                     <div style={{ width: '100%' }}>
                       <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, margin: 0 }}>
-                        Your infrastructure node is currently broadcasting on the <span style={{ color: '#1e1b4b', fontWeight: 700 }}>Aegis Mesh Network</span>.
+                        Your infrastructure node is currently broadcasting on the <span style={{ color: 'var(--ink)', fontWeight: 700 }}>Aegis Mesh Network</span>.
                         As a developer tenant, you can interface with your provisioned services using the <span style={{ fontFamily: 'var(--ff-mono)', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>X-API-KEY</span> header for all external requests.
                       </p>
                       <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, marginTop: 16 }}>
@@ -880,14 +880,14 @@ export default function Dashboard() {
                     background: "#0f172a",
                     borderRadius: 24,
                     border: "1px solid rgba(255,255,255,0.05)",
-                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)'
+                    boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', marginBottom: 24, textTransform: 'uppercase' }}>
                       QUICK START // INTEGRATION
                     </div>
                     <pre style={{
                       margin: 0,
-                      color: '#94a3b8',
+                      color: 'var(--muted)',
                       fontSize: 13,
                       fontFamily: 'var(--ff-mono)',
                       lineHeight: 1.7,
@@ -1018,16 +1018,16 @@ export default function Dashboard() {
                     perspective: '1000px'
                   }}>
                     <div style={{
-                      width: '100%', maxWidth: '480px', background: '#FFFFFF',
+                      width: '100%', maxWidth: '480px', background: 'var(--surface)',
                       borderRadius: 32, padding: '40px', position: 'relative',
-                      boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25)',
+                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
                       animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                       border: '1px solid rgba(0,0,0,0.03)',
                       transform: 'rotateX(2deg)'
                     }}>
                       <button
                         onClick={() => { setShowAiModal(false); setAiSuggestedResult(null); }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: '#f8fafc', border: 'none', cursor: 'pointer', color: '#64748b', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ position: 'absolute', top: 24, right: 24, background: 'var(--ink)', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
                         <Icon name="close" size={18} />
                       </button>
@@ -1037,21 +1037,21 @@ export default function Dashboard() {
                           <Icon name="zap" size={24} color="#6366f1" />
                         </div>
                         <div>
-                          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1e1b4b', margin: 0 }}>AI Market Intelligence</h2>
-                          <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>Smart infrastructure pricing strategies.</p>
+                          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--ink)', margin: 0 }}>AI Market Intelligence</h2>
+                          <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0 }}>Smart infrastructure pricing strategies.</p>
                         </div>
                       </div>
 
                       {!aiSuggestedResult && !aiLoading && (
                         <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Describe Your Business</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Describe Your Business</label>
                           <textarea
                             value={aiDescription}
                             onChange={(e) => setAiDescription(e.target.value)}
                             placeholder="e.g. A cloud-native storage platform for creative agencies looking for high availability..."
                             style={{
-                              width: '100%', height: 120, padding: '16px', borderRadius: 16, border: '1px solid #e2e8f0',
-                              fontSize: 14, outline: 'none', resize: 'none', marginBottom: 20, color: '#1e1b4b',
+                              width: '100%', height: 120, padding: '16px', borderRadius: 16, border: '1px solid var(--border)',
+                              fontSize: 14, outline: 'none', resize: 'none', marginBottom: 20, color: 'var(--ink)',
                               lineHeight: 1.5
                             }}
                           />
@@ -1070,9 +1070,9 @@ export default function Dashboard() {
                               }
                             }}
                             style={{
-                              width: '100%', background: '#6366f1', color: '#FFF', borderRadius: 14, border: 'none',
+                              width: '100%', background: '#6366f1', color: 'var(--surface)', borderRadius: 14, border: 'none',
                               padding: '16px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
-                              boxShadow: '0 10px 20px -5px rgba(99,102,241,0.4)',
+                              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
                               transition: 'all 0.2s'
                             }}
                             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -1086,7 +1086,7 @@ export default function Dashboard() {
                       {aiLoading ? (
                         <div style={{ padding: '40px 0', textAlign: 'center' }}>
                           <div style={{ width: 40, height: 40, border: "3px solid #f1f5f9", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 1s linear infinite", margin: '0 auto 16px' }} />
-                          <p style={{ fontSize: 14, color: '#64748b', fontWeight: 600 }}>Analyzing market volatility & node costs...</p>
+                          <p style={{ fontSize: 14, color: 'var(--muted)', fontWeight: 600 }}>Analyzing market volatility & node costs...</p>
                         </div>
                       ) : aiSuggestedResult && (
                         <div>
@@ -1108,15 +1108,15 @@ export default function Dashboard() {
                                   setShowPlanModal(true);
                                 }}
                                 style={{
-                                  padding: '16px 20px', borderRadius: 16, border: '1px solid #e2e8f0', cursor: 'pointer',
+                                  padding: '16px 20px', borderRadius: 16, border: '1px solid var(--border)', cursor: 'pointer',
                                   transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                                 }}
                                 onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.background = 'rgba(99, 102, 241, 0.02)'; }}
                                 onMouseOut={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = 'transparent'; }}
                               >
                                 <div>
-                                  <div style={{ fontSize: 14, fontWeight: 700, color: '#1e1b4b' }}>{p.name}</div>
-                                  <div style={{ fontSize: 12, color: '#64748b' }}>{p.description}</div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>{p.name}</div>
+                                  <div style={{ fontSize: 12, color: 'var(--muted)' }}>{p.description}</div>
                                 </div>
                                 <div style={{ fontSize: 15, fontWeight: 800, color: '#6366f1' }}>₹{p.price}</div>
                               </div>
@@ -1124,7 +1124,7 @@ export default function Dashboard() {
                           </div>
                           <button
                             onClick={() => setAiSuggestedResult(null)}
-                            style={{ width: '100%', background: 'none', border: '1px solid #e2e8f0', color: '#64748b', borderRadius: 14, padding: '12px', marginTop: 20, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                            style={{ width: '100%', background: 'none', border: '1px solid var(--border)', color: 'var(--muted)', borderRadius: 14, padding: '12px', marginTop: 20, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
                           >
                             &larr; Back to description
                           </button>
@@ -1141,9 +1141,9 @@ export default function Dashboard() {
                     perspective: '1000px'
                   }}>
                     <div style={{
-                      width: '100%', maxWidth: '440px', background: '#FFFFFF',
+                      width: '100%', maxWidth: '440px', background: 'var(--surface)',
                       borderRadius: 32, padding: '32px 40px 40px', position: 'relative',
-                      boxShadow: '0 30px 60px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,1)',
+                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
                       animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                       border: '1px solid rgba(0,0,0,0.03)',
                       transform: 'rotateX(2deg)'
@@ -1154,39 +1154,39 @@ export default function Dashboard() {
                           setEditingPlanId(null);
                           setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
                         }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: '#f8fafc', border: 'none', cursor: 'pointer', color: '#64748b', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
+                        style={{ position: 'absolute', top: 24, right: 24, background: 'var(--ink)', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
                         onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                        onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'var(--ink)'}
                       >
                         <Icon name="close" size={18} />
                       </button>
 
-                      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1e1b4b', marginBottom: 6, letterSpacing: '-0.5px' }}>{editingPlanId ? 'Reconfigure Node' : 'Create New Plan'}</h2>
-                      <p style={{ color: '#64748b', marginBottom: 28, fontSize: 14, fontWeight: 500, lineHeight: 1.5 }}>{editingPlanId ? 'Modify infrastructure tier protocols.' : 'Deploy a new subscription tier to your ecosystem.'}</p>
+                      <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--ink)', marginBottom: 6, letterSpacing: '-0.5px' }}>{editingPlanId ? 'Reconfigure Node' : 'Create New Plan'}</h2>
+                      <p style={{ color: 'var(--muted)', marginBottom: 28, fontSize: 14, fontWeight: 500, lineHeight: 1.5 }}>{editingPlanId ? 'Modify infrastructure tier protocols.' : 'Deploy a new subscription tier to your ecosystem.'}</p>
 
                       <div style={{ display: 'grid', gap: 18 }}>
                         <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Name</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Name</label>
                           <input
                             type="text" placeholder="e.g. Pro, Enterprise, Free"
                             value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, color: '#1e1b4b' }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, color: 'var(--ink)' }}
                           />
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                           <div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price (INR)</label>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price (INR)</label>
                             <input
                               type="number" placeholder="0"
                               value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, color: '#1e1b4b' }}
+                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, color: 'var(--ink)' }}
                             />
                           </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cycle</label>
+                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cycle</label>
                             <select
                               value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, background: 'white', color: '#1e1b4b' }}
+                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, background: 'var(--surface)', color: 'var(--ink)' }}
                             >
                               <option value="MONTHLY">Monthly</option>
                               <option value="YEARLY">Yearly</option>
@@ -1194,19 +1194,19 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
                           <textarea
                             placeholder="Brief summary of the plan..."
                             value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, height: 70, resize: 'none', color: '#1e1b4b' }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, height: 70, resize: 'none', color: 'var(--ink)' }}
                           />
                         </div>
                         <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Features (One per line)</label>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Features (One per line)</label>
                           <textarea
                             placeholder="JWT Authentication&#10;Cloud Storage"
                             value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid #e2e8f0', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: '#1e1b4b', fontWeight: 400 }}
+                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: 'var(--ink)', fontWeight: 400 }}
                           />
                         </div>
 
@@ -1244,7 +1244,7 @@ export default function Dashboard() {
                           }}
                           style={{
                             background: 'rgba(15, 23, 42, 0.95)',
-                            color: '#FFF',
+                            color: 'var(--surface)',
                             borderRadius: 14,
                             border: '1px solid rgba(255,255,255,0.1)',
                             padding: '16px',
@@ -1254,7 +1254,7 @@ export default function Dashboard() {
                             marginTop: 10,
                             transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
                             opacity: isSubmittingPlan ? 0.7 : 1,
-                            boxShadow: '0 10px 20px -5px rgba(0,0,0,0.3)',
+                            boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
                             backdropFilter: 'blur(10px)',
                             letterSpacing: '0.02em'
                           }}
@@ -1278,7 +1278,7 @@ export default function Dashboard() {
                     <p style={{ color: "#64748b", marginTop: 4 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
                   </div>
                   <div style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                    <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
                     <input
@@ -1371,7 +1371,7 @@ export default function Dashboard() {
               <div style={{ maxWidth: 900 }}>
                 <div style={{ marginBottom: 40 }}>
                   <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure License</h1>
-                  <p style={{ color: "#64748b", marginTop: 4 }}>Manage your Aegis Infra partnership and infrastructure tier.</p>
+                  <p style={{ color: "#64748b", marginTop: 4 }}>Manage your Aegis partnership and infrastructure tier.</p>
                 </div>
 
                 <div style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", borderRadius: 32, padding: 48, color: "white", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(30, 27, 75, 0.2)" }}>
@@ -1411,12 +1411,12 @@ export default function Dashboard() {
                 <div style={{ marginBottom: 40 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                     <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Aegis Infra Modules</span>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Aegis Modules</span>
                   </div>
                   <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>System Services</h1>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
-                    <p style={{ color: "#64748b", fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: '#1e1b4b' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
+                    <p style={{ color: "#64748b", fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--ink)' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
                   </div>
                 </div>
 
@@ -1428,11 +1428,11 @@ export default function Dashboard() {
                     { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#10b981', icon: 'zap' },
 
                     // Specific to Starter and above
-                    { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : '#94a3b8'), icon: 'layers' },
+                    { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : 'var(--muted)'), icon: 'layers' },
 
                     // Specific to Growth/Enterprise
-                    { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : '#94a3b8'), icon: 'activity' },
-                    { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : '#94a3b8'), icon: 'cpu' }
+                    { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : 'var(--muted)'), icon: 'activity' },
+                    { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : 'var(--muted)'), icon: 'cpu' }
                   ].map((service, i) => (
                     <div key={i} style={{
                       background: service.status === 'Locked' ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)",
@@ -1528,7 +1528,7 @@ function Footer() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#1e1b4b" }}>
-            AEGIS <span style={{ color: "#6366f1" }}>INFRA</span>
+            AEGIS<span style={{ color: "#3b82f6" }}>.</span>
           </div>
           <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#64748b", fontWeight: 600 }}>
             <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Docs</span>
@@ -1549,7 +1549,7 @@ function Footer() {
       </div>
       <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed rgba(0, 0, 0, 0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
-          © 2026 Aegis Global Infrastructure. All protocols reserved.
+          © 2026 Aegis. All protocols reserved.
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
@@ -1767,15 +1767,15 @@ function PlanCard({ plan, onDelete, onEdit }) {
               height: 36,
               borderRadius: 10,
               cursor: 'pointer',
-              color: '#94a3b8',
+              color: 'var(--muted)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.2s',
               outline: 'none'
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#ffffff'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
+            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'var(--surface)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--muted)'; }}
             title="Edit Plan"
           >
             <Icon name="edit" size={16} color="currentColor" />
@@ -1815,7 +1815,7 @@ function PlanCard({ plan, onDelete, onEdit }) {
       </p>
 
       <div style={{ display: "grid", gap: 12, position: 'relative', zIndex: 2 }}>
-        <div style={{ fontSize: 10, fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
+        <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
         {features.length > 0 ? features.map((feature, idx) => (
           <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
@@ -1824,7 +1824,7 @@ function PlanCard({ plan, onDelete, onEdit }) {
             }}>
               <Icon name="check" size={10} color="#6366f1" />
             </div>
-            <span style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 600, fontFamily: 'var(--ff-mono)', fontSize: '11px' }}>{feature.trim()}</span>
+            <span style={{ fontSize: '11px', color: "#cbd5e1", fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim()}</span>
           </div>
         )) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, opacity: 0.6 }}>
@@ -1841,7 +1841,7 @@ function PlanCard({ plan, onDelete, onEdit }) {
         marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
       }}>
-        <div style={{ fontSize: '8px', color: '#475569', fontWeight: 900, letterSpacing: '0.2em' }}>AEGIS_SECURE_LINK</div>
+        <div style={{ fontSize: '8px', color: 'var(--muted)', fontWeight: 900, letterSpacing: '0.2em' }}>AEGIS_SECURE_LINK</div>
         <div style={{ width: 30, height: 1, background: 'rgba(99,102,241,0.3)' }} />
       </div>
     </div>

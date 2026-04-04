@@ -41,10 +41,10 @@ const InfraTrustSection = () => {
                         fontSize: 'clamp(36px, 5vw, 52px)', fontFamily: 'var(--ff-serif)', color: 'var(--ink)',
                         lineHeight: 1.1, letterSpacing: '-1.5px', maxWidth: '800px', margin: '0 auto 24px'
                     }}>
-                        Enterprise Trust, built for <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>Limitless Growth.</em>
+                        Enterprise Trust, built for <em style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--gold2)' }}>Limitless Growth.</em>
                     </h2>
 
-                    <p style={{ fontSize: '17px', color: 'var(--stone)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+                    <p style={{ fontSize: '18px', color: 'var(--ink)', opacity: 0.7, maxWidth: '600px', margin: '0 auto', lineHeight: 1.6, fontFamily: 'var(--ff-sans)' }}>
                         SubSphere isn't just a dashboard—it's a military-grade backend engine engineered for data integrity and global availability.
                     </p>
                 </div>
@@ -102,43 +102,51 @@ const InfraTrustSection = () => {
 const TrustCard = ({ icon, title, desc, accent, specs }) => {
     return (
         <div style={{
-            background: '#0D0D12',
+            background: 'var(--ink)',
             borderRadius: '24px',
             padding: '40px',
-            border: '1px solid rgba(0,0,0,0.05)',
+            border: '1px solid rgba(128, 128, 128, 0.12)',
+            boxShadow: '0 8px 32px -12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05)',
             position: 'relative',
-            transition: '0.4s cubic-bezier(0.23, 1, 0.32, 1)',
-            backdropFilter: 'blur(20px)'
+            transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
         }}
-            onMouseOver={e => e.currentTarget.style.borderColor = `${accent}44`}
-            onMouseOut={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
+            onMouseOver={e => {
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = `0 24px 48px -15px rgba(0,0,0,0.15), 0 0 0 1px ${accent}40, inset 0 1px 0 rgba(255,255,255,0.1)`;
+            }}
+            onMouseOut={e => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px -12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05)';
+            }}
         >
             <div style={{
-                width: '50px', height: '50px', borderRadius: '12px', background: `${accent}15`,
+                width: '48px', height: '48px', borderRadius: '14px',
+                background: `linear-gradient(135deg, ${accent}15, transparent)`,
+                border: `1px solid ${accent}30`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent,
-                marginBottom: '24px'
+                marginBottom: '28px', flexShrink: 0
             }}>
                 {icon}
             </div>
 
-            <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#F1F5F9', marginBottom: '16px' }}>{title}</h3>
-            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>{desc}</p>
+            <h3 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--white)', marginBottom: '12px', fontFamily: 'var(--ff-sans)', letterSpacing: '-0.4px' }}>{title}</h3>
+            <p style={{ fontSize: '15px', color: 'var(--white)', opacity: 0.65, lineHeight: 1.6, marginBottom: '36px', fontFamily: 'var(--ff-sans)' }}>{desc}</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: 'auto' }}>
                 {specs.map((spec, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#94A3B8' }}>
-                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: accent }} />
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '14px', fontWeight: 500, color: 'var(--white)', opacity: 0.8, fontFamily: 'var(--ff-sans)' }}>
+                        <div style={{ display: 'flex', color: accent, opacity: 0.9 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                        </div>
                         {spec}
                     </div>
                 ))}
             </div>
-
-            {/* Corner Decorative Accent */}
-            <div style={{
-                position: 'absolute', top: 0, right: 0, width: '40px', height: '40px',
-                background: `linear-gradient(225deg, ${accent}33, transparent 100%)`,
-                borderRadius: '0 24px 0 0'
-            }} />
         </div>
     );
 };

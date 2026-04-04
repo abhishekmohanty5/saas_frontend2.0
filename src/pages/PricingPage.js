@@ -130,7 +130,7 @@ const PricingPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#ffffff' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', transition: 'background 0.3s ease' }}>
       <Navbar />
 
       {/* Unified Pricing Section Header */}
@@ -148,13 +148,14 @@ const PricingPage = () => {
           </div>
           <h1 style={{
             fontFamily: 'var(--ff-h)',
-            fontSize: 'clamp(32px, 5vw, 56px)',
-            lineHeight: 1,
-            letterSpacing: '-2px',
-            color: '#0f172a',
-            fontWeight: 900,
+            fontSize: 'clamp(28px, 4vw, 44px)',
+            lineHeight: 1.1,
+            letterSpacing: '-1.5px',
+            color: 'var(--ink)',
+            fontWeight: 800,
             maxWidth: '900px',
-            marginBottom: '20px'
+            marginBottom: '16px',
+            transition: 'color 0.3s ease'
           }}>
             Simple, transparent <span style={{
               background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
@@ -162,7 +163,7 @@ const PricingPage = () => {
               WebkitTextFillColor: 'transparent'
             }}>pricing</span>
           </h1>
-          <p style={{ fontSize: '18px', color: '#64748b', lineHeight: 1.6, maxWidth: '600px', fontWeight: 400 }}>
+          <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.6, maxWidth: '500px', margin: '0 auto', fontWeight: 400, transition: 'color 0.3s ease' }}>
             All plans include the full API suite, multi-tenant JWT auth, and automated dev consoles.
           </p>
 
@@ -170,7 +171,7 @@ const PricingPage = () => {
           <div
             role="group"
             aria-label="Billing frequency toggle"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '32px', fontSize: '15px', color: '#64748b' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '32px', fontSize: '14px', color: 'var(--muted)', transition: 'color 0.3s ease' }}
           >
             <span style={{ fontWeight: 600 }}>Monthly</span>
             <button
@@ -201,7 +202,7 @@ const PricingPage = () => {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }} />
             </button>
-            <span style={{ fontWeight: 600, color: billingInterval === BILLING_INTERVALS.ANNUAL ? '#0f172a' : '#64748b' }}>
+            <span style={{ fontWeight: 600, color: billingInterval === BILLING_INTERVALS.ANNUAL ? 'var(--ink)' : 'var(--muted)', transition: 'color 0.3s ease' }}>
               Annual <span style={{
                 display: 'inline-block',
                 background: 'rgba(59,130,246,0.1)',
