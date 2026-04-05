@@ -5,6 +5,8 @@ import Navbar from '../components/Navbar';
 import ApiCredentialsSection from '../components/ApiCredentialsSection';
 import { useToast } from '../components/ToastProvider';
 import api, { aiAPI, dashboardAPI, adminAPI, userSubscriptionAPI } from '../services/api';
+import { useTheme } from '../utils/ThemeContext';
+import { motion } from 'framer-motion';
 
 
 // ─── ICONS (SVG inline) ───────────────────────────────────────────────────
@@ -62,7 +64,7 @@ const PaginationControl = ({ current, total, onPageChange }) => {
 const Sparkline = ({ color }) => (
   <svg width="100" height="40" viewBox="0 0 80 30" style={{
     opacity: 0.9,
-    filter: `drop-shadow(0 0 8px ${color}66)`
+    filter: `drop-shadow(0 0 4px ${color}33) drop-shadow(0 0 12px ${color}22)`
   }}>
     <defs>
       <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
@@ -83,7 +85,7 @@ const Sparkline = ({ color }) => (
       strokeLinecap="round"
       strokeLinejoin="round"
       style={{
-        filter: `drop-shadow(0 0 10px ${color})`,
+        filter: `drop-shadow(0 0 5px ${color}) drop-shadow(0 0 15px ${color}88)`,
         strokeDasharray: '200',
         strokeDashoffset: '0',
         animation: 'drawPath 3s linear infinite'
@@ -95,6 +97,8 @@ const Sparkline = ({ color }) => (
 
 
 function TelemetryUnit({ dashboard }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [flowIdx, setFlowIdx] = useState(0);
   const [stepIdx, setStepIdx] = useState(0);
   const [lineIdx, setLineIdx] = useState(0);
@@ -196,22 +200,26 @@ function TelemetryUnit({ dashboard }) {
     }}>
       <style>{`
         .telemetry-3d-card {
-          background: #07070a;
-          border-radius: 12px;
-          border: 1px solid #1e293b;
-          box-shadow:
-            0 40px 100px -20px rgba(0, 0, 0, 0.9),
-            0 0 30px rgba(0, 0, 0, 0.5);
-          position: relative;
+          background: ${isDark ? "#0a0a0f" : "#ffffff"};
+          border-radius: 16px;
+          border: 1px solid ${isDark ? "rgba(99, 102, 241, 0.2)" : "rgba(0, 0, 0, 0.05)"};
+          box-shadow: ${isDark ? "0 0 50px rgba(99, 102, 241, 0.08), inset 0 2px 10px rgba(0,0,0,0.5)" : "0 10px 40px rgba(0,0,0,0.03)"};
           overflow: hidden;
-          transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+          transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
           transform-style: preserve-3d;
+          position: relative;
         }
-        .telemetry-unit-container:hover .telemetry-3d-card {
-          transform: rotateX(2deg) rotateY(-1deg) translateY(-4px);
-          box-shadow:
-            0 50px 110px -20px rgba(0, 0, 0, 1),
-            0 0 40px rgba(0, 0, 0, 0.6);
+        .telemetry-3d-card:hover {
+          border-color: rgba(99, 102, 241, 0.4);
+          transform: translateY(-2px) rotateX(2deg);
+        }
+        .telemetry-header {
+          padding: 16px 24px;
+          background: ${isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.01)"};
+          border-bottom: 1px solid ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
         .terminal-scroll {
           scroll-behavior: smooth;
@@ -226,8 +234,7 @@ function TelemetryUnit({ dashboard }) {
       `}</style>
 
       <div className="telemetry-3d-card">
-        {/* IDE Title Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#f8fafc', borderBottom: "1px solid var(--border)", borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
+        <div className="telemetry-header">
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e' }} />
@@ -241,7 +248,6 @@ function TelemetryUnit({ dashboard }) {
           </div>
         </div>
 
-        {/* IDE Content Area */}
         <div ref={scrollRef} className="terminal-scroll" style={{
           height: 340,
           overflowY: 'auto',
@@ -253,7 +259,7 @@ function TelemetryUnit({ dashboard }) {
           fontWeight: 500,
           lineHeight: '1.8',
           WebkitFontSmoothing: 'antialiased',
-          background: '#07070a'
+          background: isDark ? '#07070a' : '#f8fafc'
         }}>
           {visibleSteps.map((vs, vi) => (
             <div key={vi} style={{ marginBottom: 16, animation: 'fadeIn 0.3s ease both' }}>
@@ -303,21 +309,18 @@ function TelemetryUnit({ dashboard }) {
           )}
         </div>
 
-        {/* IDE Status Bar */}
         <div style={{
           padding: '14px 24px',
-          background: 'var(--bg)',
+          background: isDark ? '#0a0a0f' : 'var(--bg)',
           borderTop: '1px solid #10b98122',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '0 25px 60px -12px var(--theme-border)'
+          alignItems: 'center'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
               background: '#ef4444',
-              boxShadow: '0 25px 60px -12px var(--theme-border)',
               animation: 'pulse 1.2s infinite'
             }} />
             <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 900, letterSpacing: '0.15em' }}>
@@ -336,13 +339,11 @@ function TelemetryUnit({ dashboard }) {
             }}>
               <span style={{ fontSize: 10, fontWeight: 900, color: '#ef4444', letterSpacing: '0.05em' }}>{flow.method}</span>
               <div style={{ width: 1, height: 10, background: 'rgba(239, 68, 68, 0.3)' }} />
-              <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--ink)', fontFamily: "var(--ff-mono)" }}>{flow.endpoint}</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: isDark ? 'white' : 'var(--ink)', fontFamily: "var(--ff-mono)" }}>{flow.endpoint}</span>
             </div>
-            <div style={{ fontSize: 9, color: 'var(--muted)', fontWeight: 800, paddingLeft: 10 }}>LN: {lineIdx + 1}</div>
+            <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 800, paddingLeft: 10 }}>LN: {lineIdx + 1}</div>
           </div>
         </div>
-
-        <div style={{ position: 'absolute', bottom: -50, right: -50, width: 300, height: 300, background: `radial-gradient(circle, ${flow.color}11 0%, transparent 70%)`, pointerEvents: 'none' }} />
       </div>
     </div>
   );
@@ -393,21 +394,40 @@ function LiveInsights({ stats, dashboard, subscribers }) {
           0% { background-position: 0% 100%; }
           100% { background-position: 0% -100%; }
         }
-        @keyframes nodeGlow {
-          0%, 100% { transform: scale(1); filter: brightness(1) drop-shadow(0 0 5px currentColor); }
-          50% { transform: scale(1.1); filter: brightness(1.3) drop-shadow(0 0 15px currentColor); }
+        @keyframes premiumBreath {
+          0%, 100% { 
+            transform: scale(1); 
+            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor66, 0 0 40px currentColor22; 
+            filter: brightness(1);
+          }
+          50% { 
+            transform: scale(1.15); 
+            box-shadow: 0 0 15px currentColor, 0 0 35px currentColor, 0 0 60px currentColor44; 
+            filter: brightness(1.2);
+          }
         }
         .energy-line {
           background: linear-gradient(to bottom, 
             rgba(59, 130, 246, 0.05), 
-            rgba(59, 130, 246, 0.8) 50%, 
+            rgba(59, 130, 246, 0.6) 50%, 
             rgba(59, 130, 246, 0.05)
           );
           background-size: 100% 200%;
           animation: energyPulse 2s linear infinite;
         }
-        .pulsing-node {
-          animation: nodeGlow 2s ease-in-out infinite;
+        .plasma-node {
+          position: relative;
+          animation: premiumBreath 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        .plasma-node::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: inherit;
+          background: inherit;
+          filter: blur(8px);
+          opacity: 0.4;
+          z-index: -1;
         }
       `}</style>
       {insights.map((insight, i) => (
@@ -425,15 +445,15 @@ function LiveInsights({ stats, dashboard, subscribers }) {
             }} />
           )}
 
-          <div className="pulsing-node" style={{
-            width: 11,
-            height: 11,
+          <div className="plasma-node" style={{
+            width: 10,
+            height: 10,
             borderRadius: '50%',
-            background: insight.color,
+            background: `radial-gradient(circle at 30% 30%, white 0%, ${insight.color} 80%)`,
             color: insight.color,
             marginTop: 6,
             zIndex: 1,
-            boxShadow: `0 0 15px ${insight.color}, 0 0 30px ${insight.color}44`
+            border: '1px solid rgba(255,255,255,0.2)'
           }} />
 
           <div style={{ flex: 1 }}>
@@ -729,47 +749,35 @@ const FLOW_PAUSE = 2000;
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const toast = useToast();
   const location = useLocation();
-  const queryTab = new URLSearchParams(location.search).get('tab');
-  const [activeTab, setActiveTab] = useState(queryTab || "overview");
-
-  useEffect(() => {
-    if (queryTab) setActiveTab(queryTab);
-  }, [queryTab]);
-
+  const { theme } = useTheme();
+  const { addToast: toast } = useToast();
   const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const queryTab = new URLSearchParams(location.search).get('tab');
+  const [activeTab, setActiveTab] = useState(queryTab || 'overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [stats, setStats] = useState({ total: 0, active: 0, cancelled: 0, pending: 0 });
-
   const [plans, setPlans] = useState([]);
   const [plansPage, setPlansPage] = useState(0);
-  const [plansTotalPages, setPlansTotalPages] = useState(0);
   const [plansTotal, setPlansTotal] = useState(0);
-
+  const [plansTotalPages, setPlansTotalPages] = useState(0);
   const [subscribers, setSubscribers] = useState([]);
   const [subPage, setSubPage] = useState(0);
-  const [subTotalPages, setSubTotalPages] = useState(0);
   const [subTotal, setSubTotal] = useState(0);
-
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showSecret, setShowSecret] = useState(false);
+  const [subTotalPages, setSubTotalPages] = useState(0);
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState(null);
+  const [newPlan, setNewPlan] = useState({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
+  const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [aiDescription, setAiDescription] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
-  const [aiDescription, setAiDescription] = useState("");
-  const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
-  const [editingPlanId, setEditingPlanId] = useState(null);
-  const [newPlan, setNewPlan] = useState({
-    name: "",
-    description: "",
-    subtitle: "",
-    price: "",
-    billingCycle: "MONTHLY",
-    features: "",
-    active: true
-  });
+
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
 
   const handleUnauth = useCallback(() => {
     localStorage.removeItem('token');
@@ -785,7 +793,7 @@ export default function Dashboard() {
       const [dashRes, statsRes, plansRes, subRes] = await Promise.allSettled([
         dashboardAPI.getOverview(),
         dashboardAPI.getStats(),
-        dashboardAPI.getTenantPlans(plansPage, 9), // 9 per page for plans grid
+        dashboardAPI.getTenantPlans(plansPage, 9),
         dashboardAPI.getEndUsers(subPage, 10)
       ]);
 
@@ -814,27 +822,53 @@ export default function Dashboard() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg)" }}>
-      <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
+  useEffect(() => {
+    const tab = new URLSearchParams(location.search).get('tab');
+    if (tab) setActiveTab(tab);
+  }, [location.search]);
+
+  if (loading) {
+    return (
+      <div style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: isDark ? "#07070a" : "#f8fafc",
+        gap: 20
+      }}>
+        <div className="admin-spin" style={{ width: 40, height: 40, border: '3px solid rgba(99, 102, 241, 0.1)', borderTopColor: '#6366f1', borderRadius: '50%' }} />
+        <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? "#94a3b8" : "#64748b", fontFamily: 'var(--ff-mono)' }}>BOOTING_AEGIS_CORE...</span>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
+    <div className="dashboard-container" style={{
+      display: "flex",
+      flexDirection: "column",
       minHeight: "100vh",
-      background: "var(--white)",
+      background: isDark ? "#07070a" : "#f8fafc",
       color: "var(--text)",
       fontFamily: "var(--ff-sans)",
-      paddingTop: "68px"
+      transition: 'background 0.3s ease'
     }}>
+      <style>{`
+        @keyframes drawPath {
+          from { stroke-dashoffset: 200; }
+          to { stroke-dashoffset: 0; }
+        }
+        .dashboard-container {
+          background-image: ${isDark ? "radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.15), transparent 50%)" : "radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.08), transparent 45%)"};
+        }
+      `}</style>
       <Navbar />
       <div style={{ display: "flex", minHeight: "calc(100vh - 68px)" }}>
         <ConsoleSidebar
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           activeTab={activeTab} tenantName={dashboard?.tenantName}
-          currentPlan={dashboard?.currentPlan}
+          currentPlan={dashboard?.tenantPlan}
           daysRemaining={dashboard?.daysRemaining}
         />
 
@@ -854,41 +888,52 @@ export default function Dashboard() {
 
 
 
-          <div style={{ padding: "40px 32px" }}>
+          <div style={{ padding: "132px 32px 24px" }}>
 
             {activeTab === 'overview' && (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48 }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                      <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
-                      <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Management Console</span>
-                    </div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>Infrastructure Overview</h1>
-                    <p style={{ color: "var(--text)", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
-                      Real-time telemetry and operational diagnostics for node: <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--ink)', fontWeight: 700 }}>{dashboard?.tenantName || 'SAAS_ROOT'}</span>
-                    </p>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  style={{ marginBottom: 64, marginTop: 16 }}
+                >
+                  <div style={{ 
+                    fontSize: 10, 
+                    fontWeight: 900, 
+                    color: isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.4)", 
+                    letterSpacing: '0.25em', 
+                    textTransform: 'uppercase',
+                    marginBottom: 12
+                  }}>
+                    System Overview
                   </div>
-
-                  {/* System HUD */}
-                  <div style={{ display: 'flex', gap: 32, paddingBottom: 4 }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 2 }}>SYSTEM_CLOCK</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
-                        {new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 9, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: 2 }}>NODE_UPTIME</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#6366f1', fontFamily: 'var(--ff-mono)' }}>142:08:44:02</div>
-                    </div>
-                  </div>
-                </div>
+                  <h1 style={{ 
+                    fontSize: 22, 
+                    fontWeight: 800, 
+                    color: isDark ? "white" : "#1e293b", 
+                    letterSpacing: "-0.03em", 
+                    margin: 0,
+                    fontFamily: "var(--ff-h)"
+                  }}>
+                    Real-time platform activity
+                  </h1>
+                  <p style={{ 
+                    color: isDark ? "rgba(255,255,255,0.55)" : "rgba(0,0,0,0.5)", 
+                    marginTop: 8, 
+                    fontSize: 14, 
+                    lineHeight: 1.6,
+                    fontWeight: 500,
+                    maxWidth: 540
+                  }}>
+                    Aegis provides secure, decentralized node orchestration and high-performance edge computing nodes for your distributed applications and services.
+                  </p>
+                </motion.div>
 
                 {/* Unified 3D Telemetry Unit */}
                 <TelemetryUnit
                   dashboard={dashboard}
-                  stats={stats}
+                  isDark={isDark}
                 />
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
@@ -906,11 +951,11 @@ export default function Dashboard() {
                       DEVELOPER_PROTOCOL // ADVISORY
                     </div>
                     <div style={{ width: '100%' }}>
-                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, margin: 0 }}>
+                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "var(--text)", fontWeight: 500, margin: 0 }}>
                         Your infrastructure node is currently broadcasting on the <span style={{ color: 'var(--ink)', fontWeight: 700 }}>Aegis Mesh Network</span>.
                         As a developer tenant, you can interface with your provisioned services using the <span style={{ fontFamily: 'var(--ff-mono)', background: 'var(--theme-border)', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>X-API-KEY</span> header for all external requests.
                       </p>
-                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, marginTop: 16 }}>
+                      <p style={{ fontSize: 15, lineHeight: 1.8, color: "var(--text)", fontWeight: 500, marginTop: 16 }}>
                         All subscriber lifecycle events—including activations and decommissioning—are automatically synchronized across your tenant environment. For deep-level integration, refer to the <span style={{ textDecoration: 'underline', color: '#6366f1', cursor: 'pointer' }}>Infrastructure Documentation</span> or monitor the Live Insights feed above for real-time propagation status.
                       </p>
                     </div>
@@ -961,13 +1006,30 @@ export default function Dashboard() {
             {activeTab === 'plans' && (
               <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
                 <div className="neural-grid" />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40, padding: '0 8px', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, padding: '0 8px', position: 'relative', zIndex: 1 }}>
                   <div>
-                    <h1 style={{ fontSize: 32, fontWeight: 950, color: "var(--text)", letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "var(--ff-h)", marginBottom: 8 }}>Subscription Plans</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
-                      <p style={{ color: "var(--muted)", fontSize: 15, fontWeight: 500, margin: 0 }}>Define and manage plans available for your end-users.</p>
-                    </div>
+                    <h1 style={{ 
+                      fontSize: 22, 
+                      fontWeight: 800, 
+                      color: "var(--text)", 
+                      letterSpacing: "-0.03em", 
+                      lineHeight: 1.2, 
+                      fontFamily: "var(--ff-h)", 
+                      marginBottom: 8 
+                    }}>
+                      Subscription Plans
+                    </h1>
+                    <p style={{ 
+                      color: "var(--muted)", 
+                      fontSize: 14, 
+                      lineHeight: 1.6, 
+                      fontWeight: 500, 
+                      margin: 0, 
+                      maxWidth: 600,
+                      opacity: 0.9 
+                    }}>
+                      Provision and orchestrate your infrastructure nodes by defining resource-aware subscription tiers. Each plan represents a dedicated node configuration across the Aegis Mesh Network.
+                    </p>
                   </div>
                   <div style={{ display: 'flex', gap: 12 }}>
                     <button
@@ -1056,8 +1118,33 @@ export default function Dashboard() {
                       }}
                     />
                   )) : (
-                    <div style={{ gridColumn: "1/-1", padding: 100, textAlign: "center", background: "var(--glass-bg)", borderRadius: 40, border: '2px dashed var(--theme-border)' }}>
-                      <p style={{ color: "var(--muted)", fontSize: 16, fontWeight: 500 }}>No plans created yet. Start by adding your first subscription tier.</p>
+                    <div style={{ 
+                      gridColumn: "1/-1", 
+                      padding: "80px 40px", 
+                      textAlign: "center", 
+                      background: "var(--theme-bg-secondary)", 
+                      borderRadius: 32, 
+                      border: '1px solid var(--theme-border)',
+                      boxShadow: 'inset 0 4px 20px rgba(0,0,0,0.02)',
+                      animation: 'fadeIn 0.6s ease-out'
+                    }}>
+                      <div style={{ 
+                        width: 48, 
+                        height: 48, 
+                        borderRadius: 16, 
+                        background: 'rgba(99, 102, 241, 0.05)', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        margin: '0 auto 24px',
+                        border: '1px solid rgba(99, 102, 241, 0.1)'
+                      }}>
+                        <Icon name="zap" size={24} color="#6366f1" />
+                      </div>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", marginBottom: 12 }}>No nodes provisioned</h3>
+                      <p style={{ color: "var(--muted)", fontSize: 13, fontWeight: 500, maxWidth: 360, margin: '0 auto' }}>
+                        Start building your infrastructure by adding your first subscription tier or using AI to generate node clusters.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1354,10 +1441,10 @@ export default function Dashboard() {
 
             {activeTab === 'subscribers' && (
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
                   <div>
-                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "var(--text)", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Subscribers</h1>
-                    <p style={{ color: "var(--muted)", marginTop: 4 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
+                    <h1 style={{ fontSize: 20, fontWeight: 900, color: "var(--text)", letterSpacing: "-0.02em", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>Infrastructure Subscribers</h1>
+                    <p style={{ color: "var(--muted)", marginTop: 4, fontSize: 13 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
                   </div>
                   <div style={{ position: 'relative' }}>
                     <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>
@@ -1382,72 +1469,100 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid var(--glass-bg)", overflow: "hidden", boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
+                <div style={{ 
+                  background: isDark ? "rgba(10, 10, 15, 0.4)" : "rgba(255, 255, 255, 0.8)", 
+                  backdropFilter: "blur(12px)", 
+                  borderRadius: 24, 
+                  border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)"}`, 
+                  overflow: "hidden", 
+                  boxShadow: isDark ? "0 10px 40px rgba(0,0,0,0.4)" : "0 10px 30px rgba(99, 102, 241, 0.03)" 
+                }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", background: "var(--glass-bg)" }}>
-                        <th style={{ padding: "20px 32px" }}>Subscriber</th>
-                        <th style={{ padding: "20px 32px" }}>Current Plan</th>
-                        <th style={{ padding: "20px 32px" }}>Status</th>
-                        <th style={{ padding: "20px 32px" }}>Joined Date</th>
-                        <th style={{ padding: "20px 32px" }}>Actions</th>
+                      <tr style={{ 
+                        textAlign: "left", fontSize: 11, fontWeight: 800, 
+                        color: isDark ? "#64748b" : "#94a3b8", 
+                        textTransform: "uppercase", letterSpacing: "0.15em", 
+                        borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)"}`,
+                        background: isDark ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.01)" 
+                      }}>
+                        <th style={{ padding: "18px 32px" }}>Subscriber</th>
+                        <th style={{ padding: "18px 32px" }}>Current Plan</th>
+                        <th style={{ padding: "18px 32px" }}>Status</th>
+                        <th style={{ padding: "18px 32px" }}>Joined Date</th>
+                        <th style={{ padding: "18px 32px" }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {subscribers.length > 0 ? subscribers.map((sub, i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid var(--theme-border)", fontSize: 14 }}>
-                          <td style={{ padding: "20px 32px" }}>
+                        <tr key={i} style={{ 
+                          borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(0,0,0,0.02)"}`, 
+                          fontSize: 13,
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.02)" : "rgba(99, 102, 241, 0.02)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <td style={{ padding: "18px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #e0e7ff, #c7d2fe)", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>
+                              <div style={{ 
+                                width: 32, height: 32, borderRadius: "50%", 
+                                background: isDark ? "rgba(99, 102, 241, 0.15)" : "linear-gradient(135deg, #e0e7ff, #c7d2fe)", 
+                                color: isDark ? "#818cf8" : "#4f46e5", 
+                                display: "flex", alignItems: "center", justifyContent: "center", 
+                                fontWeight: 800, fontSize: 11,
+                                border: isDark ? "1px solid rgba(99, 102, 241, 0.2)" : "none"
+                              }}>
                                 {(sub.userName || sub.email || 'U')[0].toUpperCase()}
                               </div>
                               <div>
-                                <div style={{ fontWeight: 600, color: "var(--text)" }}>{sub.userName || 'Unknown User'}</div>
-                                <div style={{ fontSize: 12, color: "#94a3b8" }}>{sub.email}</div>
+                                <div style={{ fontWeight: 700, color: isDark ? "white" : "#1e293b" }}>{sub.userName || 'Unknown User'}</div>
+                                <div style={{ fontSize: 12, color: "#64748b", fontFamily: 'var(--ff-mono)' }}>{sub.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td style={{ padding: "20px 32px" }}>
+                          <td style={{ padding: "18px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366f1" }} />
-                              <span style={{ fontWeight: 600, color: "var(--text)" }}>{sub.planName || 'Standard'}</span>
+                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366f1", boxShadow: isDark ? '0 0 8px #6366f1' : 'none' }} />
+                              <span style={{ fontWeight: 600, color: isDark ? "#cbd5e1" : "#1e293b" }}>{sub.planName || 'Standard'}</span>
                             </div>
                           </td>
-                          <td style={{ padding: "20px 32px" }}>
+                          <td style={{ padding: "18px 32px" }}>
                             <span style={{
-                              fontSize: 11,
-                              fontWeight: 700,
+                              fontSize: 10,
+                              fontWeight: 800,
                               textTransform: "uppercase",
                               padding: "4px 10px",
                               borderRadius: "20px",
                               background: sub.status === 'ACTIVE' ? "rgba(16, 185, 129, 0.1)" : "rgba(244, 63, 94, 0.1)",
-                              color: sub.status === 'ACTIVE' ? "#10b981" : "#f43f5e"
+                              color: sub.status === 'ACTIVE' ? "#10b981" : "#f43f5e",
+                              border: `1px solid ${sub.status === 'ACTIVE' ? "#10b98144" : "#f43f5e44"}`
                             }}>
                               {sub.status || 'ACTIVE'}
                             </span>
                           </td>
-                          <td style={{ padding: "20px 32px", color: "var(--muted)" }}>
+                          <td style={{ padding: "18px 32px", color: isDark ? "#64748b" : "#94a3b8", fontWeight: 500, fontSize: 12 }}>
                             {sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : new Date().toLocaleDateString()}
                           </td>
-                          <td style={{ padding: "20px 32px" }}>
-                            <button style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>View Profile</button>
+                          <td style={{ padding: "18px 32px" }}>
+                            <button style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 700, cursor: "pointer", fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>View Profile</button>
                           </td>
                         </tr>
                       )) : (
                         <tr>
                           <td colSpan="5" style={{ padding: "80px 0", textAlign: "center" }}>
                             <div style={{ opacity: 0.5, marginBottom: 16 }}>
-                              <Icon name="users" size={48} color="#94a3b8" />
+                              <Icon name="users" size={48} color={isDark ? "#1e293b" : "#94a3b8"} />
                             </div>
-                            <p style={{ color: "var(--muted)", fontWeight: 500 }}>No subscribers found in your infrastructure.</p>
+                            <p style={{ color: isDark ? "#64748b" : "#94a3b8", fontWeight: 600, fontSize: 13 }}>No subscribers detected in current segment.</p>
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
                   {subscribers.length === 0 && (
-                     <div style={{ padding: '60px 0', textAlign: 'center', background: 'var(--glass-bg)' }}>
-                        <p style={{ color: "var(--muted)", fontWeight: 500 }}>No subscribers found in current segment.</p>
+                     <div style={{ padding: '60px 0', textAlign: 'center', background: isDark ? "rgba(0,0,0,0.1)" : 'var(--glass-bg)' }}>
+                        <p style={{ color: "#64748b", fontWeight: 600, fontSize: 13 }}>END_OF_LIST</p>
                      </div>
                   )}
                 </div>
@@ -1501,7 +1616,7 @@ export default function Dashboard() {
                       <div style={{ width: 24, height: 1, background: '#3b82f6' }} />
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Aegis Modules</span>
                     </div>
-                    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-1px", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>System Services</h1>
+                    <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>System Services</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
                       <p style={{ color: "var(--muted)", fontSize: 14, fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--text)' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
@@ -1509,81 +1624,90 @@ export default function Dashboard() {
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
-                    {/* Dynamic Services Logic based on Plan */}
                     {[
-                      // Base Services for ALL plans
                       { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: '#10b981', icon: 'shield' },
-                      { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#10b981', icon: 'zap' },
-
-                      // Specific to Starter and above
+                      { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#3b82f6', icon: 'zap' },
                       { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : '#64748b'), icon: 'layers' },
-
-                      // Specific to Growth/Enterprise
                       { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : '#64748b'), icon: 'activity' },
                       { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : '#64748b'), icon: 'cpu' }
                     ].map((service, i) => (
                       <div key={i} style={{
-                        background: service.status === 'Locked' ? "rgba(15, 23, 42, 0.2)" : "rgba(15, 23, 42, 0.4)",
-                        backdropFilter: "blur(12px)",
-                        borderRadius: 16,
-                        padding: 24,
-                        border: "1px solid rgba(255, 255, 255, 0.05)",
-                        boxShadow: service.status === 'Locked' ? 'none' : "0 4px 20px -10px rgba(0,0,0,0.5)",
-                        transition: 'all 0.2s ease',
+                        background: service.status === 'Locked' ? 'var(--theme-bg-tertiary)' : 'var(--glass-bg)',
+                        backdropFilter: "blur(20px)",
+                        borderRadius: 24,
+                        padding: 32,
+                        border: service.status === 'Locked' ? '1px solid var(--theme-border)' : `1px solid ${service.color}20`,
+                        boxShadow: service.status === 'Locked' ? 'none' : `0 10px 40px -10px ${service.color}15`,
+                        transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
                         position: 'relative',
                         overflow: 'hidden',
                         cursor: service.status === 'Locked' ? 'not-allowed' : 'pointer',
-                        filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.5)' : 'none'
+                        filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.6)' : 'none'
                       }}
                         onMouseEnter={(e) => {
                           if (service.status !== 'Locked') {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.borderColor = `${service.color}40`;
-                            e.currentTarget.style.background = "rgba(15, 23, 42, 0.6)";
+                            e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)';
+                            e.currentTarget.style.borderColor = `${service.color}60`;
+                            e.currentTarget.style.boxShadow = `0 20px 50px -15px ${service.color}33`;
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (service.status !== 'Locked') {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.05)";
-                            e.currentTarget.style.background = "rgba(15, 23, 42, 0.4)";
+                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                            e.currentTarget.style.borderColor = `${service.color}20`;
+                            e.currentTarget.style.boxShadow = `0 10px 40px -10px ${service.color}15`;
                           }
                         }}>
 
-                        {/* Glowing Top Border */}
+                        {/* Top Glowing Accent */}
                         {service.status !== 'Locked' && (
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: service.color, boxShadow: `0 0 10px ${service.color}` }} />
+                          <div style={{ 
+                            position: 'absolute', 
+                            top: 0, 
+                            left: '10%', 
+                            right: '10%', 
+                            height: 3, 
+                            borderRadius: '0 0 4px 4px',
+                            background: `linear-gradient(90deg, transparent, ${service.color}, transparent)`,
+                            boxShadow: `0 0 15px ${service.color}88`,
+                            opacity: 0.8
+                          }} />
                         )}
 
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20, alignItems: 'center' }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: 'center' }}>
                           <div style={{
-                            width: 40, height: 40, borderRadius: 10,
-                            background: "rgba(255, 255, 255, 0.03)",
-                            border: "1px solid rgba(255, 255, 255, 0.05)",
+                            width: 44, height: 44, borderRadius: 12,
+                            background: 'var(--theme-bg-secondary)',
+                            border: '1px solid var(--theme-border)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: "var(--text)"
+                            color: service.status === 'Locked' ? 'var(--muted)' : service.color,
+                            boxShadow: service.status !== 'Locked' ? `0 8px 16px ${service.color}10` : 'none'
                           }}>
-                            <Icon name={service.icon} size={18} />
+                            <Icon name={service.icon} size={20} color={service.status === 'Locked' ? 'var(--muted)' : service.color} />
                           </div>
 
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", fontFamily: 'var(--ff-mono)' }}>{service.version}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", fontFamily: 'var(--ff-mono)', letterSpacing: '0.05em' }}>{service.version}</span>
                             <div style={{
-                              display: 'flex', alignItems: 'center', gap: 6,
-                              background: "rgba(0, 0, 0, 0.2)", border: "1px solid rgba(255, 255, 255, 0.03)", padding: '3px 8px', borderRadius: 20
+                              display: 'flex', alignItems: 'center', gap: 8,
+                              background: 'var(--theme-bg-tertiary)', border: '1px solid var(--theme-border)', padding: '4px 10px', borderRadius: 20
                             }}>
-                              <div style={{
-                                width: 6, height: 6, borderRadius: "50%",
-                                background: service.color,
-                                boxShadow: service.status !== 'Locked' ? `0 0 8px ${service.color}` : 'none'
-                              }} />
-                              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text)", letterSpacing: '0.05em' }}>{service.status.toUpperCase()}</span>
+                              {service.status !== 'Locked' ? (
+                                <div style={{
+                                  width: 6, height: 6, borderRadius: '50%',
+                                  background: `radial-gradient(circle at 30% 30%, white 0%, ${service.color} 80%)`,
+                                  boxShadow: `0 0 10px ${service.color}, 0 0 15px ${service.color}66`
+                                }} />
+                              ) : (
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748b' }} />
+                              )}
+                              <span style={{ fontSize: 10, fontWeight: 900, color: "var(--text)", letterSpacing: '0.1em' }}>{service.status.toUpperCase()}</span>
                             </div>
                           </div>
                         </div>
 
-<h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", margin: "0 0 4px 0", letterSpacing: '-0.01em' }}>{service.name}</h3>
-                        <p style={{ fontSize: 13, color: "#94a3b8", margin: 0, fontWeight: 400 }}>{service.stats}</p>
+                        <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", margin: "0 0 6px 0", letterSpacing: '-0.02em', fontFamily: 'var(--ff-h)' }}>{service.name}</h3>
+                        <p style={{ fontSize: 13, color: "var(--muted)", margin: 0, fontWeight: 500, lineHeight: 1.5 }}>{service.stats}</p>
                       </div>
                     ))}
                   </div>

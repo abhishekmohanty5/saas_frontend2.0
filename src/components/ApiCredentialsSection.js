@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/ApiCredentialsSection.css';
-import { Lock, Unlock, Eye, EyeOff, Copy, Check, ShieldCheck, Key, Trash2 } from 'lucide-react';
+import { Lock, Unlock, Eye, EyeOff, Copy, Check, ShieldCheck } from 'lucide-react';
 
 const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initialClientSecret }) => {
   const [credentials, setCredentials] = useState({
@@ -114,14 +114,6 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
 
   return (
     <div className="api-credentials-container">
-      {/* Header */}
-      <div className="api-creds-header">
-        <div className="header-content">
-          <h1>Security & Access</h1>
-          <p>Manage your API credentials and keys securely</p>
-        </div>
-      </div>
-
       {/* Main Credentials Section */}
       <div className="creds-section">
         <div className="section-title">
@@ -134,16 +126,16 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
           <div className="credential-label">CLIENT ID</div>
           <div className="credential-input-container">
             <input
-              type={revealed.clientId ? <EyeOff size={16} /> : <Eye size={16} />}
+              type={revealed.clientId ? "text" : "password"}
               value={credentials.clientId}
               readOnly
               className="credential-input"
             />
             <div className="credential-actions">
               <button
-                className={`lock-btn ${locked.clientId ? <Lock size={16} /> : <Unlock size={16} />}`}
+                className={`lock-btn ${locked.clientId ? 'locked' : ''}`}
                 onClick={() => toggleLock('clientId')}
-                title={locked.clientId ? <Lock size={16} /> : <Unlock size={16} />}
+                title={locked.clientId ? "Unlock" : "Lock"}
               >
                 {locked.clientId ? <Lock size={16} /> : <Unlock size={16} />}
               </button>
@@ -151,13 +143,12 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
                 <button
                   className="reveal-btn"
                   onClick={() => toggleReveal('clientId')}
-                  title={revealed.clientId ? <EyeOff size={16} /> : <Eye size={16} />}
                 >
                   {revealed.clientId ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               )}
               <button
-                className={`copy-btn ${copied.clientId ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}`}
+                className={`copy-btn ${copied.clientId ? 'copied' : ''}`}
                 onClick={() => copyToClipboard(credentials.clientId, 'clientId')}
               >
                 {copied.clientId ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}
@@ -171,16 +162,16 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
           <div className="credential-label">CLIENT SECRET</div>
           <div className="credential-input-container">
             <input
-              type={revealed.clientSecret ? <EyeOff size={16} /> : <Eye size={16} />}
+              type={revealed.clientSecret ? "text" : "password"}
               value={credentials.clientSecret}
               readOnly
               className="credential-input"
             />
             <div className="credential-actions">
               <button
-                className={`lock-btn ${locked.clientSecret ? <Lock size={16} /> : <Unlock size={16} />}`}
+                className={`lock-btn ${locked.clientSecret ? 'locked' : ''}`}
                 onClick={() => toggleLock('clientSecret')}
-                title={locked.clientSecret ? <Lock size={16} /> : <Unlock size={16} />}
+                title={locked.clientSecret ? "Unlock" : "Lock"}
               >
                 {locked.clientSecret ? <Lock size={16} /> : <Unlock size={16} />}
               </button>
@@ -188,13 +179,12 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
                 <button
                   className="reveal-btn"
                   onClick={() => toggleReveal('clientSecret')}
-                  title={revealed.clientSecret ? <EyeOff size={16} /> : <Eye size={16} />}
                 >
                   {revealed.clientSecret ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               )}
               <button
-                className={`copy-btn ${copied.clientSecret ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}`}
+                className={`copy-btn ${copied.clientSecret ? 'copied' : ''}`}
                 onClick={() => copyToClipboard(credentials.clientSecret, 'clientSecret')}
               >
                 {copied.clientSecret ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}
@@ -259,23 +249,21 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
                   <button
                     className="delete-key-btn"
                     onClick={() => deleteApiKey(key.id)}
-                    title="Delete key"
                   >
                     ✕
                   </button>
                 </div>
                 <div className="key-value-container">
                   <input
-                    type={key.revealed ? <EyeOff size={16} /> : <Eye size={16} />}
+                    type={key.revealed ? "text" : "password"}
                     value={key.key}
                     readOnly
                     className="key-value-input"
                   />
                   <div className="key-actions">
                     <button
-                      className={`lock-btn ${key.locked ? <Lock size={16} /> : <Unlock size={16} />}`}
+                      className={`lock-btn ${key.locked ? 'locked' : ''}`}
                       onClick={() => toggleApiKeyLock(key.id)}
-                      title={key.locked ? <Lock size={16} /> : <Unlock size={16} />}
                     >
                       {key.locked ? <Lock size={16} /> : <Unlock size={16} />}
                     </button>
@@ -288,7 +276,7 @@ const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initia
                       </button>
                     )}
                     <button
-                      className={`copy-btn ${key.copied ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}`}
+                      className={`copy-btn ${key.copied ? 'copied' : ''}`}
                       onClick={() => copyApiKey(key.key, key.id)}
                     >
                       {key.copied ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}

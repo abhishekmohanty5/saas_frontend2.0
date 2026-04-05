@@ -49,15 +49,74 @@ const TAB_ITEMS = [
   { id: 'users', label: 'Users', icon: Users },
 ];
 
+const premiumEase = [0.22, 1, 0.36, 1];
+
 const containerMotion = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, ease: 'easeOut' },
+    transition: {
+      duration: 0.42,
+      ease: premiumEase,
+      when: 'beforeChildren',
+      staggerChildren: 0.07,
+    },
+  },
+  exit: { opacity: 0, y: -12, transition: { duration: 0.22 } },
+};
+
+const sectionMotion = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.36, ease: premiumEase },
   },
   exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
 };
+
+const staggerSectionMotion = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.36,
+      ease: premiumEase,
+      when: 'beforeChildren',
+      staggerChildren: 0.06,
+      delayChildren: 0.02,
+    },
+  },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+};
+
+const cardMotion = {
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: premiumEase },
+  },
+};
+
+const subtleCardHover = {
+  y: -4,
+  scale: 1.012,
+  transition: { duration: 0.2, ease: premiumEase },
+};
+
+const summaryCardHover = {
+  y: -6,
+  scale: 1.014,
+  rotateX: -2,
+  rotateY: 2,
+  transformPerspective: 1200,
+  transition: { duration: 0.2, ease: premiumEase },
+};
+
+const buttonTapMotion = { scale: 0.985 };
 
 const compactNumber = new Intl.NumberFormat('en-IN', {
   notation: 'compact',
@@ -263,12 +322,20 @@ const StatusBadge = ({ value }) => (
 );
 
 const SummaryCard = ({ icon: Icon, label, value, helper, tone }) => (
-  <motion.article variants={containerMotion} className={`admin-summary-card admin-summary-card--${tone}`}>
+  <motion.article
+    variants={cardMotion}
+    whileHover={summaryCardHover}
+    whileTap={buttonTapMotion}
+    className={`admin-summary-card admin-summary-card--${tone}`}
+  >
     <div className="admin-summary-card__head">
       <span className="admin-summary-card__icon">
         <Icon size={18} />
       </span>
-      <span className="admin-summary-card__label">{label}</span>
+      <div className="admin-summary-card__head-copy">
+        <span className="admin-summary-card__label">{label}</span>
+        <span className="admin-summary-card__badge">Live</span>
+      </div>
     </div>
     <div className="admin-summary-card__value">{value}</div>
     <p className="admin-summary-card__helper">{helper}</p>
@@ -325,7 +392,7 @@ const EmptyState = ({ icon: Icon, title, description, action }) => (
 
 const AdminFooter = ({ syncedAt }) => (
   <footer className="admin-footer">
-    <span>Aegis Admin</span>
+    <span>Admin workspace</span>
     <span>{syncedAt ? `Updated ${syncedAt}` : 'Waiting for data'}</span>
   </footer>
 );
@@ -650,48 +717,71 @@ const AdminDashboard = () => {
       exit="exit"
       className="admin-tab-content"
     >
-      <section className="admin-hero">
+      <motion.section className="admin-hero" variants={sectionMotion} whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+        <div className="admin-hero__ambient" aria-hidden="true">
+          <span className="admin-hero__glow admin-hero__glow--primary" />
+          <span className="admin-hero__glow admin-hero__glow--secondary" />
+          <span className="admin-hero__grid" />
+        </div>
+
         <div className="admin-hero__copy">
           <span className="admin-eyebrow">Admin Overview</span>
-          <h1>A cleaner view of your platform.</h1>
-          <p>
-            Review tenants, users, plans, and the few signals that need attention without hunting
-            through noisy screens.
-          </p>
+          <h1>Platform control, without the clutter.</h1>
+          <p>Track tenants, users, pricing, and live platform signals from one calmer admin surface.</p>
 
           <div className="admin-hero__chips">
             <span className="admin-chip">
               <ShieldCheck size={14} />
-              Signed in as {user?.email || 'super admin'}
+              Signed in: {user?.email || 'super admin'}
             </span>
             <span className="admin-chip">
               <Database size={14} />
-              Updated {lastSyncedLabel}
+              Last sync {lastSyncedLabel}
             </span>
             <span className={`admin-chip admin-chip--${analytics ? 'success' : 'warning'}`}>
               <BrainCircuit size={14} />
-              {analytics ? 'AI insights available' : 'AI insights unavailable'}
+              {analytics ? 'AI insights live' : 'AI insights fallback'}
             </span>
           </div>
         </div>
 
-        <div className="admin-hero__actions">
-          <button type="button" className="admin-button admin-button--primary" onClick={() => setShowCreatePlan(true)}>
-            <Plus size={16} />
-            New plan
-          </button>
-          <button type="button" className="admin-button admin-button--secondary" onClick={() => setShowAiModal(true)}>
-            <Sparkles size={16} />
-            Plan ideas
-          </button>
-          <button type="button" className="admin-button admin-button--ghost" onClick={handleRefresh} disabled={refreshing}>
-            {refreshing ? <Loader2 size={16} className="admin-spin" /> : <RefreshCw size={16} />}
-            Refresh data
-          </button>
-        </div>
-      </section>
+        <div className="admin-hero__aside">
+          <div className="admin-hero__actions">
+            <button type="button" className="admin-button admin-button--primary" onClick={() => setShowCreatePlan(true)}>
+              <Plus size={16} />
+              New plan
+            </button>
+            <button type="button" className="admin-button admin-button--secondary" onClick={() => setShowAiModal(true)}>
+              <Sparkles size={16} />
+              Plan ideas
+            </button>
+            <button
+              type="button"
+              className="admin-button admin-button--ghost"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              {refreshing ? <Loader2 size={16} className="admin-spin" /> : <RefreshCw size={16} />}
+              Refresh data
+            </button>
+          </div>
 
-      <motion.div className="admin-summary-grid" variants={containerMotion} initial="hidden" animate="visible">
+          <div className="admin-hero__meta">
+            <div className="admin-hero__meta-card">
+              <span>Attention</span>
+              <strong>{attentionCount}</strong>
+              <small>items in the current view</small>
+            </div>
+            <div className="admin-hero__meta-card">
+              <span>Active plans</span>
+              <strong>{activePlansCount}</strong>
+              <small>live catalog entries</small>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      <motion.div className="admin-summary-grid" variants={staggerSectionMotion}>
         <SummaryCard
           icon={Users}
           label="Platform users"
@@ -723,7 +813,7 @@ const AdminDashboard = () => {
       </motion.div>
 
       <div className="admin-overview-grid">
-        <section className="admin-panel">
+        <motion.section className="admin-panel admin-panel--interactive" variants={sectionMotion} whileHover={subtleCardHover}>
           <div className="admin-panel__header">
             <div>
               <span className="admin-panel__eyebrow">Pricing</span>
@@ -768,9 +858,9 @@ const AdminDashboard = () => {
               }
             />
           )}
-        </section>
+        </motion.section>
 
-        <section className="admin-panel">
+        <motion.section className="admin-panel admin-panel--interactive" variants={sectionMotion} whileHover={subtleCardHover}>
           <div className="admin-panel__header">
             <div>
               <span className="admin-panel__eyebrow">Health</span>
@@ -812,9 +902,9 @@ const AdminDashboard = () => {
               Live AI metrics are not available right now. The dashboard is falling back to the core platform data.
             </div>
           )}
-        </section>
+        </motion.section>
 
-        <section className="admin-panel admin-panel--tall">
+        <motion.section className="admin-panel admin-panel--tall admin-panel--interactive" variants={sectionMotion} whileHover={subtleCardHover}>
           <div className="admin-panel__header">
             <div>
               <span className="admin-panel__eyebrow">Recent Changes</span>
@@ -846,7 +936,7 @@ const AdminDashboard = () => {
               description="Once tenants, users, or plans load in, this feed will start showing recent signals."
             />
           )}
-        </section>
+        </motion.section>
       </div>
     </motion.div>
   );
@@ -860,7 +950,7 @@ const AdminDashboard = () => {
       exit="exit"
       className="admin-tab-content"
     >
-      <section className="admin-panel">
+      <motion.section className="admin-panel" variants={sectionMotion}>
         <div className="admin-panel__header admin-panel__header--stack">
           <div>
             <span className="admin-panel__eyebrow">Tenants</span>
@@ -941,7 +1031,7 @@ const AdminDashboard = () => {
           totalPages={totalPages.tenants}
           onChange={(page) => handlePageChange('tenants', page)}
         />
-      </section>
+      </motion.section>
     </motion.div>
   );
 
@@ -954,7 +1044,7 @@ const AdminDashboard = () => {
       exit="exit"
       className="admin-tab-content"
     >
-      <section className="admin-panel">
+      <motion.section className="admin-panel" variants={sectionMotion}>
         <div className="admin-panel__header admin-panel__header--stack">
           <div>
             <span className="admin-panel__eyebrow">Plans</span>
@@ -980,14 +1070,19 @@ const AdminDashboard = () => {
         </div>
 
         {filteredPlans.length ? (
-          <div className="admin-plan-grid">
+          <motion.div className="admin-plan-grid" variants={staggerSectionMotion}>
             {filteredPlans.map((plan) => {
               const status = getPlanStatus(plan);
               const planDuration = getPlanDuration(plan);
               const busy = planActionId === plan.id;
 
               return (
-                <article key={plan.id || plan.name} className="admin-plan-card">
+                <motion.article
+                  key={plan.id || plan.name}
+                  className="admin-plan-card"
+                  variants={cardMotion}
+                  whileHover={subtleCardHover}
+                >
                   <div className="admin-plan-card__top">
                     <div>
                       <div className="admin-plan-card__title">{getEntityName(plan, 'Plan')}</div>
@@ -1035,10 +1130,10 @@ const AdminDashboard = () => {
                       Delete
                     </button>
                   </div>
-                </article>
+                </motion.article>
               );
             })}
-          </div>
+          </motion.div>
         ) : (
           <EmptyState
             icon={CreditCard}
@@ -1067,7 +1162,7 @@ const AdminDashboard = () => {
           totalPages={totalPages.plans}
           onChange={(page) => handlePageChange('plans', page)}
         />
-      </section>
+      </motion.section>
     </motion.div>
   );
 
@@ -1080,7 +1175,7 @@ const AdminDashboard = () => {
       exit="exit"
       className="admin-tab-content"
     >
-      <section className="admin-panel">
+      <motion.section className="admin-panel" variants={sectionMotion}>
         <div className="admin-panel__header admin-panel__header--stack">
           <div>
             <span className="admin-panel__eyebrow">Users</span>
@@ -1155,7 +1250,7 @@ const AdminDashboard = () => {
           totalPages={totalPages.users}
           onChange={(page) => handlePageChange('users', page)}
         />
-      </section>
+      </motion.section>
     </motion.div>
   );
 
@@ -1366,13 +1461,16 @@ const AdminDashboard = () => {
                 </div>
 
                 {aiSuggestions.length > 0 && (
-                  <div className="admin-ai-grid">
+                  <motion.div className="admin-ai-grid" variants={staggerSectionMotion} initial="hidden" animate="visible">
                     {aiSuggestions.map((suggestion) => (
-                      <button
+                      <motion.button
                         key={`${suggestion.name}-${suggestion.price}`}
                         type="button"
                         className="admin-ai-card"
                         onClick={() => applySuggestion(suggestion)}
+                        variants={cardMotion}
+                        whileHover={subtleCardHover}
+                        whileTap={buttonTapMotion}
                       >
                         <div className="admin-ai-card__top">
                           <div>
@@ -1386,9 +1484,9 @@ const AdminDashboard = () => {
                           <span>{suggestion.duration} days</span>
                           <span>{suggestion.features || 'Feature bundle available after selection'}</span>
                         </div>
-                      </button>
+                      </motion.button>
                     ))}
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </motion.div>

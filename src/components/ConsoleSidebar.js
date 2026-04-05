@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
+import { useTheme } from '../utils/ThemeContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ICONS (SVG inline, match the image style)
 const Icon = ({ name, size = 18, color = "currentColor", style }) => {
@@ -32,6 +34,9 @@ const ConsoleSidebar = ({
 }) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
+    const { theme } = useTheme();
+
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
     const menuItems = [
         { id: "overview", label: "Dashboard", icon: "grid" },
@@ -40,6 +45,16 @@ const ConsoleSidebar = ({
         { id: "subscribers", label: "Subscribers", icon: "users" },
         { id: "services", label: "Services", icon: "services" },
     ];
+
+    const styles = {
+        bg: isDark ? "rgba(10, 10, 15, 0.95)" : "rgba(255, 255, 255, 0.98)",
+        border: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(15, 23, 42, 0.08)",
+        text: isDark ? "#94a3b8" : "#64748b",
+        textActive: isDark ? "white" : "#1e293b",
+        cardBg: isDark ? "rgba(0, 0, 0, 0.25)" : "rgba(248, 250, 252, 0.8)",
+        shadow: isDark ? "inset 1px 0 0 0 rgba(255, 255, 255, 0.03), 10px 0 60px rgba(0,0,0,0.5)" : "10px 0 60px rgba(15, 23, 42, 0.05)",
+        btnBg: isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(15, 23, 42, 0.02)",
+    };
 
     const handleLogout = () => {
         logout();
@@ -52,308 +67,251 @@ const ConsoleSidebar = ({
 
     return (
         <aside style={{
-            width: sidebarOpen ? 280 : 80,
-            background: "var(--surface)",
-            backdropFilter: "blur(20px) saturate(180%)",
-            borderRight: "1px solid var(--border)",
+            width: sidebarOpen ? 236 : 80,
+            background: styles.bg,
+            backdropFilter: "blur(24px) saturate(160%)",
+            borderRight: `1px solid ${styles.border}`,
             display: "flex",
             flexDirection: "column",
-            transition: "all .4s cubic-bezier(0.19, 1, 0.22, 1)",
+            transition: "all .5s cubic-bezier(0.19, 1, 0.22, 1)",
             position: "sticky",
-            top: 96,
-            height: "calc(100vh - 96px)",
+            top: 132,
+            height: "calc(100vh - 132px)",
             zIndex: 100,
-            padding: "32px 0",
-            boxShadow: "10px 0 50px rgba(0,0,0,0.02)",
+            padding: "24px 0",
+            boxShadow: styles.shadow,
             overflowX: "hidden"
         }}>
             <style>{`
                 .sidebar-label {
-                    font-size: 10px;
-                    font-weight: 800;
-                    color: var(--muted);
-                    padding: 32px 28px 12px;
+                    font-size: 9px;
+                    font-weight: 900;
+                    color: ${isDark ? "rgba(148, 163, 184, 0.5)" : "rgba(100, 116, 139, 0.6)"};
+                    padding: 24px 28px 10px;
                     text-transform: uppercase;
-                    letter-spacing: 0.15em;
+                    letter-spacing: 0.2em;
                     font-family: var(--ff-mono, monospace);
-                    opacity: 0.8;
                 }
                 .sidebar-item {
                     display: flex;
                     align-items: center;
                     gap: 16px;
-                    padding: 14px 28px;
-                    margin: 2px 12px;
-                    border-radius: 14px;
+                    padding: 12px 28px;
+                    margin: 1px 12px;
+                    border-radius: 12px;
                     cursor: pointer;
-                    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-                    color: var(--muted);
-                    font-weight: 700;
-                    font-size: 14px;
+                    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                    color: ${styles.text};
+                    font-weight: 600;
+                    font-size: 13px;
                     position: relative;
                 }
                 .sidebar-item:hover {
-                    color: var(--text);
-                    background: var(--glass-bg);
+                    color: ${styles.textActive};
+                    background: ${styles.btnBg};
                     transform: translateX(4px);
-                    box-shadow: 0 4px 12px var(--theme-border);
                 }
                 .sidebar-item.active {
-                    color: var(--accent);
-                    background: var(--surface);
-                    box-shadow: 
-                        0 10px 25px -5px rgba(79, 70, 229, 0.15),
-                        0 8px 10px -6px rgba(79, 70, 229, 0.1),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                    transform: translateX(6px);
+                    color: ${styles.textActive};
+                    background: ${isDark ? "linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%)" : "rgba(99, 102, 241, 0.05)"};
                 }
                 .sidebar-item.active::before {
                     content: '';
                     position: absolute;
-                    left: -4px;
-                    top: 15%;
-                    height: 70%;
-                    width: 4px;
-                    background: var(--accent);
+                    left: -12px;
+                    top: 20%;
+                    height: 60%;
+                    width: 3px;
+                    background: #6366f1;
                     border-radius: 0 4px 4px 0;
-                    box-shadow: 0 0 10px var(--accent);
-                }
-                .sidebar-item svg {
-                    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-                }
-                .sidebar-item:hover svg {
-                    transform: scale(1.1) rotate(-5deg);
-                }
-                .sidebar-footer-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                    padding: 14px 28px;
-                    cursor: pointer;
-                    color: var(--muted);
-                    font-weight: 700;
-                    font-size: 14px;
-                    transition: all 0.2s;
-                    margin: 0 12px;
-                    border-radius: 12px;
-                }
-                .sidebar-footer-item:hover {
-                    color: var(--text);
-                    background: var(--glass-bg);
-                }
-                .sidebar-footer-item.logout {
-                    color: var(--red);
-                }
-                .sidebar-footer-item.logout:hover {
-                    background: rgba(239, 68, 68, 0.05);
+                    box-shadow: 0 0 15px #6366f1, 0 0 5px #6366f1;
                 }
                 .workspace-card {
-                    margin: 0 24px 32px;
-                    padding: 24px;
-                    border-radius: 20px;
-                    background: var(--surface);
-                    border: 1px solid var(--border);
-                    box-shadow: 
-                        0 20px 40px -15px rgba(0,0,0,0.1),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.8);
+                    margin: 0 16px 20px;
+                    padding: 16px;
+                    border-radius: 18px;
+                    background: ${styles.cardBg};
+                    border: 1px solid ${styles.border};
+                    box-shadow: ${isDark ? "inset 0 2px 10px rgba(0,0,0,0.4)" : "none"};
                     position: relative;
                     overflow: hidden;
-                    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-                    perspective: 1000px;
-                }
-                .workspace-card::before {
-                    content: '';
-                    position: absolute;
-                    top: -100%;
-                    left: 0;
-                    width: 100%;
-                    height: 50%;
-                    background: linear-gradient(
-                        to bottom,
-                        transparent,
-                        rgba(99, 102, 241, 0.1),
-                        transparent
-                    );
-                    animation: scanningLine 4s linear infinite;
-                    pointer-events: none;
+                    transition: all 0.4s ease;
                 }
                 .workspace-card:hover {
-                    transform: translateY(-4px) rotateX(2deg) rotateY(-1deg);
-                    box-shadow: 
-                        0 30px 60px -20px rgba(0,0,0,0.15),
-                        0 0 0 1px var(--accent);
-                    border-color: transparent;
+                    border-color: rgba(99, 102, 241, 0.3);
+                    transform: translateY(-2px);
                 }
-                .workspace-card::after {
-                    content: '';
+                @keyframes heartbeat {
+                    0%, 100% { opacity: 0.4; filter: blur(2px); }
+                    50% { opacity: 0.8; filter: blur(4px); }
+                }
+                .pulse-layer {
                     position: absolute;
                     inset: 0;
                     background: radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.08), transparent 70%);
+                    animation: heartbeat 4s ease-in-out infinite;
                     pointer-events: none;
                 }
-                @keyframes scanningLine {
-                    0% { top: -100%; }
-                    100% { top: 200%; }
+                .sidebar-footer-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 10px 18px;
+                    margin: 4px 12px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    color: ${styles.text};
+                    font-family: var(--ff-mono);
+                    font-size: 10px;
+                    font-weight: 800;
+                    transition: all 0.2s;
+                    border: 1px solid transparent;
                 }
-                .dark-theme .workspace-card {
-                    background: rgba(30, 41, 59, 0.6);
-                    backdrop-filter: blur(12px);
-                    box-shadow: 
-                        0 20px 40px -15px rgba(0,0,0,0.4),
-                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+                .sidebar-footer-btn:hover {
+                    background: ${styles.btnBg};
+                    border-color: ${styles.border};
+                    color: ${styles.textActive};
                 }
-                .dark-theme .workspace-card:hover {
-                    box-shadow: 
-                        0 30px 60px -20px rgba(0,0,0,0.6),
-                        0 0 15px rgba(99, 102, 241, 0.2);
+                .sidebar-footer-btn.logout:hover {
+                    color: #ef4444;
+                    background: rgba(239, 68, 68, 0.05);
+                    border-color: rgba(239, 68, 68, 0.1);
                 }
             `}</style>
 
-            {/* Workspace Section - Persistent Operational HUD */}
-            <div className="workspace-card" style={{
-                margin: sidebarOpen ? "0 24px 32px" : "0 8px 32px",
-                padding: sidebarOpen ? "20px" : "16px 8px",
-                textAlign: sidebarOpen ? "left" : "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: sidebarOpen ? "flex-start" : "center",
-                transition: "all 0.3s cubic-bezier(0.19, 1, 0.22, 1)",
-                minHeight: sidebarOpen ? "110px" : "100px",
-                justifyContent: "flex-start"
-            }}>
-                {sidebarOpen ? (
-                    <>
-                        <div style={{
-                            fontSize: 12.5,
-                            fontWeight: 800,
-                            color: "var(--text)",
-                            fontFamily: 'var(--ff-serif)',
-                            letterSpacing: '0.02em',
-                            marginBottom: 12,
-                            textTransform: 'uppercase',
-                            opacity: 0.95
-                        }}>
-                            {tenantName || 'Acme SaaS'}
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {/* Workspace HUD */}
+            <motion.div 
+                layout
+                className="workspace-card" 
+                style={{
+                    textAlign: sidebarOpen ? "left" : "center",
+                    alignItems: sidebarOpen ? "flex-start" : "center",
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                <div className="pulse-layer" />
+                <AnimatePresence mode="wait">
+                    {sidebarOpen ? (
+                        <motion.div
+                            key="expanded"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            style={{ width: '100%' }}
+                        >
                             <div style={{
-                                background: "var(--accent)",
-                                color: "white",
-                                fontSize: '7.5px',
+                                fontSize: 11.5,
                                 fontWeight: 900,
-                                padding: '3px 8px',
-                                borderRadius: '5px',
-                                boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
-                                letterSpacing: '0.08em',
-                                whiteSpace: 'nowrap',
-                                textTransform: 'uppercase'
+                                color: isDark ? "white" : "#1e293b",
+                                letterSpacing: '0.05em',
+                                marginBottom: 12,
+                                textTransform: 'uppercase',
+                                opacity: 0.9
                             }}>
-                                {currentPlan || 'FREE'}
+                                {tenantName || 'ACME_SaaS'}
                             </div>
 
-                            {daysRemaining !== undefined && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <div style={{
-                                    fontSize: '8.5px',
-                                    fontWeight: 800,
-                                    color: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
-                                    background: 'var(--glass-bg)',
-                                    padding: '3px 8px',
-                                    borderRadius: '5px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    border: `1px solid var(--theme-border)`,
-                                    whiteSpace: 'nowrap'
+                                    background: "#6366f1",
+                                    color: "white",
+                                    fontSize: '8px',
+                                    fontWeight: 900,
+                                    padding: '2px 8px',
+                                    borderRadius: '4px',
+                                    letterSpacing: '0.05em',
                                 }}>
-                                    <div style={{
-                                        width: 4, height: 4, borderRadius: '50%',
-                                        background: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
-                                        boxShadow: `0 0 6px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`
-                                    }} />
-                                    {daysRemaining}D REMAINING
+                                    {currentPlan || 'FREE'}
                                 </div>
-                            )}
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        {/* Compact HUD Protocols (Lights & Plan) when collapsed */}
-                        <div style={{
-                            width: 10, height: 10, borderRadius: "50%",
-                            background: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
-                            boxShadow: `0 0 15px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`,
-                            marginBottom: 16,
-                            position: 'relative'
-                        }}>
+
+                                {daysRemaining !== undefined && (
+                                    <div style={{
+                                        fontSize: '8px',
+                                        fontWeight: 900,
+                                        color: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                                        background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(15, 23, 42, 0.03)',
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        border: `1px solid ${styles.border}`
+                                    }}>
+                                        <div style={{
+                                            width: 4, height: 4, borderRadius: '50%',
+                                            background: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                                            boxShadow: `0 0 6px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}`
+                                        }} />
+                                        {daysRemaining}D
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="collapsed"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                        >
                             <div style={{
-                                position: 'absolute',
-                                inset: -4,
-                                borderRadius: '50%',
-                                border: `1px solid var(--theme-border)`,
-                                opacity: 0.5
+                                width: 8, height: 8, borderRadius: "50%",
+                                background: daysRemaining > 10 ? '#10b981' : '#ef4444',
+                                boxShadow: `0 0 15px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}`,
+                                marginBottom: 12
                             }} />
-                        </div>
-                        <div style={{
-                            fontSize: 9,
-                            fontWeight: 900,
-                            padding: '4px 6px',
-                            background: "var(--accent)",
-                            color: "white",
-                            borderRadius: 4,
-                            boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)',
-                            letterSpacing: '0.05em'
-                        }}>
-                            {(currentPlan || 'F')[0].toUpperCase()}
-                        </div>
-                    </>
-                )}
-            </div>
+                            <div style={{
+                                fontSize: 8,
+                                fontWeight: 900,
+                                padding: '3px 5px',
+                                background: "#6366f1",
+                                color: "white",
+                                borderRadius: 3,
+                            }}>
+                                {(currentPlan || 'F')[0].toUpperCase()}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
 
             {/* Menu Section */}
             <div style={{ flex: 1 }}>
                 <div className="sidebar-label">{sidebarOpen ? "SYSTEM_PROTOCOLS" : ""}</div>
                 {menuItems.map(item => (
-                    <div
+                    <motion.div
                         key={item.id}
+                        whileHover={{ x: 4 }}
+                        whileTap={{ scale: 0.98 }}
                         className={`sidebar-item ${activeTab === item.id ? "active" : ""}`}
                         onClick={() => handleNav(item.id)}
                     >
-                        <Icon name={item.icon} color={activeTab === item.id ? "var(--accent)" : "var(--muted)"} />
+                        <Icon name={item.icon} color={activeTab === item.id ? (isDark ? "white" : "#6366f1") : styles.text} />
                         {sidebarOpen && <span>{item.label}</span>}
-                    </div>
+                        {activeTab === item.id && (
+                            <motion.div 
+                                layoutId="activeBeam"
+                                className="beam-indicator"
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    borderRadius: 12,
+                                    background: isDark ? 'linear-gradient(90deg, rgba(99, 102, 241, 0.08) 0%, transparent 100%)' : 'rgba(99, 102, 241, 0.04)',
+                                    zIndex: -1
+                                }}
+                            />
+                        )}
+                    </motion.div>
                 ))}
             </div>
 
-            {/* Bottom Section */}
             <div style={{
-                borderTop: "1px solid var(--theme-border)",
-                margin: "16px 16px 0",
-                paddingTop: 16
+                borderTop: `1px solid ${styles.border}`,
+                margin: "12px 12px 0",
+                paddingTop: 12
             }}>
-                <div className="sidebar-footer-item" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                    <div style={{
-                        width: 32, height: 32, borderRadius: 10,
-                        background: "var(--glass-bg)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.3s",
-                        border: "1px solid var(--theme-border)"
-                    }}>
-                        <Icon name="chevronLeft" size={16} color="var(--muted)" style={{ transform: sidebarOpen ? "none" : "rotate(180deg)" }} />
-                    </div>
-                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 11, letterSpacing: '0.05em', color: "var(--muted)" }}>SYSTEM.COLLAPSE()</span>}
-                </div>
-                <div className="sidebar-footer-item logout" onClick={handleLogout}>
-                    <div style={{
-                        width: 32, height: 32, borderRadius: 10,
-                        background: "rgba(239, 68, 68, 0.08)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        border: "1px solid rgba(239, 68, 68, 0.1)"
-                    }}>
-                        <Icon name="logout" size={16} color="var(--red)" />
-                    </div>
-                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 11, letterSpacing: '0.05em', color: "var(--red)" }}>AUTH.TERMINATE()</span>}
-                </div>
+                {/* Footer buttons removed */}
             </div>
         </aside>
     );
