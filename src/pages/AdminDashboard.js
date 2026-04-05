@@ -1,179 +1,1181 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, 
-  CreditCard, 
-  Zap, 
-  Trash2, 
-  Plus, 
-  LayoutDashboard, 
-  Globe, 
-  ChevronRight, 
-  LogOut, 
-  X, 
-  Loader2,
-  TrendingUp,
-  AlertCircle,
-  Search,
-  Filter,
-  BarChart3,
-  Activity,
-  ShieldCheck,
-  Command,
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertTriangle,
+  ArrowRight,
+  BrainCircuit,
+  Building2,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
   Database,
-  Cpu,
-  Layers,
-  MoreVertical
+  LayoutDashboard,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Users,
+  X,
+  Zap,
 } from 'lucide-react';
-import { adminAPI, subscriptionAPI, aiAPI } from '../services/api';
+import { adminAPI, aiAPI, subscriptionAPI } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
-import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import './AdminDashboard.css';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+const PAGE_SIZE = {
+  users: 8,
+  plans: 6,
+  tenants: 8,
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+const DEFAULT_PLAN = {
+  name: '',
+  price: '',
+  duration: '30',
+  features: '',
 };
+
+const TAB_ITEMS = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'tenants', label: 'Tenants', icon: Building2 },
+  { id: 'plans', label: 'Plans', icon: CreditCard },
+  { id: 'users', label: 'Users', icon: Users },
+];
+
+const containerMotion = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: 'easeOut' },
+  },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+};
+
+const compactNumber = new Intl.NumberFormat('en-IN', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+const formatCurrency = (value) => {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return 'Rs 0';
+
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  }).format(amount);
+};
+
+const formatCompact = (value) => compactNumber.format(Number(value || 0));
+
+const formatDate = (value) => {
+  if (!value) return 'No date';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'No date';
+
+  return new Intl.DateTimeFormat('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+};
+
+const toTitleCase = (value) =>
+  String(value || '')
+    .trim()
+    .replace(/[-_]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+
+const humanizeKey = (key) =>
+  toTitleCase(
+    String(key || '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\./g, ' ')
+  );
+
+const isActiveValue = (value) => ['ACTIVE', 'ENABLED', 'HEALTHY'].includes(String(value || '').toUpperCase());
+
+const getStatusText = (value) => {
+  if (!value) return 'Unknown';
+  return humanizeKey(value);
+};
+
+const getStatusTone = (value) => {
+  const status = String(value || '').toUpperCase();
+
+  if (['ACTIVE', 'ENABLED', 'HEALTHY', 'SUCCESS', 'CONNECTED'].includes(status)) {
+    return 'success';
+  }
+
+  if (['TRIAL', 'PENDING', 'DRAFT', 'PROCESSING', 'SYNCING'].includes(status)) {
+    return 'warning';
+  }
+
+  if (['INACTIVE', 'DISABLED', 'BLOCKED', 'FAILED', 'ERROR', 'EXPIRED'].includes(status)) {
+    return 'danger';
+  }
+
+  return 'neutral';
+};
+
+const getPlanDuration = (plan) => {
+  const explicitDuration = Number(plan?.durationInDays ?? plan?.duration);
+  if (Number.isFinite(explicitDuration) && explicitDuration > 0) {
+    return explicitDuration;
+  }
+
+  return String(plan?.billingCycle || '').toUpperCase() === 'YEARLY' ? 365 : 30;
+};
+
+const getCadenceLabel = (days) => {
+  if (days >= 365) return 'year';
+  if (days >= 90) return `${days} days`;
+  return 'month';
+};
+
+const getPlanStatus = (plan) => {
+  if (typeof plan?.active === 'boolean') {
+    return plan.active ? 'ACTIVE' : 'INACTIVE';
+  }
+
+  if (plan?.status) {
+    return String(plan.status).toUpperCase();
+  }
+
+  return 'ACTIVE';
+};
+
+const getEntityName = (entity, fallback = 'Untitled record') =>
+  entity?.tenantName ||
+  entity?.companyName ||
+  entity?.organizationName ||
+  entity?.name ||
+  entity?.userName ||
+  entity?.fullName ||
+  fallback;
+
+const getEntityEmail = (entity) =>
+  entity?.email || entity?.ownerEmail || entity?.adminEmail || entity?.contactEmail || 'No email';
+
+const matchesSearch = (query, values) => {
+  const normalized = String(query || '').trim().toLowerCase();
+  if (!normalized) return true;
+
+  return values.some((value) => String(value || '').toLowerCase().includes(normalized));
+};
+
+const extractSuggestionList = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+
+  const collectionKeys = ['plans', 'recommendedPlans', 'recommendations', 'suggestions', 'tiers', 'data'];
+
+  for (const key of collectionKeys) {
+    if (Array.isArray(payload[key])) {
+      return payload[key];
+    }
+  }
+
+  return [payload];
+};
+
+const normalizeSuggestion = (item, index, description) => {
+  const defaultPrices = [499, 1499, 3999];
+  const name =
+    item?.name ||
+    item?.tierName ||
+    item?.title ||
+    `${description.toLowerCase().includes('enterprise') ? 'Enterprise' : 'Growth'} ${index + 1}`;
+
+  const price = Number(item?.price ?? item?.amount ?? item?.monthlyPrice ?? defaultPrices[index] ?? 999);
+  const duration = Number(
+    item?.duration ??
+      item?.durationInDays ??
+      (String(item?.billingCycle || '').toUpperCase() === 'YEARLY' ? 365 : 30)
+  );
+  const featureSource = item?.features ?? item?.capabilities ?? item?.highlights ?? item?.featureList ?? '';
+
+  return {
+    name: toTitleCase(name),
+    price: Number.isFinite(price) ? price : 999,
+    duration: Number.isFinite(duration) && duration > 0 ? duration : 30,
+    description:
+      item?.description ||
+      item?.summary ||
+      item?.rationale ||
+      'Generated to fit the business context provided in your prompt.',
+    features: Array.isArray(featureSource) ? featureSource.join(', ') : String(featureSource || ''),
+  };
+};
+
+const buildFallbackSuggestions = (description) => {
+  const prompt = String(description || '').toLowerCase();
+  const complianceHeavy = /health|finance|bank|security|compliance|hipaa|soc2|gdpr/.test(prompt);
+  const largeScale = /enterprise|global|b2b|multi-tenant|saas|platform|marketplace/.test(prompt);
+
+  return [
+    {
+      name: 'Starter Launch',
+      price: complianceHeavy ? 999 : 499,
+      duration: 30,
+      description: 'A low-friction entry plan for onboarding early customers quickly.',
+      features: complianceHeavy
+        ? 'Secure onboarding, audit trail, email support'
+        : 'Core access, email support, monthly insights',
+    },
+    {
+      name: largeScale ? 'Growth Control' : 'Growth Plus',
+      price: complianceHeavy ? 2499 : 1499,
+      duration: 30,
+      description: 'Balanced pricing for teams that need stronger automation and better support.',
+      features: complianceHeavy
+        ? 'Role-based access, logs, SLA support, advanced analytics'
+        : 'Automation, role access, API reporting, priority support',
+    },
+    {
+      name: 'Enterprise Guard',
+      price: largeScale ? 6999 : 4999,
+      duration: 365,
+      description: 'High-trust annual tier for custom deployments and executive support.',
+      features: complianceHeavy
+        ? 'SSO, compliance reviews, dedicated manager, yearly governance review'
+        : 'SSO, custom onboarding, premium support, strategic reviews',
+    },
+  ];
+};
+
+const StatusBadge = ({ value }) => (
+  <span className={`admin-status admin-status--${getStatusTone(value)}`}>{getStatusText(value)}</span>
+);
+
+const SummaryCard = ({ icon: Icon, label, value, helper, tone }) => (
+  <motion.article variants={containerMotion} className={`admin-summary-card admin-summary-card--${tone}`}>
+    <div className="admin-summary-card__head">
+      <span className="admin-summary-card__icon">
+        <Icon size={18} />
+      </span>
+      <span className="admin-summary-card__label">{label}</span>
+    </div>
+    <div className="admin-summary-card__value">{value}</div>
+    <p className="admin-summary-card__helper">{helper}</p>
+  </motion.article>
+);
+
+const PaginationControls = ({ currentPage, totalPages, onChange }) => {
+  if (!totalPages || totalPages <= 1) return null;
+
+  return (
+    <div className="admin-pagination">
+      <button
+        type="button"
+        className="admin-pagination__button"
+        onClick={() => onChange(currentPage - 1)}
+        disabled={currentPage <= 0}
+      >
+        <ChevronLeft size={16} />
+        Previous
+      </button>
+      <span className="admin-pagination__meta">
+        Page {currentPage + 1} of {totalPages}
+      </span>
+      <button
+        type="button"
+        className="admin-pagination__button"
+        onClick={() => onChange(currentPage + 1)}
+        disabled={currentPage >= totalPages - 1}
+      >
+        Next
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+};
+
+const SearchField = ({ value, onChange, placeholder }) => (
+  <label className="admin-search">
+    <Search size={16} />
+    <input value={value} onChange={onChange} placeholder={placeholder} />
+  </label>
+);
+
+const EmptyState = ({ icon: Icon, title, description, action }) => (
+  <div className="admin-empty-state">
+    <span className="admin-empty-state__icon">
+      <Icon size={22} />
+    </span>
+    <h3>{title}</h3>
+    <p>{description}</p>
+    {action}
+  </div>
+);
+
+const AdminFooter = ({ syncedAt }) => (
+  <footer className="admin-footer">
+    <span>Aegis Admin</span>
+    <span>{syncedAt ? `Updated ${syncedAt}` : 'Waiting for data'}</span>
+  </footer>
+);
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
+
+  const [activeTab, setActiveTab] = useState('overview');
+  const [booting, setBooting] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
 
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [analytics, setAnalytics] = useState(null);
-  const [metrics, setMetrics] = useState({ usersTotal: 0, plansTotal: 0, tenantsTotal: 0, activeSubs: 0, revenue: 0 });
 
-  const [pages, setPages] = useState({ users: 0, plans: 0, tenants: 0 });
-  const [totalPages, setTotalPages] = useState({ users: 0, plans: 0, tenants: 0 });
+  const [metrics, setMetrics] = useState({
+    usersTotal: 0,
+    plansTotal: 0,
+    tenantsTotal: 0,
+    catalogValue: 0,
+  });
+
+  const [pages, setPages] = useState({
+    users: 0,
+    plans: 0,
+    tenants: 0,
+  });
+
+  const [totalPages, setTotalPages] = useState({
+    users: 0,
+    plans: 0,
+    tenants: 0,
+  });
+
+  const [search, setSearch] = useState({
+    users: '',
+    plans: '',
+    tenants: '',
+  });
 
   const [showCreatePlan, setShowCreatePlan] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiDescription, setAiDescription] = useState("");
-  const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
-  const [newPlan, setNewPlan] = useState({ name: '', price: '', duration: '', features: '' });
+  const [submittingPlan, setSubmittingPlan] = useState(false);
+  const [planActionId, setPlanActionId] = useState(null);
 
-  const fetchData = React.useCallback(async () => {
+  const [newPlan, setNewPlan] = useState(DEFAULT_PLAN);
+  const [aiDescription, setAiDescription] = useState('');
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
     try {
+      if (!booting) {
+        setRefreshing(true);
+      }
+
       const [usersRes, plansRes, tenantsRes, analyticsRes] = await Promise.all([
-        adminAPI.getAllUsers(pages.users, 10),
-        subscriptionAPI.getAllPlans(pages.plans, 10),
-        adminAPI.getTenants(pages.tenants, 12),
-        aiAPI.getAnalytics().catch(() => ({ data: { data: null } }))
+        adminAPI.getAllUsers(pages.users, PAGE_SIZE.users),
+        subscriptionAPI.getAllPlans(pages.plans, PAGE_SIZE.plans),
+        adminAPI.getTenants(pages.tenants, PAGE_SIZE.tenants),
+        aiAPI.getAnalytics().catch(() => ({ data: { data: null } })),
       ]);
 
-      const uData = usersRes.data?.data || {};
-      const pData = plansRes.data?.data || {};
-      const tData = tenantsRes.data?.data || {};
+      const usersData = usersRes.data?.data || {};
+      const plansData = plansRes.data?.data || {};
+      const tenantsData = tenantsRes.data?.data || {};
 
-      setUsers(uData.content || []);
-      setPlans(pData.content || []);
-      setTenants(tData.content || []);
-      setAnalytics(analyticsRes.data?.data);
+      const nextUsers = Array.isArray(usersData.content) ? usersData.content : [];
+      const nextPlans = Array.isArray(plansData.content) ? plansData.content : [];
+      const nextTenants = Array.isArray(tenantsData.content) ? tenantsData.content : [];
+      const nextAnalytics = analyticsRes.data?.data || null;
+
+      setUsers(nextUsers);
+      setPlans(nextPlans);
+      setTenants(nextTenants);
+      setAnalytics(nextAnalytics);
 
       setTotalPages({
-        users: uData.totalPages || 0,
-        plans: pData.totalPages || 0,
-        tenants: tData.totalPages || 0
+        users: Number(usersData.totalPages || 0),
+        plans: Number(plansData.totalPages || 0),
+        tenants: Number(tenantsData.totalPages || 0),
       });
 
       setMetrics({
-        usersTotal: uData.totalElements || 0,
-        plansTotal: pData.totalElements || 0,
-        tenantsTotal: tData.totalElements || 0,
-        activeSubs: (uData.content || []).filter(u => u.status === 'ACTIVE').length,
-        revenue: (pData.content || []).reduce((acc, p) => acc + (p.price || 0), 0) * 12
+        usersTotal: Number(usersData.totalElements || nextUsers.length || 0),
+        plansTotal: Number(plansData.totalElements || nextPlans.length || 0),
+        tenantsTotal: Number(tenantsData.totalElements || nextTenants.length || 0),
+        catalogValue: nextPlans.reduce((sum, plan) => sum + Number(plan?.price || 0), 0),
       });
 
-    } catch (err) {
-      toast.error('Sync Error', 'Failed to synchronize dashboard data.');
+      setLastSyncedAt(new Date());
+    } catch (error) {
+      toast.error('Dashboard sync failed', 'We could not load the latest admin data.');
     } finally {
-      setTimeout(() => setLoading(false), 800); 
+      setBooting(false);
+      setRefreshing(false);
     }
-  }, [pages, toast]);
+  }, [booting, pages, toast]);
 
   useEffect(() => {
-    if (!user || user.role !== 'ROLE_SUPER_ADMIN') {
-      navigate('/dashboard');
+    if (!user) return;
+
+    if (user.role !== 'ROLE_SUPER_ADMIN') {
+      navigate('/dashboard', { replace: true });
       return;
     }
+
     fetchData();
-  }, [user, navigate, fetchData]);
+  }, [fetchData, navigate, user]);
 
-  const handleCreatePlan = async (e) => {
-    e.preventDefault();
+  const handleRefresh = async () => {
+    await fetchData();
+    toast.success('Dashboard refreshed', 'The control plane is showing the latest available data.');
+  };
+
+  const handleCreatePlan = async (event) => {
+    event.preventDefault();
+
+    const price = Number(newPlan.price);
+    const duration = Number(newPlan.duration);
+
+    if (!newPlan.name.trim()) {
+      toast.error('Missing plan name', 'Give the plan a clear name before saving it.');
+      return;
+    }
+
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error('Invalid price', 'Plan price must be zero or a positive number.');
+      return;
+    }
+
+    if (!Number.isFinite(duration) || duration <= 0) {
+      toast.error('Invalid duration', 'Duration needs to be a positive number of days.');
+      return;
+    }
+
     try {
+      setSubmittingPlan(true);
       await adminAPI.createPlan({
-        name: newPlan.name,
-        price: parseFloat(newPlan.price),
-        duration: parseInt(newPlan.duration),
-        features: newPlan.features
+        name: newPlan.name.trim(),
+        price,
+        duration,
       });
-      toast.success('Plan Created', 'New pricing plan has been deployed successfully.');
+
+      toast.success('Plan created', `${newPlan.name.trim()} is now available in your catalog.`);
       setShowCreatePlan(false);
-      setNewPlan({ name: '', price: '', duration: '', features: '' });
-      fetchData();
-    } catch (err) {
-      toast.error('Creation Failed', 'Please verify the plan parameters.');
+      setNewPlan(DEFAULT_PLAN);
+      setAiSuggestions([]);
+      setAiDescription('');
+      await fetchData();
+      setActiveTab('plans');
+    } catch (error) {
+      toast.error('Plan creation failed', 'The server rejected that plan configuration.');
+    } finally {
+      setSubmittingPlan(false);
     }
   };
 
-  const handleDeletePlan = async (planId) => {
-    if (!window.confirm('Are you sure you want to delete this pricing plan?')) return;    
+  const handleTogglePlan = async (plan) => {
+    const nextAction = isActiveValue(getPlanStatus(plan)) ? 'deactivate' : 'activate';
+
     try {
-      await adminAPI.deletePlan(planId);
-      toast.success('Plan Deleted', 'Pricing plan removed successfully.');    
-      fetchData();
-    } catch (err) {
-      toast.error('Delete Failed', 'Failed to remove the pricing plan.');
+      setPlanActionId(plan.id);
+      if (nextAction === 'activate') {
+        await adminAPI.activatePlan(plan.id);
+      } else {
+        await adminAPI.deactivatePlan(plan.id);
+      }
+
+      toast.success(
+        `Plan ${nextAction}d`,
+        `${getEntityName(plan, 'Selected plan')} was ${nextAction}d successfully.`
+      );
+      await fetchData();
+    } catch (error) {
+      toast.error('Plan update failed', `We could not ${nextAction} that plan right now.`);
+    } finally {
+      setPlanActionId(null);
     }
   };
 
-const runAiAnalysis = async () => {
-    if (!aiDescription) return;
+  const handleDeletePlan = async (plan) => {
+    if (!plan?.id) return;
+
+    const confirmed = window.confirm(`Delete ${getEntityName(plan, 'this plan')}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      setPlanActionId(plan.id);
+      await adminAPI.deletePlan(plan.id);
+      toast.success('Plan deleted', `${getEntityName(plan, 'The plan')} was removed from the catalog.`);
+      await fetchData();
+    } catch (error) {
+      toast.error('Delete failed', 'The plan could not be removed.');
+    } finally {
+      setPlanActionId(null);
+    }
+  };
+
+  const runAiAnalysis = async () => {
+    if (!aiDescription.trim()) {
+      toast.info('Add some context', 'Describe the business or market before generating plans.');
+      return;
+    }
+
     setAiLoading(true);
+
     try {
-      // Simulate real AI analysis api latency
-      await new Promise(r => setTimeout(r, 2000));
-      setAiSuggestedResult({
-        tierName: 'Enterprise Plan',
-        price: '4999',
-        duration: '365',
-        features: 'SSO, Priority Support, Custom SLA, Audit Logs',
-        rationale: 'Optimized feature set based on typical enterprise requirements.'
-      });
-    } catch(err) {} finally { setAiLoading(false); }
+      const response = await aiAPI.generatePlans(aiDescription.trim());
+      const payload = response.data?.data ?? response.data;
+      const suggestions = extractSuggestionList(payload)
+        .map((item, index) => normalizeSuggestion(item, index, aiDescription))
+        .filter((item) => item.name);
+
+      if (!suggestions.length) {
+        throw new Error('No suggestions returned');
+      }
+
+      setAiSuggestions(suggestions.slice(0, 3));
+      toast.success('Drafts ready', 'Select a suggestion to prefill the plan form.');
+    } catch (error) {
+      setAiSuggestions(buildFallbackSuggestions(aiDescription));
+      toast.warning(
+        'Using a smart fallback',
+        'The AI endpoint was unavailable, so local plan drafts were prepared instead.'
+      );
+    } finally {
+      setAiLoading(false);
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#020617] text-slate-200">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 flex flex-col items-center">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <LayoutDashboard className="w-8 h-8 text-indigo-400" />
+  const applySuggestion = (suggestion) => {
+    setNewPlan({
+      name: suggestion.name,
+      price: String(suggestion.price),
+      duration: String(suggestion.duration),
+      features: suggestion.features,
+    });
+    setShowAiModal(false);
+    setShowCreatePlan(true);
+    setActiveTab('plans');
+  };
+
+  const handlePageChange = (tab, nextPage) => {
+    setPages((previous) => ({
+      ...previous,
+      [tab]: Math.max(0, nextPage),
+    }));
+  };
+
+  const filteredUsers = users.filter((item) =>
+    matchesSearch(search.users, [getEntityName(item, 'User'), getEntityEmail(item), item?.role, item?.status])
+  );
+
+  const filteredPlans = plans.filter((item) =>
+    matchesSearch(search.plans, [getEntityName(item, 'Plan'), item?.description, item?.price, getPlanStatus(item)])
+  );
+
+  const filteredTenants = tenants.filter((item) =>
+    matchesSearch(search.tenants, [
+      getEntityName(item, 'Tenant'),
+      getEntityEmail(item),
+      item?.status,
+      item?.currentPlan,
+    ])
+  );
+
+  const activePlansCount = plans.filter((plan) => isActiveValue(getPlanStatus(plan))).length;
+  const flaggedUsersCount = users.filter((item) => !isActiveValue(item?.status)).length;
+  const attentionCount = flaggedUsersCount + Math.max(plans.length - activePlansCount, 0);
+
+  const analyticsPairs =
+    analytics && typeof analytics === 'object'
+      ? Object.entries(analytics).filter(([, value]) => ['string', 'number'].includes(typeof value)).slice(0, 4)
+      : [];
+
+  const sortedPlans = [...plans].sort((left, right) => Number(right?.price || 0) - Number(left?.price || 0));
+  const topPlanValue = Number(sortedPlans[0]?.price || 0) || 1;
+
+  const activityFeed = [
+    ...tenants.slice(0, 2).map((tenant) => ({
+      title: `${getEntityName(tenant, 'Tenant')} synced`,
+      detail: `${getEntityEmail(tenant)} is visible in the tenant registry.`,
+      time: formatDate(tenant?.createdAt),
+      tone: getStatusTone(tenant?.status || 'ACTIVE'),
+    })),
+    ...users.slice(0, 2).map((account) => ({
+      title: `${getEntityName(account, 'User')} checked`,
+      detail: `${getEntityEmail(account)} is ${getStatusText(account?.status)}.`,
+      time: getStatusText(account?.role || 'member'),
+      tone: getStatusTone(account?.status),
+    })),
+    ...plans.slice(0, 2).map((plan) => ({
+      title: `${getEntityName(plan, 'Plan')} catalog entry`,
+      detail: `${formatCurrency(plan?.price)} / ${getCadenceLabel(getPlanDuration(plan))}`,
+      time: getStatusText(getPlanStatus(plan)),
+      tone: getStatusTone(getPlanStatus(plan)),
+    })),
+  ].slice(0, 6);
+
+  const lastSyncedLabel = lastSyncedAt
+    ? lastSyncedAt.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })
+    : 'Not synced yet';
+
+  const attentionTitle =
+    attentionCount === 0 ? 'Everything looks healthy' : `${attentionCount} item${attentionCount === 1 ? '' : 's'} need review`;
+  const attentionMessage =
+    attentionCount === 0
+      ? 'No urgent issues are visible in the current data window.'
+      : 'Inactive plans and account issues are visible in the current page window.';
+
+  const renderOverview = () => (
+    <motion.div
+      key="overview"
+      variants={containerMotion}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="admin-tab-content"
+    >
+      <section className="admin-hero">
+        <div className="admin-hero__copy">
+          <span className="admin-eyebrow">Admin Overview</span>
+          <h1>A cleaner view of your platform.</h1>
+          <p>
+            Review tenants, users, plans, and the few signals that need attention without hunting
+            through noisy screens.
+          </p>
+
+          <div className="admin-hero__chips">
+            <span className="admin-chip">
+              <ShieldCheck size={14} />
+              Signed in as {user?.email || 'super admin'}
+            </span>
+            <span className="admin-chip">
+              <Database size={14} />
+              Updated {lastSyncedLabel}
+            </span>
+            <span className={`admin-chip admin-chip--${analytics ? 'success' : 'warning'}`}>
+              <BrainCircuit size={14} />
+              {analytics ? 'AI insights available' : 'AI insights unavailable'}
+            </span>
+          </div>
+        </div>
+
+        <div className="admin-hero__actions">
+          <button type="button" className="admin-button admin-button--primary" onClick={() => setShowCreatePlan(true)}>
+            <Plus size={16} />
+            New plan
+          </button>
+          <button type="button" className="admin-button admin-button--secondary" onClick={() => setShowAiModal(true)}>
+            <Sparkles size={16} />
+            Plan ideas
+          </button>
+          <button type="button" className="admin-button admin-button--ghost" onClick={handleRefresh} disabled={refreshing}>
+            {refreshing ? <Loader2 size={16} className="admin-spin" /> : <RefreshCw size={16} />}
+            Refresh data
+          </button>
+        </div>
+      </section>
+
+      <motion.div className="admin-summary-grid" variants={containerMotion} initial="hidden" animate="visible">
+        <SummaryCard
+          icon={Users}
+          label="Platform users"
+          value={formatCompact(metrics.usersTotal)}
+          helper="Registered accounts across the current dataset."
+          tone="blue"
+        />
+        <SummaryCard
+          icon={Building2}
+          label="Live tenants"
+          value={formatCompact(metrics.tenantsTotal)}
+          helper="Organizations visible from the tenant registry."
+          tone="emerald"
+        />
+        <SummaryCard
+          icon={CreditCard}
+          label="Published plans"
+          value={formatCompact(metrics.plansTotal)}
+          helper="Catalog entries available to admins right now."
+          tone="amber"
+        />
+        <SummaryCard
+          icon={Zap}
+          label="Catalog value"
+          value={formatCurrency(metrics.catalogValue)}
+          helper="Visible plan value from the current data page."
+          tone="violet"
+        />
+      </motion.div>
+
+      <div className="admin-overview-grid">
+        <section className="admin-panel">
+          <div className="admin-panel__header">
+            <div>
+              <span className="admin-panel__eyebrow">Pricing</span>
+              <h2>Plan snapshot</h2>
             </div>
-            <div className="absolute -inset-4 rounded-full border-t-2 border-indigo-500/30 animate-spin transition-all duration-1000" />
+            <button type="button" className="admin-inline-link" onClick={() => setActiveTab('plans')}>
+              Manage plans
+              <ArrowRight size={14} />
+            </button>
           </div>
-          <div className="text-center space-y-2">
-            <h2 className="text-sm font-semibold tracking-wide text-slate-300">Loading Dashboard...</h2>
-            <p className="text-[11px] font-medium text-slate-500">
-              Authenticating {user.email}
-            </p>
+
+          {sortedPlans.length ? (
+            <div className="admin-spectrum">
+              {sortedPlans.slice(0, 4).map((plan) => {
+                const price = Number(plan?.price || 0);
+                const barWidth = `${Math.max((price / topPlanValue) * 100, 12)}%`;
+
+                return (
+                  <div key={plan.id || plan.name} className="admin-spectrum__row">
+                    <div className="admin-spectrum__info">
+                      <strong>{getEntityName(plan, 'Plan')}</strong>
+                      <span>{getPlanDuration(plan)} day billing window</span>
+                    </div>
+                    <div className="admin-spectrum__bar">
+                      <span style={{ width: barWidth }} />
+                    </div>
+                    <div className="admin-spectrum__value">{formatCurrency(price)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyState
+              icon={CreditCard}
+              title="No plans loaded"
+              description="Create your first plan to start building out the catalog."
+              action={
+                <button type="button" className="admin-button admin-button--primary" onClick={() => setShowCreatePlan(true)}>
+                  <Plus size={16} />
+                  Create first plan
+                </button>
+              }
+            />
+          )}
+        </section>
+
+        <section className="admin-panel">
+          <div className="admin-panel__header">
+            <div>
+              <span className="admin-panel__eyebrow">Health</span>
+              <h2>Platform status</h2>
+            </div>
           </div>
+
+          <div className="admin-signal-grid">
+            <div className="admin-signal-card">
+              <span>Attention queue</span>
+              <strong>{attentionCount}</strong>
+              <p>Inactive plans and flagged user statuses in the current window.</p>
+            </div>
+            <div className="admin-signal-card">
+              <span>Plan health</span>
+              <strong>
+                {activePlansCount}/{plans.length || 0}
+              </strong>
+              <p>Plans currently marked active inside the visible page.</p>
+            </div>
+            <div className="admin-signal-card">
+              <span>AI telemetry</span>
+              <strong>{analytics ? 'Online' : 'Fallback'}</strong>
+              <p>Analytics endpoint connection state for admin-side insights.</p>
+            </div>
+          </div>
+
+          {analyticsPairs.length ? (
+            <div className="admin-metric-list">
+              {analyticsPairs.map(([key, value]) => (
+                <div key={key} className="admin-metric-list__item">
+                  <span>{humanizeKey(key)}</span>
+                  <strong>{typeof value === 'number' ? formatCompact(value) : String(value)}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-panel__hint">
+              Live AI metrics are not available right now. The dashboard is falling back to the core platform data.
+            </div>
+          )}
+        </section>
+
+        <section className="admin-panel admin-panel--tall">
+          <div className="admin-panel__header">
+            <div>
+              <span className="admin-panel__eyebrow">Recent Changes</span>
+              <h2>Latest updates</h2>
+            </div>
+            <button type="button" className="admin-inline-link" onClick={() => setActiveTab('tenants')}>
+              Open tenant list
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {activityFeed.length ? (
+            <div className="admin-feed">
+              {activityFeed.map((item, index) => (
+                <div key={`${item.title}-${index}`} className="admin-feed__item">
+                  <span className={`admin-feed__dot admin-feed__dot--${item.tone}`} />
+                  <div className="admin-feed__body">
+                    <strong>{item.title}</strong>
+                    <p>{item.detail}</p>
+                  </div>
+                  <span className="admin-feed__time">{item.time}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Database}
+              title="Waiting for activity"
+              description="Once tenants, users, or plans load in, this feed will start showing recent signals."
+            />
+          )}
+        </section>
+      </div>
+    </motion.div>
+  );
+
+  const renderTenants = () => (
+    <motion.div
+      key="tenants"
+      variants={containerMotion}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="admin-tab-content"
+    >
+      <section className="admin-panel">
+        <div className="admin-panel__header admin-panel__header--stack">
+          <div>
+            <span className="admin-panel__eyebrow">Tenants</span>
+            <h2>Organizations</h2>
+            <p>Review tenant status, owner information, and plan coverage in one table.</p>
+          </div>
+
+          <div className="admin-panel__actions">
+            <SearchField
+              value={search.tenants}
+              onChange={(event) => setSearch((previous) => ({ ...previous, tenants: event.target.value }))}
+              placeholder="Search organization, email, or plan"
+            />
+          </div>
+        </div>
+
+        {filteredTenants.length ? (
+          <div className="admin-table-shell">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Owner</th>
+                  <th>Status</th>
+                  <th>Plan</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTenants.map((tenant) => (
+                  <tr key={tenant.id || `${tenant.email}-${tenant.name}`}>
+                    <td>
+                      <div className="admin-table__primary">{getEntityName(tenant, 'Tenant')}</div>
+                      <div className="admin-table__secondary">ID #{tenant.id || 'N/A'}</div>
+                    </td>
+                    <td>
+                      <div className="admin-table__primary">{getEntityEmail(tenant)}</div>
+                      <div className="admin-table__secondary">{tenant?.contactName || tenant?.adminName || 'Primary admin'}</div>
+                    </td>
+                    <td>
+                      <StatusBadge value={tenant?.status || 'ACTIVE'} />
+                    </td>
+                    <td>
+                      <div className="admin-table__primary">{tenant?.currentPlan || tenant?.planName || 'Not assigned'}</div>
+                      <div className="admin-table__secondary">{tenant?.region || 'Default region'}</div>
+                    </td>
+                    <td>{formatDate(tenant?.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            icon={Building2}
+            title="No tenants found"
+            description={
+              search.tenants
+                ? 'Nothing on this page matches your search. Clear the search or try another page.'
+                : 'No tenant records were returned by the API.'
+            }
+            action={
+              search.tenants ? (
+                <button
+                  type="button"
+                  className="admin-button admin-button--secondary"
+                  onClick={() => setSearch((previous) => ({ ...previous, tenants: '' }))}
+                >
+                  Clear search
+                </button>
+              ) : null
+            }
+          />
+        )}
+
+        <PaginationControls
+          currentPage={pages.tenants}
+          totalPages={totalPages.tenants}
+          onChange={(page) => handlePageChange('tenants', page)}
+        />
+      </section>
+    </motion.div>
+  );
+
+  const renderPlans = () => (
+    <motion.div
+      key="plans"
+      variants={containerMotion}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="admin-tab-content"
+    >
+      <section className="admin-panel">
+        <div className="admin-panel__header admin-panel__header--stack">
+          <div>
+            <span className="admin-panel__eyebrow">Plans</span>
+            <h2>Pricing</h2>
+            <p>Create, review, and maintain plans without extra clutter.</p>
+          </div>
+
+          <div className="admin-panel__actions">
+            <SearchField
+              value={search.plans}
+              onChange={(event) => setSearch((previous) => ({ ...previous, plans: event.target.value }))}
+              placeholder="Search plan name or price"
+            />
+            <button type="button" className="admin-button admin-button--secondary" onClick={() => setShowAiModal(true)}>
+              <Sparkles size={16} />
+              Plan ideas
+            </button>
+            <button type="button" className="admin-button admin-button--primary" onClick={() => setShowCreatePlan(true)}>
+              <Plus size={16} />
+              New plan
+            </button>
+          </div>
+        </div>
+
+        {filteredPlans.length ? (
+          <div className="admin-plan-grid">
+            {filteredPlans.map((plan) => {
+              const status = getPlanStatus(plan);
+              const planDuration = getPlanDuration(plan);
+              const busy = planActionId === plan.id;
+
+              return (
+                <article key={plan.id || plan.name} className="admin-plan-card">
+                  <div className="admin-plan-card__top">
+                    <div>
+                      <div className="admin-plan-card__title">{getEntityName(plan, 'Plan')}</div>
+                      <StatusBadge value={status} />
+                    </div>
+                    <span className="admin-plan-card__price">
+                      {formatCurrency(plan?.price)}
+                      <small>/ {getCadenceLabel(planDuration)}</small>
+                    </span>
+                  </div>
+
+                  <p className="admin-plan-card__description">
+                    {plan?.description ||
+                      `Billed every ${planDuration} days. Use this tier to serve ${isActiveValue(status) ? 'live' : 'draft'} accounts.`}
+                  </p>
+
+                  <div className="admin-plan-card__meta">
+                    <span>{planDuration} days</span>
+                    <span>ID #{plan.id || 'N/A'}</span>
+                    <span>{isActiveValue(status) ? 'Visible to admins' : 'Hidden from new upgrades'}</span>
+                  </div>
+
+                  <div className="admin-plan-card__notes">
+                    <strong>Draft notes</strong>
+                    <p>{plan?.features || 'Feature notes are not currently provided by the backend for this plan.'}</p>
+                  </div>
+
+                  <div className="admin-plan-card__actions">
+                    <button
+                      type="button"
+                      className="admin-button admin-button--secondary"
+                      onClick={() => handleTogglePlan(plan)}
+                      disabled={busy}
+                    >
+                      {busy ? <Loader2 size={16} className="admin-spin" /> : <CheckCircle2 size={16} />}
+                      {isActiveValue(status) ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-button admin-button--danger"
+                      onClick={() => handleDeletePlan(plan)}
+                      disabled={busy}
+                    >
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            icon={CreditCard}
+            title="No plans found"
+            description={
+              search.plans
+                ? 'Nothing on this page matches your search. Clear the filter or try another page.'
+                : 'No plans were returned by the pricing API.'
+            }
+            action={
+              search.plans ? (
+                <button
+                  type="button"
+                  className="admin-button admin-button--secondary"
+                  onClick={() => setSearch((previous) => ({ ...previous, plans: '' }))}
+                >
+                  Clear search
+                </button>
+              ) : null
+            }
+          />
+        )}
+
+        <PaginationControls
+          currentPage={pages.plans}
+          totalPages={totalPages.plans}
+          onChange={(page) => handlePageChange('plans', page)}
+        />
+      </section>
+    </motion.div>
+  );
+
+  const renderUsers = () => (
+    <motion.div
+      key="users"
+      variants={containerMotion}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="admin-tab-content"
+    >
+      <section className="admin-panel">
+        <div className="admin-panel__header admin-panel__header--stack">
+          <div>
+            <span className="admin-panel__eyebrow">Users</span>
+            <h2>Accounts</h2>
+            <p>Check access, status, and recent user records with a clearer view.</p>
+          </div>
+
+          <div className="admin-panel__actions">
+            <SearchField
+              value={search.users}
+              onChange={(event) => setSearch((previous) => ({ ...previous, users: event.target.value }))}
+              placeholder="Search user, email, or role"
+            />
+          </div>
+        </div>
+
+        {filteredUsers.length ? (
+          <div className="admin-table-shell">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((account) => (
+                  <tr key={account.id || account.email}>
+                    <td>
+                      <div className="admin-table__primary">{getEntityName(account, 'User')}</div>
+                      <div className="admin-table__secondary">ID #{account.id || 'N/A'}</div>
+                    </td>
+                    <td>{getEntityEmail(account)}</td>
+                    <td>{getStatusText(account?.role || 'member')}</td>
+                    <td>
+                      <StatusBadge value={account?.status || 'ACTIVE'} />
+                    </td>
+                    <td>{formatDate(account?.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            icon={Users}
+            title="No users found"
+            description={
+              search.users
+                ? 'Nothing on this page matches your search. Clear the filter or change pages.'
+                : 'No user accounts were returned by the API.'
+            }
+            action={
+              search.users ? (
+                <button
+                  type="button"
+                  className="admin-button admin-button--secondary"
+                  onClick={() => setSearch((previous) => ({ ...previous, users: '' }))}
+                >
+                  Clear search
+                </button>
+              ) : null
+            }
+          />
+        )}
+
+        <PaginationControls
+          currentPage={pages.users}
+          totalPages={totalPages.users}
+          onChange={(page) => handlePageChange('users', page)}
+        />
+      </section>
+    </motion.div>
+  );
+
+  const renderActiveTab = () => {
+    if (activeTab === 'tenants') return renderTenants();
+    if (activeTab === 'plans') return renderPlans();
+    if (activeTab === 'users') return renderUsers();
+    return renderOverview();
+  };
+
+  if (booting) {
+    return (
+      <div className="admin-loading-screen">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="admin-loading-card">
+          <div className="admin-loading-card__icon">
+            <LayoutDashboard size={26} />
+            <span className="admin-loading-card__pulse" />
+          </div>
+          <h2>Loading admin dashboard</h2>
+          <p>Preparing the control plane for {user?.email || 'your account'}.</p>
         </motion.div>
       </div>
     );
@@ -181,134 +1183,218 @@ const runAiAnalysis = async () => {
 
   return (
     <>
-    <Navbar />
-    <div className="admin-layout selection:bg-indigo-500/30">
-      {/* ── SIDEBAR ── */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-header">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <LayoutDashboard size={18} fill="currentColor" />
+      <Navbar />
+      <div className="admin-dashboard">
+        <aside className="admin-sidebar">
+          <div className="admin-sidebar__section">
+            <span className="admin-sidebar__eyebrow">Workspace</span>
+            {TAB_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`admin-sidebar__tab ${isActive ? 'is-active' : ''}`}
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <Icon size={16} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
-          <span className="text-[15px] font-bold tracking-wide text-white nav-text ml-1">Admin Panel</span>
-        </div>
 
-        <nav className="admin-sidebar-nav">
-          <div className="nav-section-label">Main</div>
-          <button onClick={() => setActiveTab('overview')} className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}>
-            <LayoutDashboard size={16} /> <span className="nav-text">Dashboard</span>
-          </button>
-          <button onClick={() => setActiveTab('tenants')} className={`nav-item ${activeTab === 'tenants' ? 'active' : ''}`}>
-            <Globe size={16} /> <span className="nav-text">Tenants</span>
-          </button>
-          <button onClick={() => setActiveTab('plans')} className={`nav-item ${activeTab === 'plans' ? 'active' : ''}`}>
-             <Zap size={16} /> <span className="nav-text">Plans</span>
-          </button>
-          <button onClick={() => setActiveTab('users')} className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}>
-            <Users size={16} /> <span className="nav-text">Subscribers</span>
-          </button>
-
-
-        </nav>
-      </aside>
-
-      {/* ── MAIN BRIDGE ── */}
-      <main className="admin-main">
-        <div className="admin-content relative flex flex-col flex-1">
-          <AnimatePresence mode="wait">
-            {activeTab === 'overview' && (
-              <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
-            )}
-            {activeTab === 'tenants' && (
-              <motion.div key="tenants" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
-            )}
-            {activeTab === 'plans' && (
-              <motion.div key="plans" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
-            )}
-            {activeTab === 'users' && (
-              <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
-            )}
-          </AnimatePresence>
-        </div>
-
-        <Footer />
-      </main>
-
-      {/* ── AI COCKPIT MODAL ── */}
-      <AnimatePresence>
-         {showAiModal && (
-            <div className="cockpit-modal-overlay">
-               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="cockpit-modal">
-                  <div className="p-10 space-y-10">
-                     <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-5">
-                           <div className="w-14 h-14 rounded-3xl bg-indigo-600 flex items-center justify-center shadow-[0_0_30px_rgba(109,74,255,0.4)]">
-                              <Zap size={28} fill="white" className="text-white" />
-                           </div>
-                           <div>
-                              <h2 className="text-2xl font-black tracking-tight text-white uppercase">Market Oracle v3</h2>
-                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Autonomous Strategy Synthesis</p>
-                           </div>
-                        </div>
-                        <button onClick={() => setShowAiModal(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors">
-                           <X size={20} className="text-slate-500" />
-                        </button>
-                     </div>
-
-                     {!aiSuggestedResult && !aiLoading && (
-                        <div className="space-y-10">
-                           <div className="space-y-4">
-                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Describe Infrastructure Mission Domain</label>
-                              <textarea
-                                 value={aiDescription} onChange={(e) => setAiDescription(e.target.value)}
-                                 placeholder="e.g. Next-Generation Cybersecurity Cluster for Decentralized Clinical Data Nodes..."
-                                 className="w-full min-h-[160px] bg-black border border-white/5 rounded-2xl p-5 text-white placeholder:text-slate-800 font-mono text-sm leading-relaxed focus:outline-none focus:border-indigo-600 transition-all"
-                              />
-                           </div>
-                           <button onClick={runAiAnalysis} className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-[#ddd] transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                              EXECUTE MARKET SYNTHESIS
-                           </button>
-                        </div>
-                     )}
-
-                     {aiLoading && (
-                        <div className="py-24 flex flex-col items-center gap-8">
-                           <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
-                           <p className="text-xs font-black text-slate-500 animate-pulse uppercase tracking-[0.4em]">Aggregating Global Market Vectors...</p>
-                        </div>
-                     )}
-
-                     {aiSuggestedResult && (
-                        <div className="space-y-6">
-                           <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-                              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] text-center">Engineered Tier Recommendations</p>
-                           </div>
-                           <div className="space-y-3">
-                              {aiSuggestedResult.map((p, i) => (
-                                 <div
-                                    key={i}
-                                    onClick={() => {
-                                       setNewPlan({ ...newPlan, name: p.name, price: p.price.toString(), duration: p.billingCycle === 'YEARLY' ? '365' : '30', features: p.features });
-                                       setShowAiModal(false); setShowCreatePlan(true);
-                                    }}
-                                    className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-indigo-500 hover:bg-indigo-500/5 cursor-pointer transition-all group"
-                                 >
-                                    <div>
-                                       <div className="font-black text-white group-hover:text-indigo-500 transition-colors uppercase tracking-tight">{p.name}</div>
-                                       <p className="text-[10px] text-slate-500 mt-1 font-medium italic">{p.description}</p>
-                                    </div>
-                                    <div className="text-2xl font-black text-indigo-500">₹{p.price}</div>
-                                 </div>
-                              ))}
-                           </div>
-                           <button onClick={() => setAiSuggestedResult(null)} className="w-full py-4 text-[9px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors">Adjust Synthesis Variables</button>
-                        </div>
-                     )}
-                  </div>
-               </motion.div>
+          <div className="admin-sidebar__section admin-sidebar__section--callout">
+            <span className="admin-sidebar__eyebrow">Status</span>
+            <div className={`admin-sidebar__callout ${attentionCount === 0 ? 'admin-sidebar__callout--calm' : ''}`}>
+              <AlertTriangle size={18} />
+              <div>
+                <strong>{attentionTitle}</strong>
+                <p>{attentionMessage}</p>
+              </div>
             </div>
-         )}
+          </div>
+        </aside>
+
+        <main className="admin-main">
+          <div className="admin-main__inner">
+            <div className="admin-toolbar">
+              <div>
+                <span className="admin-eyebrow">Platform</span>
+                <h1>{TAB_ITEMS.find((item) => item.id === activeTab)?.label || 'Overview'}</h1>
+              </div>
+              <div className="admin-toolbar__status">
+                {refreshing ? <Loader2 size={16} className="admin-spin" /> : <CheckCircle2 size={16} />}
+                <span>{refreshing ? 'Refreshing data...' : `Updated ${lastSyncedLabel}`}</span>
+              </div>
+            </div>
+
+            <AnimatePresence mode="wait">{renderActiveTab()}</AnimatePresence>
+          </div>
+
+          <AdminFooter syncedAt={lastSyncedLabel} />
+        </main>
+      </div>
+
+      <AnimatePresence>
+        {showCreatePlan && (
+          <div className="admin-modal-backdrop" onClick={() => !submittingPlan && setShowCreatePlan(false)}>
+            <motion.div
+              className="admin-modal"
+              onClick={(event) => event.stopPropagation()}
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            >
+              <div className="admin-modal__header">
+                <div>
+                  <span className="admin-panel__eyebrow">Create Plan</span>
+                  <h2>Create a plan</h2>
+                </div>
+                <button type="button" className="admin-modal__close" onClick={() => setShowCreatePlan(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form className="admin-form" onSubmit={handleCreatePlan}>
+                <label>
+                  <span>Plan name</span>
+                  <input
+                    value={newPlan.name}
+                    onChange={(event) => setNewPlan((previous) => ({ ...previous, name: event.target.value }))}
+                    placeholder="Growth Plus"
+                  />
+                </label>
+
+                <div className="admin-form__row">
+                  <label>
+                    <span>Price (INR)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newPlan.price}
+                      onChange={(event) => setNewPlan((previous) => ({ ...previous, price: event.target.value }))}
+                      placeholder="1499"
+                    />
+                  </label>
+
+                  <label>
+                    <span>Duration (days)</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPlan.duration}
+                      onChange={(event) => setNewPlan((previous) => ({ ...previous, duration: event.target.value }))}
+                      placeholder="30"
+                    />
+                  </label>
+                </div>
+
+                <label>
+                  <span>Feature notes</span>
+                  <textarea
+                    value={newPlan.features}
+                    onChange={(event) => setNewPlan((previous) => ({ ...previous, features: event.target.value }))}
+                    placeholder="Priority support, role-based access, analytics exports"
+                  />
+                </label>
+
+                <p className="admin-form__hint">
+                  Feature notes are used here for drafting and internal review. The current backend still saves
+                  only the plan name, price, and duration.
+                </p>
+
+                <div className="admin-modal__footer">
+                  <button
+                    type="button"
+                    className="admin-button admin-button--secondary"
+                    onClick={() => setShowCreatePlan(false)}
+                    disabled={submittingPlan}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="admin-button admin-button--primary" disabled={submittingPlan}>
+                    {submittingPlan ? <Loader2 size={16} className="admin-spin" /> : <Plus size={16} />}
+                    Save plan
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
-    </div>
+
+      <AnimatePresence>
+        {showAiModal && (
+          <div className="admin-modal-backdrop" onClick={() => !aiLoading && setShowAiModal(false)}>
+            <motion.div
+              className="admin-modal admin-modal--wide"
+              onClick={(event) => event.stopPropagation()}
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            >
+              <div className="admin-modal__header">
+                <div>
+                  <span className="admin-panel__eyebrow">AI Plan Assistant</span>
+                  <h2>Generate plan ideas</h2>
+                </div>
+                <button type="button" className="admin-modal__close" onClick={() => setShowAiModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="admin-form">
+                <label>
+                  <span>Business context</span>
+                  <textarea
+                    value={aiDescription}
+                    onChange={(event) => setAiDescription(event.target.value)}
+                    placeholder="Example: We are building a multi-tenant compliance platform and need simple, growth, and enterprise pricing."
+                    className="admin-form__textarea--tall"
+                  />
+                </label>
+
+                <div className="admin-modal__footer">
+                  <button type="button" className="admin-button admin-button--primary" onClick={runAiAnalysis} disabled={aiLoading}>
+                    {aiLoading ? <Loader2 size={16} className="admin-spin" /> : <Sparkles size={16} />}
+                    Generate ideas
+                  </button>
+                </div>
+
+                {aiSuggestions.length > 0 && (
+                  <div className="admin-ai-grid">
+                    {aiSuggestions.map((suggestion) => (
+                      <button
+                        key={`${suggestion.name}-${suggestion.price}`}
+                        type="button"
+                        className="admin-ai-card"
+                        onClick={() => applySuggestion(suggestion)}
+                      >
+                        <div className="admin-ai-card__top">
+                          <div>
+                            <strong>{suggestion.name}</strong>
+                            <span>{formatCurrency(suggestion.price)} / {getCadenceLabel(suggestion.duration)}</span>
+                          </div>
+                          <Sparkles size={18} />
+                        </div>
+                        <p>{suggestion.description}</p>
+                        <div className="admin-ai-card__meta">
+                          <span>{suggestion.duration} days</span>
+                          <span>{suggestion.features || 'Feature bundle available after selection'}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, 
@@ -15,12 +15,13 @@ import { useTheme } from '../utils/ThemeContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const { isAuthenticated, user, logout } = useAuth();
     const { theme } = useTheme(); 
     const [isScrolled, setIsScrolled] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const dashboardRoute = user?.role === 'ROLE_SUPER_ADMIN' ? '/super-admin' : '/dashboard';
+    const dashboardLabel = user?.role === 'ROLE_SUPER_ADMIN' ? 'Admin Console' : 'Developer Console';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -234,7 +235,7 @@ const Navbar = () => {
 
                                             <div style={{ padding: '6px' }}>
                                                 <button
-                                                    onClick={() => { navigate('/dashboard'); setIsProfileOpen(false); }}
+                                                    onClick={() => { navigate(dashboardRoute); setIsProfileOpen(false); }}
                                                     style={{
                                                         ...dropdownItemStyle, 
                                                         borderRadius: '16px', 
@@ -251,7 +252,7 @@ const Navbar = () => {
                                                     }}
                                                 >
                                                     <Activity size={18} style={{ color: '#3b82f6' }} /> 
-                                                    <span style={{ fontWeight: 700 }}>My Console</span>
+                                                    <span style={{ fontWeight: 700 }}>{dashboardLabel}</span>
                                                 </button>
 
                                                 <button
@@ -288,7 +289,7 @@ const Navbar = () => {
                             </div>
 
                             <button
-                                onClick={() => navigate('/dashboard')}
+                                onClick={() => navigate(dashboardRoute)}
                                 style={{
                                     fontSize: '14px',
                                     fontWeight: 600,
@@ -311,7 +312,7 @@ const Navbar = () => {
                                     e.target.style.transform = 'translateY(0)';
                                 }}
                             >
-                                Developer Console →
+                                {dashboardLabel} {'>'}
                             </button>
                         </>
                     ) : (

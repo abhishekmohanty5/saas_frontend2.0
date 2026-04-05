@@ -60,8 +60,8 @@ const ConsoleSidebar = ({
             flexDirection: "column",
             transition: "all .4s cubic-bezier(0.19, 1, 0.22, 1)",
             position: "sticky",
-            top: 68,
-            height: "calc(100vh - 68px)",
+            top: 96,
+            height: "calc(100vh - 96px)",
             zIndex: 100,
             padding: "32px 0",
             boxShadow: "10px 0 50px rgba(0,0,0,0.02)",
@@ -224,27 +224,28 @@ const ConsoleSidebar = ({
                 {sidebarOpen ? (
                     <>
                         <div style={{
-                            fontSize: 16,
-                            fontWeight: 900,
+                            fontSize: 12.5,
+                            fontWeight: 800,
                             color: "var(--text)",
                             fontFamily: 'var(--ff-serif)',
-                            letterSpacing: '-0.02em',
-                            marginBottom: 16,
-                            textTransform: 'uppercase'
+                            letterSpacing: '0.02em',
+                            marginBottom: 12,
+                            textTransform: 'uppercase',
+                            opacity: 0.95
                         }}>
                             {tenantName || 'Acme SaaS'}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <div style={{
                                 background: "var(--accent)",
                                 color: "white",
-                                fontSize: '8px',
+                                fontSize: '7.5px',
                                 fontWeight: 900,
-                                padding: '4px 10px',
-                                borderRadius: '6px',
+                                padding: '3px 8px',
+                                borderRadius: '5px',
                                 boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
-                                letterSpacing: '0.1em',
+                                letterSpacing: '0.08em',
                                 whiteSpace: 'nowrap',
                                 textTransform: 'uppercase'
                             }}>
@@ -253,22 +254,22 @@ const ConsoleSidebar = ({
 
                             {daysRemaining !== undefined && (
                                 <div style={{
-                                    fontSize: '9px',
+                                    fontSize: '8.5px',
                                     fontWeight: 800,
                                     color: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
                                     background: 'var(--glass-bg)',
-                                    padding: '4px 10px',
-                                    borderRadius: '6px',
+                                    padding: '3px 8px',
+                                    borderRadius: '5px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: '5px',
                                     border: `1px solid var(--theme-border)`,
                                     whiteSpace: 'nowrap'
                                 }}>
                                     <div style={{
-                                        width: 5, height: 5, borderRadius: '50%',
+                                        width: 4, height: 4, borderRadius: '50%',
                                         background: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
-                                        boxShadow: `0 0 8px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`
+                                        boxShadow: `0 0 6px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`
                                     }} />
                                     {daysRemaining}D REMAINING
                                 </div>
