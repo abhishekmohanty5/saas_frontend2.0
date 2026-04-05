@@ -4,7 +4,8 @@ import ConsoleSidebar from '../components/ConsoleSidebar';
 import Navbar from '../components/Navbar';
 import ApiCredentialsSection from '../components/ApiCredentialsSection';
 import { useToast } from '../components/ToastProvider';
-import api, { aiAPI } from '../services/api';
+import api, { aiAPI, dashboardAPI, adminAPI, userSubscriptionAPI } from '../services/api';
+
 
 // ─── ICONS (SVG inline) ───────────────────────────────────────────────────
 const Icon = ({ name, size = 20, color = "#64748b" }) => {
@@ -23,6 +24,37 @@ const Icon = ({ name, size = 20, color = "#64748b" }) => {
       stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       {icons[name]}
     </svg>
+  );
+};
+
+const PaginationControl = ({ current, total, onPageChange }) => {
+  if (total <= 1) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', marginTop: '24px', padding: '0 8px' }}>
+      <button
+        disabled={current === 0}
+        onClick={() => onPageChange(current - 1)}
+        style={{
+          background: "var(--surface)", border: "1px solid var(--border)", color: current === 0 ? '#94a3b8' : '#1e1b4b',
+          padding: '6px 12px', borderRadius: '8px', cursor: current === 0 ? 'default' : 'pointer', fontSize: '13px', fontWeight: 600,
+          transition: 'all 0.2s'
+        }}
+      >
+        &larr; Prev
+      </button>
+      <span style={{ fontSize: '13px', color: "var(--muted)", fontWeight: 500 }}>Page {current + 1} of {total}</span>
+      <button
+        disabled={current >= total - 1}
+        onClick={() => onPageChange(current + 1)}
+        style={{
+          background: "var(--surface)", border: "1px solid var(--border)", color: current >= total - 1 ? '#94a3b8' : '#1e1b4b',
+          padding: '6px 12px', borderRadius: '8px', cursor: current >= total - 1 ? 'default' : 'pointer', fontSize: '13px', fontWeight: 600,
+          transition: 'all 0.2s'
+        }}
+      >
+        Next &rarr;
+      </button>
+    </div>
   );
 };
 
@@ -166,17 +198,20 @@ function TelemetryUnit({ dashboard }) {
         .telemetry-3d-card {
           background: #07070a;
           border-radius: 12px;
-          border: 1px solid #10b981;
-          box-shadow: 
+          border: 1px solid #1e293b;
+          box-shadow:
             0 40px 100px -20px rgba(0, 0, 0, 0.9),
-            0 0 30px rgba(16, 185, 129, 0.1);
+            0 0 30px rgba(0, 0, 0, 0.5);
           position: relative;
           overflow: hidden;
           transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
           transform-style: preserve-3d;
         }
         .telemetry-unit-container:hover .telemetry-3d-card {
-          transform: rotateX(1deg) rotateY(-0.5deg) translateY(-2px);
+          transform: rotateX(2deg) rotateY(-1deg) translateY(-4px);
+          box-shadow:
+            0 50px 110px -20px rgba(0, 0, 0, 1),
+            0 0 40px rgba(0, 0, 0, 0.6);
         }
         .terminal-scroll {
           scroll-behavior: smooth;
@@ -184,7 +219,7 @@ function TelemetryUnit({ dashboard }) {
           -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
         }
         .terminal-scroll::-webkit-scrollbar { width: 4px; }
-        .terminal-scroll::-webkit-scrollbar-thumb { background: #10b98144; border-radius: 2px; }
+        .terminal-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         .line-num { color: #2d3748; user-select: none; margin-right: 18px; font-size: 11px; width: 24px; display: inline-block; text-align: right; }
         .cursor { display: inline-block; width: 2px; height: 13px; background: #e2e8f0; margin-left: 2px; vertical-align: middle; animation: blink .8s infinite; }
         @keyframes blink { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
@@ -192,7 +227,7 @@ function TelemetryUnit({ dashboard }) {
 
       <div className="telemetry-3d-card">
         {/* IDE Title Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: 'var(--surface)', borderBottom: '1px solid #1e293b' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', background: '#f8fafc', borderBottom: "1px solid var(--border)", borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f57' }} />
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#febc2e' }} />
@@ -201,7 +236,7 @@ function TelemetryUnit({ dashboard }) {
           <div style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "var(--ff-mono)" }}>
             STREAMING_RESPONSE.JSON
           </div>
-          <div style={{ fontSize: 9, fontWeight: 800, color: 'var(--muted)', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', letterSpacing: '0.05em' }}>
             {flow.method} {flow.endpoint}
           </div>
         </div>
@@ -218,7 +253,7 @@ function TelemetryUnit({ dashboard }) {
           fontWeight: 500,
           lineHeight: '1.8',
           WebkitFontSmoothing: 'antialiased',
-          background: 'var(--bg)'
+          background: '#07070a'
         }}>
           {visibleSteps.map((vs, vi) => (
             <div key={vi} style={{ marginBottom: 16, animation: 'fadeIn 0.3s ease both' }}>
@@ -276,13 +311,13 @@ function TelemetryUnit({ dashboard }) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
+          boxShadow: '0 25px 60px -12px var(--theme-border)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
               width: 8, height: 8, borderRadius: '50%',
               background: '#ef4444',
-              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 25px 60px -12px var(--theme-border)',
               animation: 'pulse 1.2s infinite'
             }} />
             <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 900, letterSpacing: '0.15em' }}>
@@ -386,7 +421,7 @@ function LiveInsights({ stats, dashboard, subscribers }) {
               width: 2,
               bottom: -24,
               zIndex: 0,
-              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
+              boxShadow: '0 25px 60px -12px var(--theme-border)'
             }} />
           )}
 
@@ -404,7 +439,7 @@ function LiveInsights({ stats, dashboard, subscribers }) {
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 11, fontWeight: 900, color: insight.color, letterSpacing: '0.15em' }}>{insight.category}</div>
-              <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.05)', borderRadius: 4, fontSize: 8, fontWeight: 900, color: 'var(--ink)', padding: '2px 6px' }}>{insight.status}</div>
+              <div style={{ background: 'var(--theme-border)', border: '1px solid var(--theme-border)', borderRadius: 4, fontSize: 8, fontWeight: 900, color: 'var(--ink)', padding: '2px 6px' }}>{insight.status}</div>
             </div>
             <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--ink)', fontWeight: 600 }}>
               {insight.text}
@@ -705,8 +740,17 @@ export default function Dashboard() {
 
   const [dashboard, setDashboard] = useState(null);
   const [stats, setStats] = useState({ total: 0, active: 0, cancelled: 0, pending: 0 });
+
   const [plans, setPlans] = useState([]);
+  const [plansPage, setPlansPage] = useState(0);
+  const [plansTotalPages, setPlansTotalPages] = useState(0);
+  const [plansTotal, setPlansTotal] = useState(0);
+
   const [subscribers, setSubscribers] = useState([]);
+  const [subPage, setSubPage] = useState(0);
+  const [subTotalPages, setSubTotalPages] = useState(0);
+  const [subTotal, setSubTotal] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSecret, setShowSecret] = useState(false);
@@ -739,31 +783,40 @@ export default function Dashboard() {
       if (!token) { handleUnauth(); return; }
 
       const [dashRes, statsRes, plansRes, subRes] = await Promise.allSettled([
-        api.get('/dashboard'),
-        api.get('/developer/tenant-stats'),
-        api.get('/developer/tenant-plans'),
-        api.get('/developer/tenant-subscribers')
+        dashboardAPI.getOverview(),
+        dashboardAPI.getStats(),
+        dashboardAPI.getTenantPlans(plansPage, 9), // 9 per page for plans grid
+        dashboardAPI.getEndUsers(subPage, 10)
       ]);
 
       const getVal = (res, fallback = null) => res.status === 'fulfilled' ? res.value.data.data : fallback;
 
+      const pData = getVal(plansRes, {});
+      const sData = getVal(subRes, {});
+
       setDashboard(getVal(dashRes));
       setStats(getVal(statsRes, { total: 0, active: 0, cancelled: 0, pending: 0 }));
-      setPlans(getVal(plansRes, []));
-      setSubscribers(getVal(subRes, []));
+      
+      setPlans(pData.content || []);
+      setPlansTotal(pData.totalElements || 0);
+      setPlansTotalPages(pData.totalPages || 0);
+
+      setSubscribers(sData.content || []);
+      setSubTotal(sData.totalElements || 0);
+      setSubTotalPages(sData.totalPages || 0);
 
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
-  }, [handleUnauth]);
+  }, [handleUnauth, plansPage, subPage]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#ffffff" }}>
-      <div style={{ width: 40, height: 40, border: "3px solid #f1f5f9", borderTopColor: "#4f46e5", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "var(--bg)" }}>
+      <div style={{ width: 40, height: 40, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -772,7 +825,7 @@ export default function Dashboard() {
     <div style={{
       minHeight: "100vh",
       background: "var(--white)",
-      color: "#1e1b4b",
+      color: "var(--text)",
       fontFamily: "var(--ff-sans)",
       paddingTop: "68px"
     }}>
@@ -791,9 +844,9 @@ export default function Dashboard() {
           flexDirection: "column",
           minHeight: "calc(100vh - 68px)",
           overflowY: "auto",
+          background: "var(--bg)",
           backgroundImage: `
-            radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8))
+            radial-gradient(var(--border) 1px, transparent 1px)
           `,
           backgroundSize: '24px 24px',
           backgroundPosition: 'center center'
@@ -811,8 +864,8 @@ export default function Dashboard() {
                       <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
                       <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Management Console</span>
                     </div>
-                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1e1b4b", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>Infrastructure Overview</h1>
-                    <p style={{ color: "#475569", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
+                    <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.5px", fontFamily: "var(--ff-h)", margin: 0 }}>Infrastructure Overview</h1>
+                    <p style={{ color: "var(--text)", marginTop: 6, fontSize: 13, fontWeight: 500 }}>
                       Real-time telemetry and operational diagnostics for node: <span style={{ fontFamily: 'var(--ff-mono)', color: 'var(--ink)', fontWeight: 700 }}>{dashboard?.tenantName || 'SAAS_ROOT'}</span>
                     </p>
                   </div>
@@ -848,14 +901,14 @@ export default function Dashboard() {
                   </section>
 
                   {/* Developer Protocol Memo */}
-                  <section style={{ padding: "0 8px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 40, marginTop: 40 }}>
+                  <section style={{ padding: "0 8px", borderTop: "1px solid var(--theme-border)", paddingTop: 40, marginTop: 40 }}>
                     <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.2em', marginBottom: 24, textTransform: 'uppercase' }}>
                       DEVELOPER_PROTOCOL // ADVISORY
                     </div>
                     <div style={{ width: '100%' }}>
                       <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, margin: 0 }}>
                         Your infrastructure node is currently broadcasting on the <span style={{ color: 'var(--ink)', fontWeight: 700 }}>Aegis Mesh Network</span>.
-                        As a developer tenant, you can interface with your provisioned services using the <span style={{ fontFamily: 'var(--ff-mono)', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>X-API-KEY</span> header for all external requests.
+                        As a developer tenant, you can interface with your provisioned services using the <span style={{ fontFamily: 'var(--ff-mono)', background: 'var(--theme-border)', padding: '2px 6px', borderRadius: 4, fontSize: 13 }}>X-API-KEY</span> header for all external requests.
                       </p>
                       <p style={{ fontSize: 15, lineHeight: 1.8, color: "#000000", fontWeight: 500, marginTop: 16 }}>
                         All subscriber lifecycle events—including activations and decommissioning—are automatically synchronized across your tenant environment. For deep-level integration, refer to the <span style={{ textDecoration: 'underline', color: '#6366f1', cursor: 'pointer' }}>Infrastructure Documentation</span> or monitor the Live Insights feed above for real-time propagation status.
@@ -880,7 +933,7 @@ export default function Dashboard() {
                     background: "#0f172a",
                     borderRadius: 24,
                     border: "1px solid rgba(255,255,255,0.05)",
-                    boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
+                    boxShadow: '0 25px 60px -12px var(--theme-border)'
                   }}>
                     <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', marginBottom: 24, textTransform: 'uppercase' }}>
                       QUICK START // INTEGRATION
@@ -910,10 +963,10 @@ export default function Dashboard() {
                 <div className="neural-grid" />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40, padding: '0 8px', position: 'relative', zIndex: 1 }}>
                   <div>
-                    <h1 style={{ fontSize: 32, fontWeight: 950, color: "#1e1b4b", letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "var(--ff-h)", marginBottom: 8 }}>Subscription Plans</h1>
+                    <h1 style={{ fontSize: 32, fontWeight: 950, color: "var(--text)", letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "var(--ff-h)", marginBottom: 8 }}>Subscription Plans</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
-                      <p style={{ color: "#64748b", fontSize: 15, fontWeight: 500, margin: 0 }}>Define and manage plans available for your end-users.</p>
+                      <p style={{ color: "var(--muted)", fontSize: 15, fontWeight: 500, margin: 0 }}>Define and manage plans available for your end-users.</p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 12 }}>
@@ -957,7 +1010,7 @@ export default function Dashboard() {
                         fontWeight: 800,
                         fontSize: 13,
                         cursor: "pointer",
-                        boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                        boxShadow: "0 10px 30px var(--theme-border)",
                         transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
                         display: 'flex',
                         alignItems: 'center',
@@ -966,7 +1019,7 @@ export default function Dashboard() {
                         letterSpacing: '0.05em'
                       }}
                       onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)'; e.currentTarget.style.background = '#000'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)'; e.currentTarget.style.background = '#0a0a0a'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px var(--theme-border)'; e.currentTarget.style.background = '#0a0a0a'; }}
                     >
                       + Create New Plan
                     </button>
@@ -993,7 +1046,7 @@ export default function Dashboard() {
                       onDelete={async (id) => {
                         if (window.confirm("Are you sure you want to decommission this plan?")) {
                           try {
-                            await api.delete(`/developer/tenant-plans/${id}`);
+                            await api.delete(`/v1/tenant-admin/tenant-plans/${id}`);
                             toast.success("Decommissioned", "Plan has been removed from infrastructure");
                             fetchData();
                           } catch (err) {
@@ -1003,11 +1056,12 @@ export default function Dashboard() {
                       }}
                     />
                   )) : (
-                    <div style={{ gridColumn: "1/-1", padding: 100, textAlign: "center", background: "rgba(255, 255, 255, 0.4)", borderRadius: 40, border: '2px dashed rgba(0,0,0,0.05)' }}>
-                      <p style={{ color: "#64748b", fontSize: 16, fontWeight: 500 }}>No plans created yet. Start by adding your first subscription tier.</p>
+                    <div style={{ gridColumn: "1/-1", padding: 100, textAlign: "center", background: "var(--glass-bg)", borderRadius: 40, border: '2px dashed var(--theme-border)' }}>
+                      <p style={{ color: "var(--muted)", fontSize: 16, fontWeight: 500 }}>No plans created yet. Start by adding your first subscription tier.</p>
                     </div>
                   )}
                 </div>
+                <PaginationControl current={plansPage} total={plansTotalPages} onPageChange={setPlansPage} />
 
                 {/* AI Recommendation Modal */}
                 {showAiModal && (
@@ -1020,9 +1074,9 @@ export default function Dashboard() {
                     <div style={{
                       width: '100%', maxWidth: '480px', background: 'var(--surface)',
                       borderRadius: 32, padding: '40px', position: 'relative',
-                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
+                      boxShadow: '0 25px 60px -12px var(--theme-border)',
                       animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                      border: '1px solid rgba(0,0,0,0.03)',
+                      border: '1px solid var(--theme-border)',
                       transform: 'rotateX(2deg)'
                     }}>
                       <button
@@ -1072,7 +1126,7 @@ export default function Dashboard() {
                             style={{
                               width: '100%', background: '#6366f1', color: 'var(--surface)', borderRadius: 14, border: 'none',
                               padding: '16px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
-                              boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
+                              boxShadow: '0 25px 60px -12px var(--theme-border)',
                               transition: 'all 0.2s'
                             }}
                             onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -1137,132 +1191,160 @@ export default function Dashboard() {
                   <div style={{
                     position: 'fixed', inset: 0, zIndex: 1000,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)',
-                    perspective: '1000px'
+                    background: 'rgba(7, 7, 10, 0.6)', backdropFilter: 'blur(20px)',
+                    perspective: '2000px'
                   }}>
-                    <div style={{
-                      width: '100%', maxWidth: '440px', background: 'var(--surface)',
-                      borderRadius: 32, padding: '32px 40px 40px', position: 'relative',
-                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
-                      animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                      border: '1px solid rgba(0,0,0,0.03)',
-                      transform: 'rotateX(2deg)'
+                    <div className="telemetry-3d-card" style={{
+                      width: '100%', maxWidth: '460px', background: 'var(--glass-bg)',
+                      borderRadius: 32, padding: '40px', position: 'relative',
+                      boxShadow: '0 40px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+                      animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                      border: '1px solid var(--theme-border)',
+                      transform: 'rotateX(4deg) translateY(-20px)',
+                      backdropFilter: 'blur(40px) saturate(180%)',
+                      overflow: 'hidden'
                     }}>
+                      {/* Scanning Line FX */}
+                      <div style={{ 
+                        position: 'absolute', top: '-100%', left: 0, width: '100%', height: '50%',
+                        background: 'linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.08), transparent)',
+                        animation: 'scanningLine 6s linear infinite', pointerEvents: 'none'
+                      }} />
+
                       <button
                         onClick={() => {
                           setShowPlanModal(false);
                           setEditingPlanId(null);
                           setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
                         }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: 'var(--ink)', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
-                        onMouseOut={(e) => e.currentTarget.style.background = 'var(--ink)'}
+                        style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--theme-border)', cursor: 'pointer', color: 'var(--muted)', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', zIndex: 10 }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'var(--red)'; e.currentTarget.style.color = 'white'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--muted)'; }}
                       >
-                        <Icon name="close" size={18} />
+                        <Icon name="close" size={20} />
                       </button>
 
-                      <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--ink)', marginBottom: 6, letterSpacing: '-0.5px' }}>{editingPlanId ? 'Reconfigure Node' : 'Create New Plan'}</h2>
-                      <p style={{ color: 'var(--muted)', marginBottom: 28, fontSize: 14, fontWeight: 500, lineHeight: 1.5 }}>{editingPlanId ? 'Modify infrastructure tier protocols.' : 'Deploy a new subscription tier to your ecosystem.'}</p>
-
-                      <div style={{ display: 'grid', gap: 18 }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Plan Name</label>
-                          <input
-                            type="text" placeholder="e.g. Pro, Enterprise, Free"
-                            value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, color: 'var(--ink)' }}
-                          />
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                      <div style={{ position: 'relative', zIndex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon name="zap" size={24} color="#6366f1" />
+                          </div>
                           <div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Price (INR)</label>
+                            <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0, letterSpacing: '-1px', fontFamily: 'var(--ff-h)' }}>{editingPlanId ? 'RECONFIGURE_NODE' : 'PROVISION_PLAN'}</h2>
+                            <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0, fontWeight: 600 }}>ID: {editingPlanId ? `NODE_${editingPlanId}` : 'NEW_INFRA_TIER'}</p>
+                          </div>
+                        </div>
+                        
+                        <p style={{ color: 'var(--muted)', marginBottom: 32, fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>{editingPlanId ? 'Adjust the infrastructure tier protocols to optimize throughput.' : 'Configure a new subscription tier for deployment across the Aegis Mesh network.'}</p>
+
+                        <div style={{ display: 'grid', gap: 24 }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: '#6366f1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>PLAN_IDENTIFIER</label>
                             <input
-                              type="number" placeholder="0"
-                              value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, color: 'var(--ink)' }}
+                              type="text" placeholder="e.g. ULTIMATE_NODE"
+                              value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.3s' }}
+                              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                              onBlur={(e) => e.target.style.borderColor = 'var(--theme-border)'}
                             />
                           </div>
-                          <div>
-                            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cycle</label>
-                            <select
-                              value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
-                              style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, background: 'var(--surface)', color: 'var(--ink)' }}
-                            >
-                              <option value="MONTHLY">Monthly</option>
-                              <option value="YEARLY">Yearly</option>
-                            </select>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CREDITS_PER_CYCLE</label>
+                              <div style={{ position: 'relative' }}>
+                                <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontWeight: 800, fontSize: 14 }}>₹</span>
+                                <input
+                                  type="number" placeholder="0"
+                                  value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                                  style={{ width: '100%', padding: '14px 18px 14px 34px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>SYNC_INTERVAL</label>
+                              <select
+                                value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
+                                style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, background: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)', cursor: 'pointer', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                              >
+                                <option value="MONTHLY">Monthly cycle</option>
+                                <option value="YEARLY">Yearly cycle</option>
+                              </select>
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</label>
-                          <textarea
-                            placeholder="Brief summary of the plan..."
-                            value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, height: 70, resize: 'none', color: 'var(--ink)' }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Features (One per line)</label>
-                          <textarea
-                            placeholder="JWT Authentication&#10;Cloud Storage"
-                            value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                            style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--border)', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: 'var(--ink)', fontWeight: 400 }}
-                          />
-                        </div>
+                          
+                          <div>
+                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>OPERATIONAL_DESCRIPTION</label>
+                            <textarea
+                              placeholder="Brief summary of the plan capability..."
+                              value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', lineHeight: 1.6 }}
+                            />
+                          </div>
 
-                        <button
-                          disabled={isSubmittingPlan}
-                          onClick={async () => {
-                            if (!newPlan.name || !newPlan.price) {
-                              toast.error("Invalid Input", "Please fill required fields");
-                              return;
-                            }
-                            setIsSubmittingPlan(true);
-                            try {
-                              if (editingPlanId) {
-                                await api.put(`/developer/tenant-plans/${editingPlanId}`, {
-                                  ...newPlan,
-                                  price: parseFloat(newPlan.price),
-                                });
-                                toast.success("Updated", "Infrastructure node reconfigured");
-                              } else {
-                                await api.post('/developer/tenant-plans', {
-                                  ...newPlan,
-                                  price: parseFloat(newPlan.price),
-                                });
-                                toast.success("Success", "Plan created successfully");
+                          <div>
+                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CORE_FEATURES (PROTOCOLS)</label>
+                            <textarea
+                              placeholder="JWT_AUTH&#10;SSL_ENCRYPTION&#10;REGION_LOCK"
+                              value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
+                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 13, height: 90, resize: 'none', color: 'var(--accent)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'var(--ff-mono)', lineHeight: 1.6 }}
+                            />
+                          </div>
+
+                          <button
+                            disabled={isSubmittingPlan}
+                            onClick={async () => {
+                              if (!newPlan.name || !newPlan.price) {
+                                toast.error("ACCESS_DENIED", "Required fields missing from payload");
+                                return;
                               }
-                              setShowPlanModal(false);
-                              setEditingPlanId(null);
-                              setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
-                              fetchData();
-                            } catch (err) {
-                              toast.error("Failed", editingPlanId ? "Could not update plan" : "Could not create plan");
-                            } finally {
-                              setIsSubmittingPlan(false);
-                            }
-                          }}
-                          style={{
-                            background: 'rgba(15, 23, 42, 0.95)',
-                            color: 'var(--surface)',
-                            borderRadius: 14,
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            padding: '16px',
-                            fontWeight: 700,
-                            fontSize: 15,
-                            cursor: 'pointer',
-                            marginTop: 10,
-                            transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
-                            opacity: isSubmittingPlan ? 0.7 : 1,
-                            boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)',
-                            backdropFilter: 'blur(10px)',
-                            letterSpacing: '0.02em'
-                          }}
-                          onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = 'rgba(15, 23, 42, 0.95)'; }}
-                        >
-                          {isSubmittingPlan ? (editingPlanId ? 'UPDATING...' : 'CONFIGURING...') : (editingPlanId ? 'UPDATE NODE' : 'LAUNCH PLAN')}
-                        </button>
+                              setIsSubmittingPlan(true);
+                              try {
+                                if (editingPlanId) {
+                                  await api.put(`/v1/tenant-admin/tenant-plans/${editingPlanId}`, {
+                                    ...newPlan,
+                                    price: parseFloat(newPlan.price),
+                                  });
+                                  toast.success("RECONFIGURED", "Infrastructure node reconfigured");
+                                } else {
+                                  await api.post('/v1/tenant-admin/tenant-plans', {
+                                    ...newPlan,
+                                    price: parseFloat(newPlan.price),
+                                  });
+                                  toast.success("DEPLOYED", "Infrastructure tier live on network");
+                                }
+                                setShowPlanModal(false);
+                                setEditingPlanId(null);
+                                setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
+                                fetchData();
+                              } catch (err) {
+                                toast.error("UPLINK_FAILED", editingPlanId ? "Reconfiguration protocol failed" : "Deployment signal lost");
+                              } finally {
+                                setIsSubmittingPlan(false);
+                              }
+                            }}
+                            style={{
+                              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+                              color: 'white',
+                              borderRadius: 16,
+                              border: 'none',
+                              padding: '18px',
+                              fontWeight: 900,
+                              fontSize: 14,
+                              cursor: 'pointer',
+                              marginTop: 12,
+                              transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
+                              opacity: isSubmittingPlan ? 0.7 : 1,
+                              boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.5)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.1em'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 25px 50px -10px rgba(99, 102, 241, 0.7)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(99, 102, 241, 0.5)'; }}
+                          >
+                            {isSubmittingPlan ? (editingPlanId ? 'RECONFIGURING...' : 'COMMITTING...') : (editingPlanId ? 'COMMIT_RECONFIGURATION' : 'DEPLOY_INFRASTRUCTURE')}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1274,8 +1356,8 @@ export default function Dashboard() {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                   <div>
-                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Subscribers</h1>
-                    <p style={{ color: "#64748b", marginTop: 4 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
+                    <h1 style={{ fontSize: 42, fontWeight: 900, color: "var(--text)", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure Subscribers</h1>
+                    <p style={{ color: "var(--muted)", marginTop: 4 }}>Monitor and manage users currently connected to your tenant infrastructure.</p>
                   </div>
                   <div style={{ position: 'relative' }}>
                     <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>
@@ -1287,23 +1369,23 @@ export default function Dashboard() {
                       style={{
                         padding: '12px 12px 12px 40px',
                         borderRadius: 14,
-                        border: '1px solid rgba(0,0,0,0.08)',
-                        background: 'rgba(255,255,255,0.7)',
+                        border: '1px solid var(--theme-border)',
+                        background: 'var(--glass-bg)',
                         outline: 'none',
                         width: 280,
                         fontSize: 14,
                         transition: 'all 0.2s'
                       }}
                       onFocus={(e) => e.target.style.border = '1px solid #6366f1'}
-                      onBlur={(e) => e.target.style.border = '1px solid rgba(0,0,0,0.08)'}
+                      onBlur={(e) => e.target.style.border = '1px solid var(--theme-border)'}
                     />
                   </div>
                 </div>
 
-                <div style={{ background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)", overflow: "hidden", boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
+                <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid var(--glass-bg)", overflow: "hidden", boxShadow: "0 10px 30px rgba(99, 102, 241, 0.05)" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
-                      <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", background: "rgba(255,255,255,0.4)" }}>
+                      <tr style={{ textAlign: "left", fontSize: 12, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.1em", background: "var(--glass-bg)" }}>
                         <th style={{ padding: "20px 32px" }}>Subscriber</th>
                         <th style={{ padding: "20px 32px" }}>Current Plan</th>
                         <th style={{ padding: "20px 32px" }}>Status</th>
@@ -1313,14 +1395,14 @@ export default function Dashboard() {
                     </thead>
                     <tbody>
                       {subscribers.length > 0 ? subscribers.map((sub, i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid rgba(0,0,0,0.03)", fontSize: 14 }}>
+                        <tr key={i} style={{ borderBottom: "1px solid var(--theme-border)", fontSize: 14 }}>
                           <td style={{ padding: "20px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #e0e7ff, #c7d2fe)", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>
                                 {(sub.userName || sub.email || 'U')[0].toUpperCase()}
                               </div>
                               <div>
-                                <div style={{ fontWeight: 600, color: "#1e1b4b" }}>{sub.userName || 'Unknown User'}</div>
+                                <div style={{ fontWeight: 600, color: "var(--text)" }}>{sub.userName || 'Unknown User'}</div>
                                 <div style={{ fontSize: 12, color: "#94a3b8" }}>{sub.email}</div>
                               </div>
                             </div>
@@ -1328,7 +1410,7 @@ export default function Dashboard() {
                           <td style={{ padding: "20px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366f1" }} />
-                              <span style={{ fontWeight: 600, color: "#475569" }}>{sub.planName || 'Standard'}</span>
+                              <span style={{ fontWeight: 600, color: "var(--text)" }}>{sub.planName || 'Standard'}</span>
                             </div>
                           </td>
                           <td style={{ padding: "20px 32px" }}>
@@ -1344,7 +1426,7 @@ export default function Dashboard() {
                               {sub.status || 'ACTIVE'}
                             </span>
                           </td>
-                          <td style={{ padding: "20px 32px", color: "#64748b" }}>
+                          <td style={{ padding: "20px 32px", color: "var(--muted)" }}>
                             {sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : new Date().toLocaleDateString()}
                           </td>
                           <td style={{ padding: "20px 32px" }}>
@@ -1357,21 +1439,27 @@ export default function Dashboard() {
                             <div style={{ opacity: 0.5, marginBottom: 16 }}>
                               <Icon name="users" size={48} color="#94a3b8" />
                             </div>
-                            <p style={{ color: "#64748b", fontWeight: 500 }}>No subscribers found in your infrastructure.</p>
+                            <p style={{ color: "var(--muted)", fontWeight: 500 }}>No subscribers found in your infrastructure.</p>
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
+                  {subscribers.length === 0 && (
+                     <div style={{ padding: '60px 0', textAlign: 'center', background: 'var(--glass-bg)' }}>
+                        <p style={{ color: "var(--muted)", fontWeight: 500 }}>No subscribers found in current segment.</p>
+                     </div>
+                  )}
                 </div>
+                <PaginationControl current={subPage} total={subTotalPages} onPageChange={setSubPage} />
               </div>
             )}
 
             {activeTab === 'license' && (
               <div style={{ maxWidth: 900 }}>
                 <div style={{ marginBottom: 40 }}>
-                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure License</h1>
-                  <p style={{ color: "#64748b", marginTop: 4 }}>Manage your Aegis partnership and infrastructure tier.</p>
+                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "var(--text)", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>Infrastructure License</h1>
+                  <p style={{ color: "var(--muted)", marginTop: 4 }}>Manage your Aegis partnership and infrastructure tier.</p>
                 </div>
 
                 <div style={{ background: "linear-gradient(135deg, #1e1b4b, #312e81)", borderRadius: 32, padding: 48, color: "white", position: "relative", overflow: "hidden", boxShadow: "0 20px 50px rgba(30, 27, 75, 0.2)" }}>
@@ -1409,103 +1497,103 @@ export default function Dashboard() {
             {activeTab === 'services' && (
               <div>
                 <div style={{ marginBottom: 40 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                    <div style={{ width: 12, height: 2, background: '#6366f1', borderRadius: 2 }} />
-                    <span style={{ fontSize: 10, fontWeight: 900, color: '#6366f1', letterSpacing: '0.25em', textTransform: 'uppercase' }}>Aegis Modules</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <div style={{ width: 24, height: 1, background: '#3b82f6' }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Aegis Modules</span>
+                    </div>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text)", letterSpacing: "-1px", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>System Services</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                      <p style={{ color: "var(--muted)", fontSize: 14, fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--text)' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
+                    </div>
                   </div>
-                  <h1 style={{ fontSize: 42, fontWeight: 900, color: "#1e1b4b", letterSpacing: "-2.5px", lineHeight: 1.1, fontFamily: "var(--ff-h)" }}>System Services</h1>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'blinkHUD 2s infinite' }} />
-                    <p style={{ color: "#64748b", fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--ink)' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
-                  </div>
-                </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
-                  {/* Dynamic Services Logic based on Plan */}
-                  {[
-                    // Base Services for ALL plans
-                    { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: '#10b981', icon: 'shield' },
-                    { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#10b981', icon: 'zap' },
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+                    {/* Dynamic Services Logic based on Plan */}
+                    {[
+                      // Base Services for ALL plans
+                      { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: '#10b981', icon: 'shield' },
+                      { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#10b981', icon: 'zap' },
 
-                    // Specific to Starter and above
-                    { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : 'var(--muted)'), icon: 'layers' },
+                      // Specific to Starter and above
+                      { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : '#64748b'), icon: 'layers' },
 
-                    // Specific to Growth/Enterprise
-                    { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : 'var(--muted)'), icon: 'activity' },
-                    { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : 'var(--muted)'), icon: 'cpu' }
-                  ].map((service, i) => (
-                    <div key={i} style={{
-                      background: service.status === 'Locked' ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.85)",
-                      backdropFilter: "blur(20px)",
-                      borderRadius: 24,
-                      padding: 32,
-                      border: "1px solid rgba(255,255,255,0.8)",
-                      boxShadow: service.status === 'Locked' ? 'none' : "0 20px 40px -15px rgba(0,0,0,0.05)",
-                      transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      cursor: service.status === 'Locked' ? 'not-allowed' : 'pointer',
-                      filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.7)' : 'none'
-                    }}
-                      onMouseEnter={(e) => {
-                        if (service.status !== 'Locked') {
-                          e.currentTarget.style.transform = 'translateY(-4px)';
-                          e.currentTarget.style.boxShadow = `0 25px 50px -12px ${service.color}33`;
-                          e.currentTarget.style.borderColor = `${service.color}44`;
-                        }
+                      // Specific to Growth/Enterprise
+                      { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : '#64748b'), icon: 'activity' },
+                      { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : '#64748b'), icon: 'cpu' }
+                    ].map((service, i) => (
+                      <div key={i} style={{
+                        background: service.status === 'Locked' ? "rgba(15, 23, 42, 0.2)" : "rgba(15, 23, 42, 0.4)",
+                        backdropFilter: "blur(12px)",
+                        borderRadius: 16,
+                        padding: 24,
+                        border: "1px solid rgba(255, 255, 255, 0.05)",
+                        boxShadow: service.status === 'Locked' ? 'none' : "0 4px 20px -10px rgba(0,0,0,0.5)",
+                        transition: 'all 0.2s ease',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        cursor: service.status === 'Locked' ? 'not-allowed' : 'pointer',
+                        filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.5)' : 'none'
                       }}
-                      onMouseLeave={(e) => {
-                        if (service.status !== 'Locked') {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = "0 20px 40px -15px rgba(0,0,0,0.05)";
-                          e.currentTarget.style.borderColor = "rgba(255,255,255,0.8)";
-                        }
-                      }}>
-
-                      {/* Top decorative gradient line */}
-                      {service.status !== 'Locked' && (
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }} />
-                      )}
-
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: 'flex-start' }}>
-                        <div style={{
-                          width: 44, height: 44, borderRadius: 12,
-                          background: `${service.color}15`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: service.color
+                        onMouseEnter={(e) => {
+                          if (service.status !== 'Locked') {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.borderColor = `${service.color}40`;
+                            e.currentTarget.style.background = "rgba(15, 23, 42, 0.6)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (service.status !== 'Locked') {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                            e.currentTarget.style.background = "rgba(15, 23, 42, 0.4)";
+                          }
                         }}>
-                          <Icon name={service.icon} size={20} />
-                        </div>
 
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: 11, fontWeight: 900, color: "#94a3b8", fontFamily: 'var(--ff-mono)', letterSpacing: '0.05em' }}>{service.version}</span>
+                        {/* Glowing Top Border */}
+                        {service.status !== 'Locked' && (
+                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: service.color, boxShadow: `0 0 10px ${service.color}` }} />
+                        )}
+
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20, alignItems: 'center' }}>
                           <div style={{
-                            display: 'flex', alignItems: 'center', gap: 6, marginTop: 6,
-                            background: `${service.color}10`, padding: '4px 8px', borderRadius: 6
+                            width: 40, height: 40, borderRadius: 10,
+                            background: "rgba(255, 255, 255, 0.03)",
+                            border: "1px solid rgba(255, 255, 255, 0.05)",
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: "var(--text)"
                           }}>
+                            <Icon name={service.icon} size={18} />
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748b", fontFamily: 'var(--ff-mono)' }}>{service.version}</span>
                             <div style={{
-                              width: 6, height: 6, borderRadius: "50%",
-                              background: service.color,
-                              boxShadow: `0 0 10px ${service.color}`
-                            }} />
-                            <span style={{ fontSize: 10, fontWeight: 800, color: service.color, letterSpacing: '0.1em' }}>{service.status.toUpperCase()}</span>
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              background: "rgba(0, 0, 0, 0.2)", border: "1px solid rgba(255, 255, 255, 0.03)", padding: '3px 8px', borderRadius: 20
+                            }}>
+                              <div style={{
+                                width: 6, height: 6, borderRadius: "50%",
+                                background: service.color,
+                                boxShadow: service.status !== 'Locked' ? `0 0 8px ${service.color}` : 'none'
+                              }} />
+                              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text)", letterSpacing: '0.05em' }}>{service.status.toUpperCase()}</span>
+                            </div>
                           </div>
                         </div>
+
+<h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text)", margin: "0 0 4px 0", letterSpacing: '-0.01em' }}>{service.name}</h3>
+                        <p style={{ fontSize: 13, color: "#94a3b8", margin: 0, fontWeight: 400 }}>{service.stats}</p>
                       </div>
-
-                      <h3 style={{ fontSize: 19, fontWeight: 800, color: "#1e1b4b", marginBottom: 8, letterSpacing: '-0.3px' }}>{service.name}</h3>
-                      <p style={{ fontSize: 14, color: "#475569", margin: 0, fontWeight: 500, lineHeight: 1.5 }}>{service.stats}</p>
-
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {(!['overview', 'credentials', 'plans', 'subscribers', 'license', 'services'].includes(activeTab)) && (
-              <div style={{ padding: 60, textAlign: "center", background: "rgba(255, 255, 255, 0.65)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid rgba(255, 255, 255, 0.5)" }}>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1e1b4b" }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module</h2>
-                <p style={{ color: "#64748b", marginTop: 12 }}>This enterprise feature is currently being provisioned for your tenant.</p>
+              <div style={{ padding: 60, textAlign: "center", background: "var(--glass-bg)", backdropFilter: "blur(10px)", borderRadius: 24, border: "1px solid var(--glass-bg)" }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text)" }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Module</h2>
+                <p style={{ color: "var(--muted)", marginTop: 12 }}>This enterprise feature is currently being provisioned for your tenant.</p>
               </div>
             )}
           </div>
@@ -1521,16 +1609,16 @@ function Footer() {
     <footer style={{
       marginTop: "auto",
       padding: "32px",
-      borderTop: "1px solid rgba(0, 0, 0, 0.05)",
-      background: "rgba(255, 255, 255, 0.4)",
+      borderTop: "1px solid var(--theme-border)",
+      background: "var(--glass-bg)",
       backdropFilter: "blur(10px)"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#1e1b4b" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
             AEGIS<span style={{ color: "#3b82f6" }}>.</span>
           </div>
-          <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#64748b", fontWeight: 600 }}>
+          <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--muted)", fontWeight: 600 }}>
             <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Docs</span>
             <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Support</span>
             <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Security</span>
@@ -1538,17 +1626,17 @@ function Footer() {
         </div>
         <div style={{ display: "flex", gap: 32 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>System Region</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b4b" }}>ASIA-SOUTH-1</div>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "1px" }}>System Region</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>ASIA-SOUTH-1</div>
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 10, fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Build Version</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#1e1b4b" }}>v4.2.0-stable</div>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "1px" }}>Build Version</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>v4.2.0-stable</div>
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed rgba(0, 0, 0, 0.05)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
+      <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed var(--theme-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>
           © 2026 Aegis. All protocols reserved.
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -1564,18 +1652,18 @@ function Footer() {
 function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
   return (
     <div className="stat-card" style={{
-      background: "rgba(255, 255, 255, 0.7)",
+      background: "var(--glass-bg)",
       backdropFilter: "blur(20px) saturate(160%)",
       borderRadius: 24,
-      border: "1px solid rgba(255, 255, 255, 0.8)",
+      border: "1px solid var(--border)",
       padding: 28,
       display: "flex",
       flexDirection: "column",
       position: "relative",
       overflow: "hidden",
       boxShadow: `
-        0 10px 30px -10px rgba(0, 0, 0, 0.05),
-        inset 0 1px 1px rgba(255, 255, 255, 0.8),
+        0 10px 30px -10px var(--theme-border),
+        inset 0 1px 1px var(--glass-bg),
         inset 0 -1px 20px rgba(99, 102, 241, 0.02)
       `,
       transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
@@ -1592,7 +1680,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
             box-shadow:
                 0 30px 60px -12px rgba(99, 102, 241, 0.15),
                 0 18px 36px -18px rgba(0, 0, 0, 0.2),
-                inset 0 1px 1px rgba(255, 255, 255, 1);
+                inset 0 1px 1px var(--glass-border);
             border-color: rgba(99, 102, 241, 0.3);
         }
         .stat-card:hover .spark-container {
@@ -1652,7 +1740,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
         <div style={{
           fontSize: 42,
           fontWeight: 900,
-          color: "#1e1b4b",
+          color: "var(--text)",
           marginBottom: 4,
           letterSpacing: "-1.5px",
           fontFamily: 'var(--ff-sans)',
@@ -1664,7 +1752,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
           <span style={{
             fontSize: 10,
             fontWeight: 800,
-            color: "#64748b",
+            color: "var(--muted)",
             letterSpacing: '0.1em',
             fontFamily: 'var(--ff-mono)'
           }}>[OPERATIONAL]</span>
@@ -1672,7 +1760,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
         <div style={{
           fontSize: 14,
           fontWeight: 700,
-          color: "#475569",
+          color: "var(--text)",
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
           display: 'flex',
@@ -1807,7 +1895,7 @@ function PlanCard({ plan, onDelete, onEdit }) {
 
       <div style={{ fontSize: 42, fontWeight: 950, color: "#ffffff", marginBottom: 12, letterSpacing: "-2px", display: 'flex', alignItems: 'baseline', position: 'relative', zIndex: 2 }}>
         {plan.price === 0 ? "Free" : `₹${plan.price}`}
-        <span style={{ fontSize: 13, color: "#64748b", fontWeight: 700, letterSpacing: 0, marginLeft: 2 }}>/{plan.billingCycle.toLowerCase()}</span>
+        <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700, letterSpacing: 0, marginLeft: 2 }}>/{plan.billingCycle.toLowerCase()}</span>
       </div>
 
       <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 32, lineHeight: 1.6, fontWeight: 500, position: 'relative', zIndex: 2 }}>
@@ -1831,7 +1919,7 @@ function PlanCard({ plan, onDelete, onEdit }) {
             <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Icon name="check" size={10} color="#475569" />
             </div>
-            <span style={{ fontSize: 13, color: "#475569", fontWeight: 500 }}>Base system protocols</span>
+            <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Base system protocols</span>
           </div>
         )}
       </div>

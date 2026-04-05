@@ -53,9 +53,9 @@ const ConsoleSidebar = ({
     return (
         <aside style={{
             width: sidebarOpen ? 280 : 80,
-            background: "rgba(255, 255, 255, 0.8)",
+            background: "var(--surface)",
             backdropFilter: "blur(20px) saturate(180%)",
-            borderRight: "1px solid rgba(15, 23, 42, 0.08)",
+            borderRight: "1px solid var(--border)",
             display: "flex",
             flexDirection: "column",
             transition: "all .4s cubic-bezier(0.19, 1, 0.22, 1)",
@@ -71,11 +71,12 @@ const ConsoleSidebar = ({
                 .sidebar-label {
                     font-size: 10px;
                     font-weight: 800;
-                    color: #475569;
+                    color: var(--muted);
                     padding: 32px 28px 12px;
                     text-transform: uppercase;
                     letter-spacing: 0.15em;
                     font-family: var(--ff-mono, monospace);
+                    opacity: 0.8;
                 }
                 .sidebar-item {
                     display: flex;
@@ -86,23 +87,24 @@ const ConsoleSidebar = ({
                     border-radius: 14px;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-                    color: #1e2b3c;
+                    color: var(--muted);
                     font-weight: 700;
                     font-size: 14px;
                     position: relative;
                 }
                 .sidebar-item:hover {
-                    color: #1e1b4b;
-                    background: rgba(15, 23, 42, 0.03);
+                    color: var(--text);
+                    background: var(--glass-bg);
                     transform: translateX(4px);
+                    box-shadow: 0 4px 12px var(--theme-border);
                 }
                 .sidebar-item.active {
-                    color: #4f46e5;
-                    background: #ffffff;
+                    color: var(--accent);
+                    background: var(--surface);
                     box-shadow: 
-                        0 10px 25px -5px rgba(79, 70, 229, 0.1),
+                        0 10px 25px -5px rgba(79, 70, 229, 0.15),
                         0 8px 10px -6px rgba(79, 70, 229, 0.1),
-                        inset 0 1px 0 rgba(255,255,255,1);
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
                     transform: translateX(6px);
                 }
                 .sidebar-item.active::before {
@@ -112,9 +114,9 @@ const ConsoleSidebar = ({
                     top: 15%;
                     height: 70%;
                     width: 4px;
-                    background: #4f46e5;
+                    background: var(--accent);
                     border-radius: 0 4px 4px 0;
-                    box-shadow: 0 0 10px rgba(79, 70, 229, 0.5);
+                    box-shadow: 0 0 10px var(--accent);
                 }
                 .sidebar-item svg {
                     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -128,7 +130,7 @@ const ConsoleSidebar = ({
                     gap: 14px;
                     padding: 14px 28px;
                     cursor: pointer;
-                    color: #1e2b3c;
+                    color: var(--muted);
                     font-weight: 700;
                     font-size: 14px;
                     transition: all 0.2s;
@@ -136,49 +138,81 @@ const ConsoleSidebar = ({
                     border-radius: 12px;
                 }
                 .sidebar-footer-item:hover {
-                    color: #1e1b4b;
-                    background: rgba(15, 23, 42, 0.03);
+                    color: var(--text);
+                    background: var(--glass-bg);
                 }
                 .sidebar-footer-item.logout {
-                    color: #f43f5e;
+                    color: var(--red);
                 }
                 .sidebar-footer-item.logout:hover {
-                    background: rgba(244, 63, 94, 0.05);
+                    background: rgba(239, 68, 68, 0.05);
                 }
                 .workspace-card {
-                    margin: 0 16px 24px;
+                    margin: 0 24px 32px;
                     padding: 24px;
-                    border-radius: 12px;
-                    background: #ffffff;
-                    border: 1px solid rgba(15, 23, 42, 0.06);
+                    border-radius: 20px;
+                    background: var(--surface);
+                    border: 1px solid var(--border);
                     box-shadow: 
-                        0 20px 25px -5px rgba(0,0,0,0.03),
-                        0 8px 10px -6px rgba(0,0,0,0.03),
-                        inset 0 1px 1px rgba(255,255,255,1);
+                        0 20px 40px -15px rgba(0,0,0,0.1),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.8);
                     position: relative;
                     overflow: hidden;
-                    transition: all 0.3s ease;
+                    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+                    perspective: 1000px;
+                }
+                .workspace-card::before {
+                    content: '';
+                    position: absolute;
+                    top: -100%;
+                    left: 0;
+                    width: 100%;
+                    height: 50%;
+                    background: linear-gradient(
+                        to bottom,
+                        transparent,
+                        rgba(99, 102, 241, 0.1),
+                        transparent
+                    );
+                    animation: scanningLine 4s linear infinite;
+                    pointer-events: none;
                 }
                 .workspace-card:hover {
-                    transform: translateY(-2px);
+                    transform: translateY(-4px) rotateX(2deg) rotateY(-1deg);
                     box-shadow: 
-                        0 25px 30px -5px rgba(0,0,0,0.05),
-                        0 12px 15px -6px rgba(0,0,0,0.05);
+                        0 30px 60px -20px rgba(0,0,0,0.15),
+                        0 0 0 1px var(--accent);
+                    border-color: transparent;
                 }
                 .workspace-card::after {
                     content: '';
                     position: absolute;
-                    top: 0; right: 0;
-                    width: 70px; height: 70px;
-                    background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.05), transparent 70%);
+                    inset: 0;
+                    background: radial-gradient(circle at 100% 0%, rgba(99, 102, 241, 0.08), transparent 70%);
                     pointer-events: none;
+                }
+                @keyframes scanningLine {
+                    0% { top: -100%; }
+                    100% { top: 200%; }
+                }
+                .dark-theme .workspace-card {
+                    background: rgba(30, 41, 59, 0.6);
+                    backdrop-filter: blur(12px);
+                    box-shadow: 
+                        0 20px 40px -15px rgba(0,0,0,0.4),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+                }
+                .dark-theme .workspace-card:hover {
+                    box-shadow: 
+                        0 30px 60px -20px rgba(0,0,0,0.6),
+                        0 0 15px rgba(99, 102, 241, 0.2);
                 }
             `}</style>
 
             {/* Workspace Section - Persistent Operational HUD */}
             <div className="workspace-card" style={{
-                margin: sidebarOpen ? "0 16px 24px" : "0 8px 24px",
-                padding: sidebarOpen ? "18px 20px" : "16px 8px",
+                margin: sidebarOpen ? "0 24px 32px" : "0 8px 32px",
+                padding: sidebarOpen ? "20px" : "16px 8px",
                 textAlign: sidebarOpen ? "left" : "center",
                 display: "flex",
                 flexDirection: "column",
@@ -190,52 +224,53 @@ const ConsoleSidebar = ({
                 {sidebarOpen ? (
                     <>
                         <div style={{
-                            fontSize: 18,
-                            fontWeight: 800,
-                            color: "#1e1b4b",
-                            fontFamily: 'var(--ff-sans)',
-                            letterSpacing: '-0.5px',
-                            marginBottom: 14
+                            fontSize: 16,
+                            fontWeight: 900,
+                            color: "var(--text)",
+                            fontFamily: 'var(--ff-serif)',
+                            letterSpacing: '-0.02em',
+                            marginBottom: 16,
+                            textTransform: 'uppercase'
                         }}>
                             {tenantName || 'Acme SaaS'}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                             <div style={{
-                                background: "#6366f1",
+                                background: "var(--accent)",
                                 color: "white",
-                                fontSize: '9px',
-                                fontWeight: 800,
-                                padding: '3px 10px',
-                                borderRadius: '100px',
+                                fontSize: '8px',
+                                fontWeight: 900,
+                                padding: '4px 10px',
+                                borderRadius: '6px',
                                 boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
-                                letterSpacing: '0.05em',
-                                whiteSpace: 'nowrap'
+                                letterSpacing: '0.1em',
+                                whiteSpace: 'nowrap',
+                                textTransform: 'uppercase'
                             }}>
                                 {currentPlan || 'FREE'}
                             </div>
 
                             {daysRemaining !== undefined && (
                                 <div style={{
-                                    fontSize: '10px',
-                                    fontWeight: 700,
-                                    color: daysRemaining > 10 ? '#10b981' : '#ef4444',
-                                    background: daysRemaining > 10 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                                    padding: '3px 12px',
-                                    borderRadius: '100px',
+                                    fontSize: '9px',
+                                    fontWeight: 800,
+                                    color: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
+                                    background: 'var(--glass-bg)',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '5px',
-                                    boxShadow: `0 0 12px ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}`,
-                                    border: `1px solid ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}`,
+                                    gap: '6px',
+                                    border: `1px solid var(--theme-border)`,
                                     whiteSpace: 'nowrap'
                                 }}>
                                     <div style={{
                                         width: 5, height: 5, borderRadius: '50%',
-                                        background: daysRemaining > 10 ? '#10b981' : '#ef4444',
-                                        boxShadow: `0 0 8px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}`
+                                        background: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
+                                        boxShadow: `0 0 8px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`
                                     }} />
-                                    {daysRemaining} days left
+                                    {daysRemaining}D REMAINING
                                 </div>
                             )}
                         </div>
@@ -244,27 +279,27 @@ const ConsoleSidebar = ({
                     <>
                         {/* Compact HUD Protocols (Lights & Plan) when collapsed */}
                         <div style={{
-                            width: 12, height: 12, borderRadius: "50%",
-                            background: daysRemaining > 10 ? '#10b981' : '#ef4444',
-                            boxShadow: `0 0 15px ${daysRemaining > 10 ? '#10b981' : '#ef4444'}, 0 0 5px rgba(255,255,255,0.8)`,
-                            marginBottom: 14,
+                            width: 10, height: 10, borderRadius: "50%",
+                            background: daysRemaining > 10 ? 'var(--green)' : 'var(--red)',
+                            boxShadow: `0 0 15px ${daysRemaining > 10 ? 'var(--green)' : 'var(--red)'}`,
+                            marginBottom: 16,
                             position: 'relative'
                         }}>
                             <div style={{
                                 position: 'absolute',
                                 inset: -4,
                                 borderRadius: '50%',
-                                border: `1px solid ${daysRemaining > 10 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                                border: `1px solid var(--theme-border)`,
                                 opacity: 0.5
                             }} />
                         </div>
                         <div style={{
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: 900,
-                            padding: '3px 6px',
-                            background: "linear-gradient(135deg, #1e1b4b, #4f46e5)",
+                            padding: '4px 6px',
+                            background: "var(--accent)",
                             color: "white",
-                            borderRadius: 6,
+                            borderRadius: 4,
                             boxShadow: '0 4px 10px rgba(79, 70, 229, 0.3)',
                             letterSpacing: '0.05em'
                         }}>
@@ -276,14 +311,14 @@ const ConsoleSidebar = ({
 
             {/* Menu Section */}
             <div style={{ flex: 1 }}>
-                <div className="sidebar-label">{sidebarOpen ? "Menu" : ""}</div>
+                <div className="sidebar-label">{sidebarOpen ? "SYSTEM_PROTOCOLS" : ""}</div>
                 {menuItems.map(item => (
                     <div
                         key={item.id}
                         className={`sidebar-item ${activeTab === item.id ? "active" : ""}`}
                         onClick={() => handleNav(item.id)}
                     >
-                        <Icon name={item.icon} color={activeTab === item.id ? "#4f46e5" : "#475569"} />
+                        <Icon name={item.icon} color={activeTab === item.id ? "var(--accent)" : "var(--muted)"} />
                         {sidebarOpen && <span>{item.label}</span>}
                     </div>
                 ))}
@@ -291,30 +326,32 @@ const ConsoleSidebar = ({
 
             {/* Bottom Section */}
             <div style={{
-                borderTop: "1px solid rgba(15, 23, 42, 0.05)",
+                borderTop: "1px solid var(--theme-border)",
                 margin: "16px 16px 0",
                 paddingTop: 16
             }}>
                 <div className="sidebar-footer-item" onClick={() => setSidebarOpen(!sidebarOpen)}>
                     <div style={{
                         width: 32, height: 32, borderRadius: 10,
-                        background: "rgba(15, 23, 42, 0.03)",
+                        background: "var(--glass-bg)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        transition: "all 0.3s"
+                        transition: "all 0.3s",
+                        border: "1px solid var(--theme-border)"
                     }}>
-                        <Icon name="chevronLeft" size={16} style={{ transform: sidebarOpen ? "none" : "rotate(180deg)" }} />
+                        <Icon name="chevronLeft" size={16} color="var(--muted)" style={{ transform: sidebarOpen ? "none" : "rotate(180deg)" }} />
                     </div>
-                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 12, letterSpacing: '0.05em' }}>SYSTEM.COLLAPSE()</span>}
+                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 11, letterSpacing: '0.05em', color: "var(--muted)" }}>SYSTEM.COLLAPSE()</span>}
                 </div>
                 <div className="sidebar-footer-item logout" onClick={handleLogout}>
                     <div style={{
                         width: 32, height: 32, borderRadius: 10,
-                        background: "rgba(244, 63, 94, 0.05)",
-                        display: "flex", alignItems: "center", justifyContent: "center"
+                        background: "rgba(239, 68, 68, 0.08)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        border: "1px solid rgba(239, 68, 68, 0.1)"
                     }}>
-                        <Icon name="logout" size={16} color="#f43f5e" />
+                        <Icon name="logout" size={16} color="var(--red)" />
                     </div>
-                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 12, letterSpacing: '0.05em' }}>AUTH.TERMINATE()</span>}
+                    {sidebarOpen && <span style={{ fontFamily: "var(--ff-mono, monospace)", fontSize: 11, letterSpacing: '0.05em', color: "var(--red)" }}>AUTH.TERMINATE()</span>}
                 </div>
             </div>
         </aside>

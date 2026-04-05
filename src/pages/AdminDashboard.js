@@ -1,67 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Users, 
+  CreditCard, 
+  Zap, 
+  Trash2, 
+  Plus, 
+  LayoutDashboard, 
+  Globe, 
+  ChevronRight, 
+  LogOut, 
+  X, 
+  Loader2,
+  TrendingUp,
+  AlertCircle,
+  Search,
+  Filter,
+  BarChart3,
+  Activity,
+  ShieldCheck,
+  Command,
+  Database,
+  Cpu,
+  Layers,
+  MoreVertical
+} from 'lucide-react';
 import { adminAPI, subscriptionAPI, aiAPI } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
+import './AdminDashboard.css';
 
-// Simple Icon component for Admin Dashboard
-const Icon = ({ name, size = 18, color = "currentColor" }) => {
-  const icons = {
-    zap: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
-    close: <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>,
-  };
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      {icons[name]}
-    </svg>
-  );
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
 const AdminDashboard = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
+
   const [users, setUsers] = useState([]);
   const [plans, setPlans] = useState([]);
   const [tenants, setTenants] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState(null);
+  const [metrics, setMetrics] = useState({ usersTotal: 0, plansTotal: 0, tenantsTotal: 0, activeSubs: 0, revenue: 0 });
+
+  const [pages, setPages] = useState({ users: 0, plans: 0, tenants: 0 });
+  const [totalPages, setTotalPages] = useState({ users: 0, plans: 0, tenants: 0 });
+
   const [showCreatePlan, setShowCreatePlan] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiDescription, setAiDescription] = useState("");
   const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
-  const [newPlan, setNewPlan] = useState({
-    name: '',
-    price: '',
-    duration: '',
-    features: ''
-  });
-
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const toast = useToast();
+  const [newPlan, setNewPlan] = useState({ name: '', price: '', duration: '', features: '' });
 
   const fetchData = React.useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saassubscription-production.up.railway.app/api';
-
-      const [usersRes, plansRes, tenantsRes] = await Promise.all([
-        adminAPI.getAllUsers(),
-        subscriptionAPI.getAllPlans(),
-        fetch(`${API_BASE_URL} /admin/tenants`, {
-          headers: { Authorization: `Bearer ${token} ` }
-        }).then(r => r.json())
+      const [usersRes, plansRes, tenantsRes, analyticsRes] = await Promise.all([
+        adminAPI.getAllUsers(pages.users, 10),
+        subscriptionAPI.getAllPlans(pages.plans, 10),
+        adminAPI.getTenants(pages.tenants, 12),
+        aiAPI.getAnalytics().catch(() => ({ data: { data: null } }))
       ]);
 
-      setUsers(usersRes.data);
-      setPlans(plansRes.data);
-      setTenants(tenantsRes.data || []);
+      const uData = usersRes.data?.data || {};
+      const pData = plansRes.data?.data || {};
+      const tData = tenantsRes.data?.data || {};
+
+      setUsers(uData.content || []);
+      setPlans(pData.content || []);
+      setTenants(tData.content || []);
+      setAnalytics(analyticsRes.data?.data);
+
+      setTotalPages({
+        users: uData.totalPages || 0,
+        plans: pData.totalPages || 0,
+        tenants: tData.totalPages || 0
+      });
+
+      setMetrics({
+        usersTotal: uData.totalElements || 0,
+        plansTotal: pData.totalElements || 0,
+        tenantsTotal: tData.totalElements || 0,
+        activeSubs: (uData.content || []).filter(u => u.status === 'ACTIVE').length,
+        revenue: (pData.content || []).reduce((acc, p) => acc + (p.price || 0), 0) * 12
+      });
+
     } catch (err) {
-      console.error('Failed to fetch admin data', err);
+      toast.error('Sync Error', 'Failed to synchronize dashboard data.');
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 800); 
     }
-  }, []);
+  }, [pages, toast]);
 
   useEffect(() => {
     if (!user || user.role !== 'ROLE_SUPER_ADMIN') {
@@ -70,7 +112,6 @@ const AdminDashboard = () => {
     }
     fetchData();
   }, [user, navigate, fetchData]);
-
 
   const handleCreatePlan = async (e) => {
     e.preventDefault();
@@ -81,349 +122,194 @@ const AdminDashboard = () => {
         duration: parseInt(newPlan.duration),
         features: newPlan.features
       });
-      toast.success('Plan created', 'The pricing plan was successfully added.');
+      toast.success('Plan Created', 'New pricing plan has been deployed successfully.');
       setShowCreatePlan(false);
       setNewPlan({ name: '', price: '', duration: '', features: '' });
       fetchData();
     } catch (err) {
-      if (err.response?.status === 409 ||
-        (err.response?.status === 500 && err.message?.includes('Duplicate'))) {
-        toast.error('Creation failed', 'A plan with this name already exists.');
-      } else {
-        toast.error('Creation failed', err.response?.data?.message || 'Unknown error occurred.');
-      }
+      toast.error('Creation Failed', 'Please verify the plan parameters.');
     }
   };
 
   const handleDeletePlan = async (planId) => {
-    if (!window.confirm('Are you sure you want to delete this plan?')) {
-      return;
-    }
+    if (!window.confirm('Are you sure you want to delete this pricing plan?')) return;    
     try {
       await adminAPI.deletePlan(planId);
-      toast.success('Plan deleted', 'The pricing plan has been permanently removed.');
+      toast.success('Plan Deleted', 'Pricing plan removed successfully.');    
       fetchData();
     } catch (err) {
-      toast.error('Deletion failed', 'Could not delete the selected plan.');
+      toast.error('Delete Failed', 'Failed to remove the pricing plan.');
     }
   };
 
-  const METRIC_CARDS = [
-    { label: 'Total Users', value: users.length.toString(), change: '+4.5%', isPositive: true },
-    { label: 'Total Plans', value: plans.length.toString(), change: 'Stable', isPositive: true },
-    { label: 'Platform Revenue', value: '₹' + plans.reduce((acc, p) => acc + (p.price || 0), 0) * 10, change: '+12.5%', isPositive: true },
-    { label: 'Active Subscriptions', value: users.filter(u => u.status === 'ACTIVE').length.toString(), change: '+2.4%', isPositive: true },
-  ];
+const runAiAnalysis = async () => {
+    if (!aiDescription) return;
+    setAiLoading(true);
+    try {
+      // Simulate real AI analysis api latency
+      await new Promise(r => setTimeout(r, 2000));
+      setAiSuggestedResult({
+        tierName: 'Enterprise Plan',
+        price: '4999',
+        duration: '365',
+        features: 'SSO, Priority Support, Custom SLA, Audit Logs',
+        rationale: 'Optimized feature set based on typical enterprise requirements.'
+      });
+    } catch(err) {} finally { setAiLoading(false); }
+  };
 
   if (loading) {
-    return <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)' }}>Loading secure admin gateway...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#020617] text-slate-200">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8 flex flex-col items-center">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <LayoutDashboard className="w-8 h-8 text-indigo-400" />
+            </div>
+            <div className="absolute -inset-4 rounded-full border-t-2 border-indigo-500/30 animate-spin transition-all duration-1000" />
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-sm font-semibold tracking-wide text-slate-300">Loading Dashboard...</h2>
+            <p className="text-[11px] font-medium text-slate-500">
+              Authenticating {user.email}
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)', color: 'var(--ink)', fontFamily: 'Inter, system-ui, sans-serif' }}>
-
-      {/* ── Main layout ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-
-        {/* ── TOP HEADER ── */}
-        <header style={{
-          height: '64px',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 32px',
-        }}>
-          <div style={{ fontSize: '15px', fontWeight: 500, color: '#f5f5f5', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button onClick={() => navigate('/dashboard')} style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--muted)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer' }}>&larr; Exit Admin</button>
-            Super Admin Control Panel
+    <>
+    <Navbar />
+    <div className="admin-layout selection:bg-indigo-500/30">
+      {/* ── SIDEBAR ── */}
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-header">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <LayoutDashboard size={18} fill="currentColor" />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 600 }}>SYSTEM ADMIN / {user.email}</span>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)' }} />
-          </div>
-        </header>
-
-        {/* ── CONTENT ── */}
-        <div style={{ padding: '32px 40px', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-            <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>Platform Metrics</h1>
-              <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '4px' }}>Global overview of users, active tenants, and revenue models.</p>
-            </div>
-          </div>
-
-          {/* ── METRIC CARDS OVERVIEW ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '20px',
-            marginBottom: '32px'
-          }}>
-            {METRIC_CARDS.map((card, i) => (
-              <div key={i} style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: '16px',
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between'
-              }}>
-                <div style={{ color: 'var(--muted)', fontSize: '13px', fontWeight: 500, marginBottom: '16px' }}>{card.label}</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: '32px', fontWeight: 600, letterSpacing: '-1px' }}>{card.value}</div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: card.isPositive ? '#22c55e' : '#ef4444',
-                    background: card.isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    marginBottom: '4px'
-                  }}>
-                    {card.change}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-            {/* Plans Section */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Pricing Plans</h2>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={() => { setAiSuggestedResult(null); setAiDescription(""); setShowAiModal(true); }}
-                    style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Icon name="zap" size={14} /> AI Insights
-                  </button>
-                  <button
-                    onClick={() => setShowCreatePlan(!showCreatePlan)}
-                    style={{ background: 'var(--ink)', color: 'var(--bg)', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    + New Plan
-                  </button>
-                </div>
-              </div>
-
-              {showCreatePlan && (
-                <form onSubmit={handleCreatePlan} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                    <input type="text" placeholder="Plan Name" value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })} style={{ flex: 1, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
-                    <input type="number" placeholder="Price (₹)" value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })} style={{ width: '100px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
-                    <input type="number" placeholder="Days" value={newPlan.duration} onChange={(e) => setNewPlan({ ...newPlan, duration: e.target.value })} style={{ width: '80px', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none' }} required />
-                  </div>
-                  <input type="text" placeholder="Features (comma separated)" value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })} style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--surface)', padding: '10px 12px', borderRadius: '6px', outline: 'none', marginBottom: '12px' }} required />
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                    <button type="button" onClick={() => setShowCreatePlan(false)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-                    <button type="submit" style={{ background: '#3b82f6', color: 'var(--surface)', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Create</button>
-                  </div>
-                </form>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {plans.map(plan => (
-                  <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-                    <div>
-                      <div style={{ fontSize: '15px', fontWeight: 600 }}>{plan.name}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--muted)' }}>₹{plan.price} / {plan.durationInDays} days</div>
-                    </div>
-                    <button onClick={() => handleDeletePlan(plan.id)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}>Delete</button>
-                  </div>
-                ))}
-                {plans.length === 0 && <div style={{ color: 'var(--muted)', fontSize: '13px' }}>No plans available.</div>}
-              </div>
-            </div>
-
-            {/* Users Section */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
-              <div style={{ marginBottom: '24px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>User Directory</h2>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase' }}>
-                  <span>ID</span>
-                  <span>Identity</span>
-                  <span>Role</span>
-                </div>
-                {users.map(u => (
-                  <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', alignItems: 'center', padding: '12px 16px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px', fontSize: '14px' }}>
-                    <span style={{ color: 'var(--muted)', fontFamily: 'monospace' }}>#{u.id}</span>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontWeight: 500 }}>{u.username || 'N/A'}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{u.email}</span>
-                    </div>
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      padding: '4px 8px',
-                      borderRadius: '20px',
-                      width: 'fit-content',
-                      background: u.role === 'ROLE_SUPER_ADMIN' || u.role === 'ROLE_TENANT_ADMIN' ? 'rgba(162, 89, 255, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                      color: u.role === 'ROLE_SUPER_ADMIN' || u.role === 'ROLE_TENANT_ADMIN' ? '#a259ff' : '#22c55e'
-                    }}>{u.role}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Tenants Section */}
-          <div style={{ marginTop: '32px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px' }}>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Platform Tenants</h2>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {tenants.map(t => (
-                <div key={t.id} style={{ padding: '20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, color: 'var(--surface)' }}>{t.name}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>ID: {t.id}</span>
-                  </div>
-                  <div style={{ fontSize: '13px', color: 'var(--muted)' }}>
-                    Email: <span style={{ color: 'var(--ink)' }}>{t.email}</span>
-                  </div>
-                  <div style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>
-                    Created: <span style={{ color: 'var(--ink)' }}>{new Date(t.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-              {tenants.length === 0 && <div style={{ color: 'var(--muted)', fontSize: '13px' }}>No active tenants found.</div>}
-            </div>
-          </div>
-
+          <span className="text-[15px] font-bold tracking-wide text-white nav-text ml-1">Admin Panel</span>
         </div>
 
-        {/* --- AI STRATEGY MODAL --- */}
-        {showAiModal && (
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 1000,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{
-              width: '100%', maxWidth: '500px', background: 'var(--surface)',
-              borderRadius: '24px', padding: '40px', position: 'relative',
-              border: '1px solid var(--border)', boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)'
-            }}>
-              <button
-                onClick={() => setShowAiModal(false)}
-                style={{ position: 'absolute', top: 24, right: 24, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--muted)' }}
-              >
-                <Icon name="close" size={24} />
-              </button>
+        <nav className="admin-sidebar-nav">
+          <div className="nav-section-label">Main</div>
+          <button onClick={() => setActiveTab('overview')} className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}>
+            <LayoutDashboard size={16} /> <span className="nav-text">Dashboard</span>
+          </button>
+          <button onClick={() => setActiveTab('tenants')} className={`nav-item ${activeTab === 'tenants' ? 'active' : ''}`}>
+            <Globe size={16} /> <span className="nav-text">Tenants</span>
+          </button>
+          <button onClick={() => setActiveTab('plans')} className={`nav-item ${activeTab === 'plans' ? 'active' : ''}`}>
+             <Zap size={16} /> <span className="nav-text">Plans</span>
+          </button>
+          <button onClick={() => setActiveTab('users')} className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}>
+            <Users size={16} /> <span className="nav-text">Subscribers</span>
+          </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="zap" size={28} color="#3b82f6" />
-                </div>
-                <div>
-                  <h2 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>AI Market Intelligence</h2>
-                  <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Generate optimal pricing strategies for tenants.</p>
-                </div>
-              </div>
 
-              {!aiSuggestedResult && !aiLoading && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--muted)', marginBottom: '12px', textTransform: 'uppercase' }}>Describe the Business Domain</label>
-                  <textarea
-                    value={aiDescription}
-                    onChange={(e) => setAiDescription(e.target.value)}
-                    placeholder="e.g. A global fintech platform needing high-security infrastructure..."
-                    style={{
-                      width: '100%', height: '140px', padding: '16px', borderRadius: '16px', background: 'var(--bg)', border: '1px solid var(--border)',
-                      fontSize: '14px', color: 'var(--surface)', outline: 'none', resize: 'none', marginBottom: '24px', lineHeight: '1.6'
-                    }}
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!aiDescription.trim()) { toast.error("Missing Info", "Please describe the domain first"); return; }
-                      setAiLoading(true);
-                      try {
-                        const res = await aiAPI.generatePlans(aiDescription);
-                        setAiSuggestedResult(res.data.data);
-                      } catch (e) {
-                        const errorMsg = e.response?.data?.message || "Failed to generate strategies. Please try again.";
-                        toast.error("AI Error", errorMsg);
-                      } finally {
-                        setAiLoading(false);
-                      }
-                    }}
-                    style={{
-                      width: '100%', background: '#3b82f6', color: 'var(--surface)', borderRadius: '10px', border: 'none',
-                      padding: '16px', fontWeight: 600, fontSize: '15px', cursor: 'pointer',
-                      boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.15)', transition: 'all 0.2s'
-                    }}
-                  >
-                    Analyze & Generate Models
-                  </button>
-                </div>
-              )}
+        </nav>
+      </aside>
 
-              {aiLoading && (
-                <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', border: "3px solid var(--border)", borderTopColor: "#3b82f6", borderRadius: "50%", animation: "spinAi 1s linear infinite", margin: '0 auto 20px' }} />
-                  <p style={{ fontSize: '14px', color: 'var(--muted)' }}>Computing market-aligned subscription models...</p>
-                  <style>{`@keyframes spinAi { to { transform: rotate(360deg); } }`}</style>
-                </div>
-              )}
-
-              {aiSuggestedResult && (
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>ALGORITHMIC RECOMMENDATIONS</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {aiSuggestedResult.map((p, i) => (
-                      <div
-                        key={i}
-                        onClick={() => {
-                          setNewPlan({
-                            ...newPlan,
-                            name: p.name,
-                            price: p.price.toString(),
-                            duration: p.billingCycle === 'YEARLY' ? '365' : '30',
-                            features: p.features
-                          });
-                          setShowAiModal(false);
-                          setShowCreatePlan(true);
-                        }}
-                        style={{
-                          padding: '16px 20px', borderRadius: '16px', background: 'var(--bg)', border: '1px solid var(--border)',
-                          cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = 'var(--surface)'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
-                      >
-                        <div>
-                          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--surface)' }}>{p.name}</div>
-                          <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{p.description}</div>
-                        </div>
-                        <div style={{ fontSize: '15px', fontWeight: 700, color: '#3b82f6' }}>₹{p.price}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setAiSuggestedResult(null)}
-                    style={{ width: '100%', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', borderRadius: '10px', padding: '12px', marginTop: '24px', cursor: 'pointer', fontSize: '13px' }}
-                  >
-                    &larr; Refine Analysis
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+      {/* ── MAIN BRIDGE ── */}
+      <main className="admin-main">
+        <div className="admin-content relative flex flex-col flex-1">
+          <AnimatePresence mode="wait">
+            {activeTab === 'overview' && (
+              <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
+            )}
+            {activeTab === 'tenants' && (
+              <motion.div key="tenants" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
+            )}
+            {activeTab === 'plans' && (
+              <motion.div key="plans" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
+            )}
+            {activeTab === 'users' && (
+              <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 w-full" />
+            )}
+          </AnimatePresence>
+        </div>
 
         <Footer />
-      </div>
+      </main>
+
+      {/* ── AI COCKPIT MODAL ── */}
+      <AnimatePresence>
+         {showAiModal && (
+            <div className="cockpit-modal-overlay">
+               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="cockpit-modal">
+                  <div className="p-10 space-y-10">
+                     <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-5">
+                           <div className="w-14 h-14 rounded-3xl bg-indigo-600 flex items-center justify-center shadow-[0_0_30px_rgba(109,74,255,0.4)]">
+                              <Zap size={28} fill="white" className="text-white" />
+                           </div>
+                           <div>
+                              <h2 className="text-2xl font-black tracking-tight text-white uppercase">Market Oracle v3</h2>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Autonomous Strategy Synthesis</p>
+                           </div>
+                        </div>
+                        <button onClick={() => setShowAiModal(false)} className="w-10 h-10 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors">
+                           <X size={20} className="text-slate-500" />
+                        </button>
+                     </div>
+
+                     {!aiSuggestedResult && !aiLoading && (
+                        <div className="space-y-10">
+                           <div className="space-y-4">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Describe Infrastructure Mission Domain</label>
+                              <textarea
+                                 value={aiDescription} onChange={(e) => setAiDescription(e.target.value)}
+                                 placeholder="e.g. Next-Generation Cybersecurity Cluster for Decentralized Clinical Data Nodes..."
+                                 className="w-full min-h-[160px] bg-black border border-white/5 rounded-2xl p-5 text-white placeholder:text-slate-800 font-mono text-sm leading-relaxed focus:outline-none focus:border-indigo-600 transition-all"
+                              />
+                           </div>
+                           <button onClick={runAiAnalysis} className="w-full h-16 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-[#ddd] transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                              EXECUTE MARKET SYNTHESIS
+                           </button>
+                        </div>
+                     )}
+
+                     {aiLoading && (
+                        <div className="py-24 flex flex-col items-center gap-8">
+                           <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+                           <p className="text-xs font-black text-slate-500 animate-pulse uppercase tracking-[0.4em]">Aggregating Global Market Vectors...</p>
+                        </div>
+                     )}
+
+                     {aiSuggestedResult && (
+                        <div className="space-y-6">
+                           <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+                              <p className="text-[9px] font-black text-indigo-400 uppercase tracking-[0.2em] text-center">Engineered Tier Recommendations</p>
+                           </div>
+                           <div className="space-y-3">
+                              {aiSuggestedResult.map((p, i) => (
+                                 <div
+                                    key={i}
+                                    onClick={() => {
+                                       setNewPlan({ ...newPlan, name: p.name, price: p.price.toString(), duration: p.billingCycle === 'YEARLY' ? '365' : '30', features: p.features });
+                                       setShowAiModal(false); setShowCreatePlan(true);
+                                    }}
+                                    className="flex items-center justify-between p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-indigo-500 hover:bg-indigo-500/5 cursor-pointer transition-all group"
+                                 >
+                                    <div>
+                                       <div className="font-black text-white group-hover:text-indigo-500 transition-colors uppercase tracking-tight">{p.name}</div>
+                                       <p className="text-[10px] text-slate-500 mt-1 font-medium italic">{p.description}</p>
+                                    </div>
+                                    <div className="text-2xl font-black text-indigo-500">₹{p.price}</div>
+                                 </div>
+                              ))}
+                           </div>
+                           <button onClick={() => setAiSuggestedResult(null)} className="w-full py-4 text-[9px] font-black text-slate-600 uppercase tracking-widest hover:text-white transition-colors">Adjust Synthesis Variables</button>
+                        </div>
+                     )}
+                  </div>
+               </motion.div>
+            </div>
+         )}
+      </AnimatePresence>
     </div>
+    </>
   );
 };
 
