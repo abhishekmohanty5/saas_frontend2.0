@@ -23,7 +23,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { adminAPI, aiAPI, subscriptionAPI } from '../services/api';
+import { adminAPI, aiAPI, publicAPI, subscriptionAPI } from '../services/api';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
 import Navbar from '../components/Navbar';
@@ -229,6 +229,142 @@ const getEntityName = (entity, fallback = 'Untitled record') =>
 
 const getEntityEmail = (entity) =>
   entity?.email || entity?.ownerEmail || entity?.adminEmail || entity?.contactEmail || 'No email';
+
+const getCollectionState = (response) => {
+  const candidates = [response?.data?.data, response?.data, response];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return {
+        items: candidate,
+        totalPages: candidate.length ? 1 : 0,
+        totalElements: candidate.length,
+      };
+    }
+
+    if (candidate && typeof candidate === 'object') {
+      const collection =
+        candidate.content ??
+        candidate.items ??
+        candidate.results ??
+        candidate.plans ??
+        candidate.data;
+
+      if (Array.isArray(collection)) {
+        return {
+          items: collection,
+          totalPages: Number(candidate.totalPages || candidate.pages || (collection.length ? 1 : 0)),
+          totalElements: Number(candidate.totalElements || candidate.total || candidate.count || collection.length),
+        };
+      }
+    }
+  }
+
+  return {
+    items: [],
+    totalPages: 0,
+    totalElements: 0,
+  };
+};
+
+const mergeUniqueStrings = (...values) =>
+  [...new Set(values.flat().map((value) => String(value || '').trim()).filter(Boolean))];
+
+const getDefaultPlanFeatureList = (planName) => {
+  const key = String(planName || '').trim().toLowerCase();
+
+  if (key === 'starter') {
+    return ['Core API access', 'Workspace controls', 'Email support', 'Monthly usage insights'];
+  }
+
+  if (key === 'pro' || key === 'growth' || key === 'growth plus') {
+    return ['Higher usage limits', 'Priority support', 'Advanced analytics', 'Automation workflows'];
+  }
+
+  if (key === 'enterprise' || key === 'enterprise guard') {
+    return ['SSO and governance', 'Dedicated support', 'Custom onboarding', 'Executive reviews'];
+  }
+
+  return ['API access', 'Admin visibility', 'Plan controls', 'Billing coverage'];
+};
+
+const getPlanFeatureList = (plan) => {
+  const featureSource = plan?.featureList ?? plan?.features ?? plan?.capabilities ?? plan?.highlights ?? '';
+
+  if (Array.isArray(featureSource)) {
+    const normalized = mergeUniqueStrings(
+      featureSource.map((item) => (typeof item === 'string' ? item : item?.text || item?.name || item?.label))
+    );
+    return normalized.length ? normalized : getDefaultPlanFeatureList(plan?.name);
+  }
+
+  if (typeof featureSource === 'string') {
+    const normalized = mergeUniqueStrings(featureSource.split(/[,\n]/));
+    return normalized.length ? normalized : getDefaultPlanFeatureList(plan?.name);
+  }
+
+  return getDefaultPlanFeatureList(plan?.name);
+};
+
+const normalizePlatformPlan = (plan, fallbackIndex = 0) => {
+  const id = plan?.id ?? plan?.planId ?? plan?.enginePlanId ?? `plan-${fallbackIndex}`;
+  const name = toTitleCase(plan?.name || plan?.planName || plan?.title || `Plan ${fallbackIndex + 1}`);
+  const active =
+    typeof plan?.active === 'boolean'
+      ? plan.active
+      : isActiveValue(plan?.status || plan?.planStatus || plan?.state || 'ACTIVE');
+  const status = active ? 'ACTIVE' : String(plan?.status || plan?.planStatus || 'INACTIVE').toUpperCase();
+  const duration = getPlanDuration(plan);
+  const features = getPlanFeatureList(plan);
+
+  return {
+    ...plan,
+    id,
+    name,
+    active,
+    status,
+    durationInDays: duration,
+    price: Number(plan?.price ?? plan?.amount ?? plan?.monthlyPrice ?? 0),
+    description:
+      plan?.description ||
+      `Billed every ${duration} days with ${active ? 'active' : 'inactive'} visibility in the platform catalog.`,
+    featureList: features,
+    featuresText: features.join(', '),
+  };
+};
+
+const getPlanCatalogKey = (plan) => {
+  if (plan?.id !== undefined && plan?.id !== null) return `id:${plan.id}`;
+  return `name:${String(plan?.name || '').trim().toLowerCase()}`;
+};
+
+const mergePlanCatalogs = (enginePlans, publicPlans) => {
+  const merged = new Map();
+
+  [...publicPlans, ...enginePlans].forEach((rawPlan, index) => {
+    const plan = normalizePlatformPlan(rawPlan, index);
+    const key = getPlanCatalogKey(plan);
+    const current = merged.get(key);
+
+    if (!current) {
+      merged.set(key, plan);
+      return;
+    }
+
+    const featureList = mergeUniqueStrings(current.featureList, plan.featureList);
+    merged.set(key, {
+      ...current,
+      ...plan,
+      active: typeof plan.active === 'boolean' ? plan.active : current.active,
+      featureList,
+      featuresText: featureList.join(', '),
+      description: plan.description || current.description,
+      price: Number.isFinite(Number(plan.price)) && Number(plan.price) > 0 ? Number(plan.price) : current.price,
+    });
+  });
+
+  return Array.from(merged.values()).sort((left, right) => Number(right?.price || 0) - Number(left?.price || 0));
+};
 
 const matchesSearch = (query, values) => {
   const normalized = String(query || '').trim().toLowerCase();
@@ -453,20 +589,22 @@ const AdminDashboard = () => {
         setRefreshing(true);
       }
 
-      const [usersRes, plansRes, tenantsRes, analyticsRes] = await Promise.all([
+      const [usersRes, plansRes, publicPlansRes, tenantsRes, analyticsRes] = await Promise.all([
         adminAPI.getAllUsers(pages.users, PAGE_SIZE.users),
-        subscriptionAPI.getAllPlans(pages.plans, PAGE_SIZE.plans),
+        subscriptionAPI.getAllPlans(pages.plans, PAGE_SIZE.plans).catch(() => ({ data: { data: [] } })),
+        publicAPI.getAllPlans(0, PAGE_SIZE.plans * 4).catch(() => ({ data: { data: [] } })),
         adminAPI.getTenants(pages.tenants, PAGE_SIZE.tenants),
         aiAPI.getAnalytics().catch(() => ({ data: { data: null } })),
       ]);
 
-      const usersData = usersRes.data?.data || {};
-      const plansData = plansRes.data?.data || {};
-      const tenantsData = tenantsRes.data?.data || {};
+      const usersData = getCollectionState(usersRes);
+      const plansData = getCollectionState(plansRes);
+      const publicPlansData = getCollectionState(publicPlansRes);
+      const tenantsData = getCollectionState(tenantsRes);
 
-      const nextUsers = Array.isArray(usersData.content) ? usersData.content : [];
-      const nextPlans = Array.isArray(plansData.content) ? plansData.content : [];
-      const nextTenants = Array.isArray(tenantsData.content) ? tenantsData.content : [];
+      const nextUsers = Array.isArray(usersData.items) ? usersData.items : [];
+      const nextPlans = mergePlanCatalogs(plansData.items, publicPlansData.items);
+      const nextTenants = Array.isArray(tenantsData.items) ? tenantsData.items : [];
       const nextAnalytics = analyticsRes.data?.data || null;
 
       setUsers(nextUsers);
@@ -476,13 +614,13 @@ const AdminDashboard = () => {
 
       setTotalPages({
         users: Number(usersData.totalPages || 0),
-        plans: Number(plansData.totalPages || 0),
+        plans: Number(plansData.totalPages || (nextPlans.length ? 1 : 0)),
         tenants: Number(tenantsData.totalPages || 0),
       });
 
       setMetrics({
         usersTotal: Number(usersData.totalElements || nextUsers.length || 0),
-        plansTotal: Number(plansData.totalElements || nextPlans.length || 0),
+        plansTotal: Number(Math.max(plansData.totalElements || 0, publicPlansData.totalElements || 0, nextPlans.length)),
         tenantsTotal: Number(tenantsData.totalElements || nextTenants.length || 0),
         catalogValue: nextPlans.reduce((sum, plan) => sum + Number(plan?.price || 0), 0),
       });
@@ -652,7 +790,13 @@ const AdminDashboard = () => {
   );
 
   const filteredPlans = plans.filter((item) =>
-    matchesSearch(search.plans, [getEntityName(item, 'Plan'), item?.description, item?.price, getPlanStatus(item)])
+    matchesSearch(search.plans, [
+      getEntityName(item, 'Plan'),
+      item?.description,
+      item?.price,
+      getPlanStatus(item),
+      item?.featuresText,
+    ])
   );
 
   const filteredTenants = tenants.filter((item) =>
@@ -1075,14 +1219,18 @@ const AdminDashboard = () => {
               const status = getPlanStatus(plan);
               const planDuration = getPlanDuration(plan);
               const busy = planActionId === plan.id;
+              const featureList = Array.isArray(plan?.featureList) ? plan.featureList.slice(0, 4) : [];
+              const isPlanActive = isActiveValue(status);
 
               return (
                 <motion.article
                   key={plan.id || plan.name}
-                  className="admin-plan-card"
+                  className={`admin-plan-card ${isPlanActive ? 'admin-plan-card--active' : 'admin-plan-card--inactive'}`}
                   variants={cardMotion}
                   whileHover={subtleCardHover}
                 >
+                  <span className="admin-plan-card__beam" aria-hidden="true" />
+
                   <div className="admin-plan-card__top">
                     <div>
                       <div className="admin-plan-card__title">{getEntityName(plan, 'Plan')}</div>
@@ -1102,12 +1250,34 @@ const AdminDashboard = () => {
                   <div className="admin-plan-card__meta">
                     <span>{planDuration} days</span>
                     <span>ID #{plan.id || 'N/A'}</span>
-                    <span>{isActiveValue(status) ? 'Visible to admins' : 'Hidden from new upgrades'}</span>
+                    <span>{isPlanActive ? 'Visible in infra catalog' : 'Inactive in infra catalog'}</span>
+                  </div>
+
+                  <div className="admin-plan-card__statusline">
+                    <div className="admin-plan-card__statusmetric">
+                      <span>Lifecycle</span>
+                      <strong>{isPlanActive ? 'Active' : 'Inactive'}</strong>
+                    </div>
+                    <div className="admin-plan-card__statusmetric">
+                      <span>Catalog state</span>
+                      <strong>{isPlanActive ? 'Available for new upgrades' : 'Not available for new upgrades'}</strong>
+                    </div>
                   </div>
 
                   <div className="admin-plan-card__notes">
-                    <strong>Draft notes</strong>
-                    <p>{plan?.features || 'Feature notes are not currently provided by the backend for this plan.'}</p>
+                    <strong>Infra plan features</strong>
+                    {featureList.length ? (
+                      <div className="admin-plan-card__featurelist">
+                        {featureList.map((feature) => (
+                          <div key={`${plan.id}-${feature}`} className="admin-plan-card__feature">
+                            <span className="admin-plan-card__feature-dot" />
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>Feature notes are not currently provided by the backend for this plan.</p>
+                    )}
                   </div>
 
                   <div className="admin-plan-card__actions">
@@ -1141,7 +1311,7 @@ const AdminDashboard = () => {
             description={
               search.plans
                 ? 'Nothing on this page matches your search. Clear the filter or try another page.'
-                : 'No plans were returned by the pricing API.'
+                : 'No plans were returned by the platform plan APIs.'
             }
             action={
               search.plans ? (

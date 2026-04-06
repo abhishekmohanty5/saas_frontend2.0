@@ -1772,290 +1772,201 @@ function Footer() {
   );
 }
 
-
-function StatCard({ label, value, icon, iconBg, iconColor, sparklineColor }) {
+function StatCard({ label, value, icon, iconColor, subValue = "System Data Linked" }) {
+  const [hovered, setHovered] = useState(false);
+  
   return (
-    <div className="stat-card" style={{
-      background: "var(--glass-bg)",
-      backdropFilter: "blur(20px) saturate(160%)",
-      borderRadius: 24,
-      border: "1px solid var(--border)",
-      padding: 28,
-      display: "flex",
-      flexDirection: "column",
-      position: "relative",
-      overflow: "hidden",
-      boxShadow: `
-        0 10px 30px -10px var(--theme-border),
-        inset 0 1px 1px var(--glass-bg),
-        inset 0 -1px 20px rgba(99, 102, 241, 0.02)
-      `,
-      transition: "all 0.4s cubic-bezier(0.19, 1, 0.22, 1)",
-      cursor: "pointer",
-      perspective: '1000px'
-    }}>
-      <style>{`
-        .stat-card {
-            background-image: radial-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .stat-card:hover {
-            transform: translateY(-8px) rotateX(4deg) rotateY(-2deg);
-            box-shadow:
-                0 30px 60px -12px rgba(99, 102, 241, 0.15),
-                0 18px 36px -18px rgba(0, 0, 0, 0.2),
-                inset 0 1px 1px var(--glass-border);
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-        .stat-card:hover .spark-container {
-            transform: translateZ(20px) scale(1.05);
-        }
-        @keyframes drawPath {
-            0% { stroke-dashoffset: 200; opacity: 0.8; }
-            50% { stroke-dashoffset: 0; opacity: 1; }
-            100% { stroke-dashoffset: -200; opacity: 0.8; }
-        }
-        @keyframes scan {
-          0% { top: -10%; opacity: 0; }
-          10% { opacity: 0.5; }
-          90% { opacity: 0.5; }
-          100% { top: 110%; opacity: 0; }
-        }
-        @keyframes neuralPulse {
-          0% { opacity: 0.1; transform: scale(1); }
-          50% { opacity: 0.3; transform: scale(1.05); }
-          100% { opacity: 0.1; transform: scale(1); }
-        }
-        @keyframes blinkHUD {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-        .neural-grid {
-          background-image: 
-            linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
-          background-size: 40px 40px;
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          mask-image: radial-gradient(circle at center, black, transparent 80%);
-        }
-      `}</style>
-
-      {/* Engineering Corner Accents */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: 40, height: 40, borderLeft: '1px solid rgba(99, 102, 241, 0.1)', borderTop: '1px solid rgba(99, 102, 241, 0.1)', borderTopLeftRadius: 24 }} />
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, zIndex: 2 }}>
-        <div style={{
-          width: 48, height: 48, borderRadius: 14, background: iconBg,
+    <div 
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "var(--surface)",
+        backgroundImage: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.02))",
+        borderRadius: "24px",
+        border: "1px solid var(--theme-border)",
+        padding: "24px",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: hovered 
+          ? "0 30px 60px -12px var(--shadow-lg), 0 0 0 1px var(--theme-border)"
+          : "0 10px 30px -10px var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.05)",
+        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        transform: hovered ? "translateY(-4px) scale(1.02)" : "translateY(0) scale(1)",
+        cursor: "default",
+        height: "100%",
+        minHeight: "150px"
+      }}>
+      
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+        <div>
+          <div style={{ 
+            fontSize: "10px", 
+            fontWeight: 800, 
+            color: "var(--muted)", 
+            textTransform: "uppercase", 
+            letterSpacing: "1.2px",
+            marginBottom: 4
+          }}>
+            {label}
+          </div>
+          <div style={{ 
+            fontSize: "34px", 
+            fontWeight: 900, 
+            color: "var(--theme-text)", 
+            letterSpacing: "-1.5px",
+            lineHeight: 1
+          }}>
+            {value}
+          </div>
+        </div>
+        <div style={{ 
+          width: "44px", height: "44px", borderRadius: "12px", 
+          background: `${iconColor}15`, 
           display: "flex", alignItems: "center", justifyContent: "center",
-          border: `1px solid ${iconColor}22`,
-          boxShadow: `0 8px 16px ${iconColor}15`
+          border: `1px solid ${iconColor}25`,
+          color: iconColor,
+          boxShadow: `0 8px 16px ${iconColor}10`
         }}>
-          <Icon name={icon} color={iconColor} />
-        </div>
-        <div className="spark-container" style={{ transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)' }}>
-          <Sparkline color={sparklineColor} />
+          <Icon name={icon} size={20} color={iconColor} />
         </div>
       </div>
 
-      <div style={{ zIndex: 2 }}>
-        <div style={{
-          fontSize: 42,
-          fontWeight: 900,
-          color: "var(--text)",
-          marginBottom: 4,
-          letterSpacing: "-1.5px",
-          fontFamily: 'var(--ff-sans)',
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 8
-        }}>
-          {value}
-          <span style={{
-            fontSize: 10,
-            fontWeight: 800,
-            color: "var(--muted)",
-            letterSpacing: '0.1em',
-            fontFamily: 'var(--ff-mono)'
-          }}>[OPERATIONAL]</span>
-        </div>
-        <div style={{
-          fontSize: 14,
-          fontWeight: 700,
-          color: "var(--text)",
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8
-        }}>
-          <div style={{ width: 4, height: 4, borderRadius: '50%', background: iconColor }} />
-          {label}
-        </div>
+      <div style={{ 
+        marginTop: 'auto',
+        fontSize: "11px", 
+        fontWeight: 700, 
+        color: "var(--muted)",
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        background: 'rgba(0,0,0,0.03)',
+        padding: '6px 12px',
+        borderRadius: '100px',
+        width: 'fit-content',
+        border: '1px solid var(--theme-border)'
+      }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: iconColor, opacity: 1, boxShadow: `0 0 10px ${iconColor}` }} />
+        {subValue}
       </div>
 
-      {/* Technical HUD glow */}
-      <div style={{
-        position: 'absolute',
-        bottom: -20,
-        right: -20,
-        width: 100,
-        height: 100,
-        background: `radial-gradient(circle, ${iconColor}08 0%, transparent 70%)`,
-        zIndex: 1
+      {/* Surface Gloss Reflection */}
+      <div style={{ 
+        position: 'absolute', inset: 0, 
+        background: `linear-gradient(135deg, rgba(255,255,255,${hovered ? 0.05 : 0}), transparent)`, 
+        pointerEvents: 'none',
+        transition: 'opacity 0.4s'
       }} />
     </div>
   );
 }
 
 function PlanCard({ plan, onDelete, onEdit }) {
+  const [hovered, setHovered] = useState(false);
   const features = plan.features ? plan.features.split(/[,\n]/).filter(f => f.trim()) : [];
 
   return (
-    <div style={{
-      background: "#0a0a0a",
-      borderRadius: 32,
-      padding: "32px 32px 40px",
-      display: "flex",
-      flexDirection: "column",
-      boxShadow: "0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05)",
-      transition: "all 0.5s cubic-bezier(0.19, 1, 0.22, 1)",
-      position: 'relative',
-      border: '1px solid rgba(255,255,255,0.05)',
-      cursor: 'default',
-      transformStyle: 'preserve-3d',
-      perspective: '1000px',
-      overflow: 'hidden'
-    }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-10px) rotateX(4deg) rotateY(-2deg)';
-        e.currentTarget.style.boxShadow = '0 40px 80px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255,255,255,0.2)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.transform = 'translateY(0) rotateX(0) rotateY(0)';
-        e.currentTarget.style.boxShadow = '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1)';
-      }}
-      className="management-card">
+    <div 
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "var(--surface)",
+        backgroundImage: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.03))",
+        borderRadius: "32px",
+        padding: "24px 28px",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: hovered 
+          ? "0 40px 80px -20px var(--shadow-lg), 0 0 0 1px var(--theme-border)"
+          : "0 15px 40px -15px var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.05)",
+        transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+        position: 'relative',
+        border: '1px solid var(--theme-border)',
+        cursor: 'default',
+        transform: hovered ? "translateY(-4px) scale(1.01)" : "translateY(0) scale(1)",
+        overflow: 'hidden',
+        height: '100%'
+      }}>
 
-      {/* Decorative HUD Corner */}
-      <div style={{
-        position: 'absolute', bottom: 12, right: 12, width: 20, height: 20,
-        borderRight: '1px solid rgba(255,255,255,0.15)',
-        borderBottom: '1px solid rgba(255,255,255,0.15)',
-        opacity: 0.5
-      }} />
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, position: 'relative', zIndex: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
-          <h4 style={{ fontSize: 24, fontWeight: 900, color: "#ffffff", margin: 0, letterSpacing: '-0.5px' }}>{plan.name.toLowerCase()}</h4>
-          <div style={{ display: 'flex', marginTop: 6 }}>
+          <div style={{ fontSize: "10px", fontWeight: 800, color: "var(--muted)", textTransform: 'uppercase', letterSpacing: "1.2px", marginBottom: 4 }}>Infrastructure Node</div>
+          <h4 style={{ fontSize: "22px", fontWeight: 900, color: "var(--theme-text)", margin: 0, letterSpacing: "-1px" }}>{plan.name}</h4>
+          <div style={{ display: 'flex', marginTop: 10 }}>
             <span style={{
-              fontSize: 9,
+              fontSize: "9px",
               fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-              background: plan.active ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              letterSpacing: '0.12em',
+              background: plan.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
               color: plan.active ? '#10b981' : '#f43f5e',
               padding: '4px 10px',
-              borderRadius: 6,
-              display: 'inline-flex',
-              alignItems: 'center',
-              border: `1px solid ${plan.active ? '#10b98166' : '#f43f5e66'}`,
-              boxShadow: plan.active ? '0 0 15px rgba(16, 185, 129, 0.2)' : 'none'
+              borderRadius: 20,
+              border: `1px solid ${plan.active ? '#10b98133' : '#f43f5e33'}`
             }}>
-              {plan.active ? 'SECURE NODE' : 'INACTIVE'}
+              {plan.active ? 'PROVISIONED' : 'HALTED'}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => onEdit?.(plan)}
             style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: 'none',
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              cursor: 'pointer',
-              color: 'var(--muted)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              outline: 'none'
+              background: 'var(--theme-bg-secondary)',
+              border: '1px solid var(--theme-border)',
+              width: "34px", height: "34px", borderRadius: "10px",
+              cursor: 'pointer', color: 'var(--muted)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s'
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'var(--surface)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--muted)'; }}
-            title="Edit Plan"
           >
-            <Icon name="edit" size={16} color="currentColor" />
+            <Icon name="edit" size={14} />
           </button>
           <button
             onClick={() => onDelete?.(plan.id)}
             style={{
               background: 'rgba(244, 63, 94, 0.05)',
-              border: 'none',
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              cursor: 'pointer',
-              color: '#f43f5e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              outline: 'none'
+              border: '1px solid rgba(244, 63, 94, 0.1)',
+              width: "34px", height: "34px", borderRadius: "10px",
+              cursor: 'pointer', color: '#f43f5e',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s'
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.1)'; e.currentTarget.style.color = '#fb7185'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(244, 63, 94, 0.05)'; e.currentTarget.style.color = '#f43f5e'; }}
-            title="Delete Plan"
           >
-            <Icon name="trash" size={16} color="currentColor" />
+            <Icon name="trash" size={14} />
           </button>
         </div>
       </div>
 
-      <div style={{ fontSize: 42, fontWeight: 950, color: "#ffffff", marginBottom: 12, letterSpacing: "-2px", display: 'flex', alignItems: 'baseline', position: 'relative', zIndex: 2 }}>
+      <div style={{ fontSize: "32px", fontWeight: 950, color: "var(--theme-text)", marginBottom: 12, letterSpacing: "-1.5px", display: 'flex', alignItems: 'baseline' }}>
         {plan.price === 0 ? "Free" : `₹${plan.price}`}
         <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700, letterSpacing: 0, marginLeft: 2 }}>/{plan.billingCycle.toLowerCase()}</span>
       </div>
 
-      <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 32, lineHeight: 1.6, fontWeight: 500, position: 'relative', zIndex: 2 }}>
-        {plan.description || "Infrastructure tier for standard SaaS operations."}
+      <p style={{ fontSize: "14px", color: "var(--muted)", marginBottom: 28, lineHeight: 1.5, fontWeight: 500 }}>
+        {plan.description || "Active infrastructure tier serving production endpoints."}
       </p>
 
-      <div style={{ display: "grid", gap: 12, position: 'relative', zIndex: 2 }}>
-        <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
-        {features.length > 0 ? features.map((feature, idx) => (
+      <div style={{ display: "grid", gap: 10, marginTop: 'auto' }}>
+        <div style={{ fontSize: "9px", fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>NODE_PROTOCOLS</div>
+        {features.map((feature, idx) => (
           <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 18, height: 18, borderRadius: "50%", background: "rgba(99, 102, 241, 0.1)",
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-            }}>
-              <Icon name="check" size={10} color="#6366f1" />
+            <div style={{ width: 14, height: 14, borderRadius: "50%", background: "rgba(99, 102, 241, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="check" size={8} color="#6366f1" />
             </div>
-            <span style={{ fontSize: '11px', color: "#cbd5e1", fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim()}</span>
+            <span style={{ fontSize: '11px', color: "var(--theme-text)", opacity: 0.8, fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim()}</span>
           </div>
-        )) : (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, opacity: 0.6 }}>
-            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="check" size={10} color="#475569" />
-            </div>
-            <span style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}>Base system protocols</span>
-          </div>
-        )}
+        ))}
       </div>
 
-      {/* Bottom Technical HUD Bar */}
-      <div style={{
-        marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-      }}>
-        <div style={{ fontSize: '8px', color: 'var(--muted)', fontWeight: 900, letterSpacing: '0.2em' }}>AEGIS_SECURE_LINK</div>
-        <div style={{ width: 30, height: 1, background: 'rgba(99,102,241,0.3)' }} />
-      </div>
+      {/* Surface Light FX */}
+      <div style={{ 
+        position: 'absolute', inset: 0, 
+        background: `linear-gradient(135deg, rgba(255,255,255,${hovered ? 0.04 : 0}), transparent)`, 
+        pointerEvents: 'none',
+        transition: 'opacity 0.4s'
+      }} />
     </div>
   );
 }

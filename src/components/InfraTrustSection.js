@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  ShieldCheck,
+  Zap,
+  RefreshCw,
+} from 'lucide-react';
 
 /**
  * INFRA TRUST SECTION
@@ -50,33 +55,36 @@ const InfraTrustSection = () => {
                 </div>
 
                 {/* Trust Matrix */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '40px' }}>
 
                     {/* Security Pillar */}
                     <TrustCard
-                        icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>}
-                        title="Zero-Trust Security"
-                        desc="End-to-End AES-256 encryption for every subscription payload and tenant data block."
-                        accent="#2DD4BF"
-                        specs={['SOC2 Type II Ready', 'GDPR Compliant', 'E2E Encryption']}
+                        label="Infrastructure"
+                        title="Two icons join forces to level up your security."
+                        icon={<ShieldCheck />}
+                        desc="End-to-End AES-256 encryption. Every subscription payload is locked with tenant-specific nodes."
+                        accent="#10b981"
+                        specs={['SOC2 Type II Ready', 'GDPR Core compliant', 'E2E Encryption']}
                     />
 
                     {/* Scale Pillar */}
                     <TrustCard
-                        icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></svg>}
-                        title="Hyper-Scale Core"
-                        desc="Stateless node-cluster architecture capable of handling 50,000+ API requests per second."
-                        accent="#2563EB"
-                        specs={['99.99% Uptime SLA', 'Auto-Scaling Pods', 'Multi-Region Support']}
+                        label="Performance"
+                        title="Powerhouse scaling for your workload."
+                        icon={<Zap />}
+                        desc="Stateless node-cluster architecture capable of handling 50,000+ API requests every second."
+                        accent="#3b82f6"
+                        specs={['99.99% Uptime SLA', 'Auto-Scaling Pods', 'Enterprise Backbone']}
                     />
 
                     {/* Resilience Pillar */}
                     <TrustCard
-                        icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>}
-                        title="Self-Healing Logic"
-                        desc="Automated CRON recovery and failed-transaction auditing ensure no revenue is ever lost."
-                        accent="#A78BFA"
-                        specs={['Cron Failure Recovery', 'Audit Logging', 'Webhook Retries']}
+                        label="Reliability"
+                        title="Self-healing logic that never sleeps."
+                        icon={<RefreshCw />}
+                        desc="Automated CRON recovery and failed-transaction auditing ensure zero data leakage across clusters."
+                        accent="#a855f7"
+                        specs={['Failover Recovery', 'Audit Log ready', 'Instant Webhooks']}
                     />
 
                 </div>
@@ -99,50 +107,88 @@ const InfraTrustSection = () => {
     );
 };
 
-const TrustCard = ({ icon, title, desc, accent, specs }) => {
+const TrustCard = ({ label, title, desc, icon, accent, specs }) => {
     return (
         <div style={{
-            background: 'var(--ink)',
-            borderRadius: '24px',
+            background: 'var(--surface)',
+            borderRadius: '40px',
             padding: '40px',
-            border: '1px solid rgba(128, 128, 128, 0.12)',
-            boxShadow: '0 8px 32px -12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05)',
+            boxShadow: `0 20px 60px -15px var(--shadow-sm), inset 0 0 0 1px var(--glass-border)`,
             position: 'relative',
-            transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
-            overflow: 'hidden',
+            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflow: 'hidden',
+            cursor: 'default'
         }}
             onMouseOver={e => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = `0 24px 48px -15px rgba(0,0,0,0.15), 0 0 0 1px ${accent}40, inset 0 1px 0 rgba(255,255,255,0.1)`;
+                e.currentTarget.style.boxShadow = `0 40px 100px -20px var(--shadow-lg), 0 0 0 1px ${accent}25`;
             }}
             onMouseOut={e => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 32px -12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.05)';
+                e.currentTarget.style.boxShadow = `0 20px 60px -15px var(--shadow-sm), inset 0 0 0 1px var(--glass-border)`;
             }}
         >
             <div style={{
-                width: '48px', height: '48px', borderRadius: '14px',
-                background: `linear-gradient(135deg, ${accent}15, transparent)`,
-                border: `1px solid ${accent}30`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent,
-                marginBottom: '28px', flexShrink: 0
+                width: '56px',
+                height: '56px',
+                borderRadius: '16px',
+                background: `linear-gradient(135deg, ${accent}20, ${accent}05)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: accent,
+                boxShadow: `0 10px 20px ${accent}15`,
+                marginBottom: '28px'
             }}>
-                {icon}
+                {React.cloneElement(icon, { size: 24 })}
             </div>
 
-            <h3 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--white)', marginBottom: '12px', fontFamily: 'var(--ff-sans)', letterSpacing: '-0.4px' }}>{title}</h3>
-            <p style={{ fontSize: '15px', color: 'var(--white)', opacity: 0.65, lineHeight: 1.6, marginBottom: '36px', fontFamily: 'var(--ff-sans)' }}>{desc}</p>
+            <div style={{
+                fontSize: '11px',
+                fontWeight: 800,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '1.2px',
+                marginBottom: '12px'
+            }}>
+                {label}
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: 'auto' }}>
+            <h3 style={{
+                fontSize: '28px',
+                fontWeight: 800,
+                color: 'var(--theme-text)',
+                lineHeight: 1.15,
+                letterSpacing: '-1.2px',
+                marginBottom: '20px'
+            }}>
+                {title}
+            </h3>
+
+            <p style={{
+                fontSize: '15px',
+                color: 'var(--muted)',
+                lineHeight: 1.6,
+                fontWeight: 500,
+                marginBottom: '32px'
+            }}>
+                {desc}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: 'auto' }}>
                 {specs.map((spec, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '14px', fontWeight: 500, color: 'var(--white)', opacity: 0.8, fontFamily: 'var(--ff-sans)' }}>
-                        <div style={{ display: 'flex', color: accent, opacity: 0.9 }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                        </div>
+                    <div key={i} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: 'var(--theme-text)',
+                        fontFamily: 'var(--ff-mono)'
+                    }}>
+                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: accent }} />
                         {spec}
                     </div>
                 ))}

@@ -133,6 +133,11 @@ const getDefaultDescription = (name) => {
 export const normalizePlanFromBackend = (plan) => {
   const name = titleCasePlanName(plan?.name);
   const key = name.toLowerCase();
+  const status = String(plan?.status || plan?.planStatus || '').toUpperCase();
+  const active =
+    typeof plan?.active === 'boolean'
+      ? plan.active
+      : !['INACTIVE', 'DISABLED', 'BLOCKED', 'ARCHIVED', 'DELETED'].includes(status);
 
   // Always use canonical prices — overrides stale DB values
   const canonicalPrice = CANONICAL_PRICES[key];
@@ -148,7 +153,7 @@ export const normalizePlanFromBackend = (plan) => {
     name,
     price,
     durationInDays: plan?.durationInDays,
-    active: !!plan?.active,
+    active,
     description: plan?.description || getDefaultDescription(name),
     featured: !!plan?.featured || key === 'pro',
     // Always use our rich feature definitions — backend doesn't store features

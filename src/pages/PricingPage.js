@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 import { useToast } from '../components/ToastProvider';
+import { useTheme } from '../utils/ThemeContext';
 import { publicAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -14,6 +15,8 @@ const PricingPage = () => {
   const location = useLocation();
   const { user } = useAuth();
   const toast = useToast();
+  const { theme } = useTheme();
+  const isSuperAdmin = user?.role === 'ROLE_SUPER_ADMIN';
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const selectedPlanParam = searchParams.get('plan'); // can be id or name
@@ -30,6 +33,24 @@ const PricingPage = () => {
     billingParam === BILLING_INTERVALS.ANNUAL ? BILLING_INTERVALS.ANNUAL : BILLING_INTERVALS.MONTHLY
   );
 
+  const isDark =
+    theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  const pricingDarkTheme = isDark
+    ? {
+        '--bg': '#0b1220',
+        '--surface': '#0f172a',
+        '--surface2': 'rgba(255, 255, 255, 0.03)',
+        '--border': 'rgba(255, 255, 255, 0.10)',
+        '--border2': 'rgba(59, 130, 246, 0.22)',
+        '--ink': '#e5e7eb',
+        '--muted': '#9ca3af',
+        '--accent2': '#3b82f6',
+        background:
+          'linear-gradient(180deg, #060b18 0%, #0b1220 20%, #0b1220 100%)',
+      }
+    : {};
+
   useEffect(() => {
     if (billingParam === BILLING_INTERVALS.ANNUAL || billingParam === BILLING_INTERVALS.MONTHLY) {
       setBillingInterval(billingParam);
@@ -42,26 +63,34 @@ const PricingPage = () => {
         setLoading(true);
         setError('');
         const response = await publicAPI.getAllPlans();
+        const payload = response?.data?.data;
 
-        if (response.data && response.data.data) {
-          const normalized = response.data.data
+        if (Array.isArray(payload)) {
+          const normalized = payload
             .map((p) => normalizePlanFromBackend(p))
             .filter((p) => p.active !== false);
-          setPlans(normalized.length > 0 ? normalized : DEFAULT_PLANS);
+
+          // Respect backend truth: if all plans are inactive, show no plans instead of reviving defaults.
+          setPlans(normalized);
         } else {
           setPlans(DEFAULT_PLANS);
         }
       } catch (err) {
-        // Network / connection error — backend is offline, use static fallback silently
+        const isAuthError = err.response?.status === 401 || err.response?.status === 403;
         const isNetworkError = !err.response;
-        if (isNetworkError) {
+
+        if (isAuthError) {
+          // Suppress public route 401 spam — backend config error
+          console.warn('Backend: /api/v1/public/plans is secured (401). Using static DEFAULT_PLANS fallback.');
+          setPlans(DEFAULT_PLANS);
+          setError(''); // Silence the banner
+        } else if (isNetworkError) {
           console.warn('Backend offline — using default plans.');
           setPlans(DEFAULT_PLANS);
-          setError(''); // no banner for offline backend
+          setError('');
         } else {
-          // Real server error (500, 403, etc.) — show message
           console.error('Error fetching plans:', err);
-          setError(err.response?.data?.message || 'Failed to load plans.');
+          setError(err.response?.data?.message || 'Plans currently unavailable.');
           setPlans(DEFAULT_PLANS);
         }
       } finally {
@@ -93,8 +122,22 @@ const PricingPage = () => {
     }
   }, [loading, plans, selectedPlanNameParam, selectedPlanParam]);
 
+  useEffect(() => {
+    if (isSuperAdmin && checkoutPlan) {
+      setCheckoutPlan(null);
+    }
+  }, [checkoutPlan, isSuperAdmin]);
+
   const handleSubscribe = useCallback(async (plan) => {
     if (!plan?.id) return;
+
+    if (user?.role === 'ROLE_SUPER_ADMIN') {
+      toast.error(
+        'Super admins cannot subscribe',
+        'Use the Admin Dashboard to manage platform plans. Pricing is view-only for super admin accounts.'
+      );
+      return;
+    }
 
     if (!user) {
       const redirect = `/pricing?plan=${encodeURIComponent(String(plan.id))}&planName=${encodeURIComponent(String(plan.name || ''))}&billing=${encodeURIComponent(billingInterval)}`;
@@ -104,7 +147,7 @@ const PricingPage = () => {
 
     // Open the checkout modal instead of directly subscribing
     setCheckoutPlan(plan);
-  }, [user, billingInterval, navigate]);
+  }, [user, billingInterval, navigate, toast]);
 
   const filteredPlans = useMemo(() => {
     return plans.filter(p => Number(p.price) > 0);
@@ -130,7 +173,7 @@ const PricingPage = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', transition: 'background 0.3s ease' }}>
+    <div style={{ ...pricingDarkTheme, minHeight: '100vh', background: 'var(--bg)', transition: 'background 0.3s ease' }}>
       <Navbar />
 
       {/* Unified Pricing Section Header */}
@@ -271,10 +314,32 @@ const PricingPage = () => {
           </div>
         )}
 
+        {isSuperAdmin && (
+          <div
+            style={{
+              background: 'rgba(59, 130, 246, 0.08)',
+              border: '1px solid rgba(59, 130, 246, 0.18)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              color: 'var(--ink)',
+              padding: '14px 20px',
+              borderRadius: '14px',
+              marginBottom: '28px',
+              maxWidth: '560px',
+              boxShadow: '0 10px 30px rgba(59, 130, 246, 0.08)',
+            }}
+          >
+            <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '6px' }}>Admin view only</div>
+            <div style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.6 }}>
+              Super admin accounts can review pricing here, but they cannot purchase or upgrade subscriptions.
+            </div>
+          </div>
+        )}
+
         {/* Cards Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           gap: '32px',
           alignItems: 'stretch',
           perspective: '1200px',
@@ -287,6 +352,8 @@ const PricingPage = () => {
               billingInterval={billingInterval}
               subscribing={subscribingPlanId === plan.id}
               onAction={handleSubscribe}
+              disabled={isSuperAdmin}
+              actionLabel={isSuperAdmin ? 'Admin cannot subscribe' : undefined}
             />
           ))}
         </div>

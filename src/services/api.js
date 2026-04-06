@@ -45,14 +45,28 @@ api.interceptors.response.use(
   }
 );
 
-// Create public axios instance (no auth interceptors)
+// Create public axios instance (independent, no auto-redirect on 401)
 const publicApi = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Bypass-Tunnel-Reminder': 'true',
+    'Accept': 'application/json'
   },
+  withCredentials: false 
 });
+
+// Add token to public requests IF available (allows logged-in users to still access "public" resources if backend is strict)
+publicApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 // ==================== AUTH ENDPOINTS ====================
 export const authAPI = {

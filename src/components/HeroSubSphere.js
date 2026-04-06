@@ -75,7 +75,7 @@ const HeroSubSphere = () => {
             {/* Deep Perspective Grid Layer */}
             <div style={{
                 position: 'absolute',
-                top: '50%', left: '50%',
+                top: '60%', left: '50%',
                 width: '300%', height: '300%',
                 background: `
                     linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
@@ -93,7 +93,7 @@ const HeroSubSphere = () => {
             {/* ═ THE AEGIS SPATIAL GLOBE (Pure CSS 3D - Setup for Perf) ═ */}
             <div style={{
                 position: 'absolute',
-                top: '50%', left: '50%',
+                top: '60%', left: '50%',
                 /* Drastically simplified parallax - translation is much faster than 3D rotation */
                 transform: `translate(-50%, -50%) translate3d(${tilt.x * -0.5}px, ${tilt.y * -0.5}px, 0)`,
                 width: '800px', height: '800px',
@@ -111,7 +111,7 @@ const HeroSubSphere = () => {
                     {/* Inner Core Glow - Kept simple radial blur */}
                     <div style={{
                         position: 'absolute',
-                        top: '50%', left: '50%',
+                        top: '60%', left: '50%',
                         width: '300px', height: '300px',
                         transform: 'translate(-50%, -50%)',
                         background: 'radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 60%)',
