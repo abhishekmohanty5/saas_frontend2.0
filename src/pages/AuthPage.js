@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 
 const AuthPage = () => {
@@ -509,9 +509,9 @@ const AuthPage = () => {
             {/* Forgot Password (Login only) */}
             {isLogin && (
               <div style={{ textAlign: 'right', marginBottom: '28px' }}>
-                <a href="#" style={{ fontSize: '14px', color: '#4A90E2', textDecoration: 'none', fontWeight: 600 }}>
+                <Link to="/forgot-password" style={{ fontSize: '14px', color: '#4A90E2', textDecoration: 'none', fontWeight: 600 }}>
                   Forgot password?
-                </a>
+                </Link>
               </div>
             )}
 

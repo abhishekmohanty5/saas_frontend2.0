@@ -751,7 +751,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { theme } = useTheme();
-  const { addToast: toast } = useToast();
+  const toast = useToast();
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -770,6 +770,7 @@ export default function Dashboard() {
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState(null);
   const [newPlan, setNewPlan] = useState({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
+  const [formStep, setFormStep] = useState(1);
   const [isSubmittingPlan, setIsSubmittingPlan] = useState(false);
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiDescription, setAiDescription] = useState("");
@@ -777,7 +778,6 @@ export default function Dashboard() {
   const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
 
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
 
   const handleUnauth = useCallback(() => {
     localStorage.removeItem('token');
@@ -798,27 +798,54 @@ export default function Dashboard() {
       ]);
 
       const getVal = (res, fallback = null) => res.status === 'fulfilled' ? res.value.data.data : fallback;
-
       const pData = getVal(plansRes, {});
       const sData = getVal(subRes, {});
 
       setDashboard(getVal(dashRes));
       setStats(getVal(statsRes, { total: 0, active: 0, cancelled: 0, pending: 0 }));
-      
       setPlans(pData.content || []);
       setPlansTotal(pData.totalElements || 0);
       setPlansTotalPages(pData.totalPages || 0);
-
       setSubscribers(sData.content || []);
       setSubTotal(sData.totalElements || 0);
       setSubTotalPages(sData.totalPages || 0);
-
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
   }, [handleUnauth, plansPage, subPage]);
+
+  const handleCreatePlan = useCallback(async (planData) => {
+    setIsSubmittingPlan(true);
+    try {
+      const payload = {
+        ...planData,
+        price: typeof planData.price === 'string' ? parseFloat(planData.price) : planData.price,
+        active: planData.active ?? true
+      };
+
+      if (editingPlanId) {
+        await api.put(`/v1/tenant-admin/tenant-plans/${editingPlanId}`, payload);
+        toast.success("RECONFIGURED", "Infrastructure node reconfigured");
+      } else {
+        await api.post('/v1/tenant-admin/tenant-plans', payload);
+        toast.success("DEPLOYED", "Infrastructure tier live on network");
+      }
+      
+      setShowPlanModal(false);
+      setShowAiModal(false);
+      setEditingPlanId(null);
+      setFormStep(1);
+      setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
+      fetchData();
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Operation failed";
+      toast.error("ERROR", errorMsg);
+    } finally {
+      setIsSubmittingPlan(false);
+    }
+  }, [editingPlanId, fetchData, toast]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -1062,7 +1089,7 @@ export default function Dashboard() {
                     </button>
 
                     <button
-                      onClick={() => setShowPlanModal(true)}
+                      onClick={() => { setFormStep(1); setShowPlanModal(true); }}
                       style={{
                         background: "#0a0a0a",
                         color: "#FFF",
@@ -1103,6 +1130,7 @@ export default function Dashboard() {
                           features: p.features || "",
                           active: p.active
                         });
+                        setFormStep(1);
                         setShowPlanModal(true);
                       }}
                       onDelete={async (id) => {
@@ -1236,18 +1264,7 @@ export default function Dashboard() {
                             {aiSuggestedResult.map((p, i) => (
                               <div
                                 key={i}
-                                onClick={() => {
-                                  setNewPlan({
-                                    ...newPlan,
-                                    name: p.name,
-                                    price: p.price.toString(),
-                                    description: p.description,
-                                    billingCycle: p.billingCycle || "MONTHLY",
-                                    features: p.features
-                                  });
-                                  setShowAiModal(false);
-                                  setShowPlanModal(true);
-                                }}
+                                onClick={() => handleCreatePlan(p)}
                                 style={{
                                   padding: '16px 20px', borderRadius: 16, border: '1px solid var(--border)', cursor: 'pointer',
                                   transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
@@ -1302,6 +1319,7 @@ export default function Dashboard() {
                         onClick={() => {
                           setShowPlanModal(false);
                           setEditingPlanId(null);
+                          setFormStep(1);
                           setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
                         }}
                         style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--theme-border)', cursor: 'pointer', color: 'var(--muted)', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', zIndex: 10 }}
@@ -1312,125 +1330,154 @@ export default function Dashboard() {
                       </button>
 
                       <div style={{ position: 'relative', zIndex: 1 }}>
+                        {/* STEP PROGRESS INDICATOR */}
+                        <div style={{ display: 'flex', gap: 8, marginBottom: 32, padding: '2px' }}>
+                          {[1, 2, 3].map(s => (
+                            <div key={s} style={{ 
+                              flex: 1, height: 4, borderRadius: 2, 
+                              background: formStep >= s ? 'linear-gradient(90deg, #6366f1, #a855f7)' : 'rgba(255,255,255,0.1)',
+                              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: formStep === s ? '0 0 10px rgba(99, 102, 241, 0.4)' : 'none'
+                            }} />
+                          ))}
+                        </div>
+
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                           <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Icon name="zap" size={24} color="#6366f1" />
+                            <Icon name={formStep === 1 ? "edit" : (formStep === 2 ? "zap" : "check")} size={24} color="#6366f1" />
                           </div>
                           <div>
-                            <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0, letterSpacing: '-1px', fontFamily: 'var(--ff-h)' }}>{editingPlanId ? 'RECONFIGURE_NODE' : 'PROVISION_PLAN'}</h2>
-                            <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0, fontWeight: 600 }}>ID: {editingPlanId ? `NODE_${editingPlanId}` : 'NEW_INFRA_TIER'}</p>
+                            <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0, letterSpacing: '-1px', fontFamily: 'var(--ff-h)' }}>
+                              {formStep === 1 ? 'STEP_01: IDENTITY' : (formStep === 2 ? 'STEP_02: ECONOMY' : 'STEP_03: PROTOCOLS')}
+                            </h2>
+                            <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0, fontWeight: 600 }}>
+                              {formStep === 1 ? 'Defining the infrastructure core' : (formStep === 2 ? 'Configuring resource allocation' : 'Finalizing security protocols')}
+                            </p>
                           </div>
                         </div>
                         
-                        <p style={{ color: 'var(--muted)', marginBottom: 32, fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>{editingPlanId ? 'Adjust the infrastructure tier protocols to optimize throughput.' : 'Configure a new subscription tier for deployment across the Aegis Mesh network.'}</p>
+                        <p style={{ color: 'var(--muted)', marginBottom: 32, fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>
+                          {formStep === 1 ? 'Enter the unique identifier and operational summary for this new infrastructure tier.' : 
+                           formStep === 2 ? 'Set the credit requirements and synchronization interval for the sub-mesh network.' : 
+                           'Define the core features and security protocols that will be deployed across the nodes.'}
+                        </p>
 
-                        <div style={{ display: 'grid', gap: 24 }}>
-                          <div>
-                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: '#6366f1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>PLAN_IDENTIFIER</label>
-                            <input
-                              type="text" placeholder="e.g. ULTIMATE_NODE"
-                              value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.3s' }}
-                              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                              onBlur={(e) => e.target.style.borderColor = 'var(--theme-border)'}
-                            />
-                          </div>
-                          
-                          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
-                            <div>
-                              <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CREDITS_PER_CYCLE</label>
-                              <div style={{ position: 'relative' }}>
-                                <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontWeight: 800, fontSize: 14 }}>₹</span>
+                        <div style={{ display: 'grid', gap: 24, minHeight: '300px' }}>
+                          {formStep === 1 && (
+                            <div style={{ opacity: 1 }}>
+                              <div style={{ marginBottom: 24 }}>
+                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: '#6366f1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>PLAN_IDENTIFIER</label>
                                 <input
-                                  type="number" placeholder="0"
-                                  value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                                  style={{ width: '100%', padding: '14px 18px 14px 34px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                  type="text" placeholder="e.g. ULTIMATE_NODE"
+                                  value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.3s' }}
+                                  onFocus={(e) => e.target.style.borderColor = '#6366f1'}
+                                  onBlur={(e) => e.target.style.borderColor = 'var(--theme-border)'}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>OPERATIONAL_DESCRIPTION</label>
+                                <textarea
+                                  placeholder="Brief summary of the plan capability..."
+                                  value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, height: 120, resize: 'none', color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', lineHeight: 1.6 }}
                                 />
                               </div>
                             </div>
-                            <div>
-                              <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>SYNC_INTERVAL</label>
-                              <select
-                                value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
-                                style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, background: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)', cursor: 'pointer', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
-                              >
-                                <option value="MONTHLY">Monthly cycle</option>
-                                <option value="YEARLY">Yearly cycle</option>
-                              </select>
+                          )}
+
+                          {formStep === 2 && (
+                            <div style={{ opacity: 1 }}>
+                              <div style={{ display: 'grid', gap: 24 }}>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CREDITS_PER_CYCLE</label>
+                                  <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontWeight: 800, fontSize: 14 }}>₹</span>
+                                    <input
+                                      type="number" placeholder="0"
+                                      value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
+                                      style={{ width: '100%', padding: '14px 18px 14px 34px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>SYNC_INTERVAL</label>
+                                  <select
+                                    value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
+                                    style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, background: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)', cursor: 'pointer', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                  >
+                                    <option value="MONTHLY">Monthly cycle</option>
+                                    <option value="YEARLY">Yearly cycle</option>
+                                  </select>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          
-                          <div>
-                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>OPERATIONAL_DESCRIPTION</label>
-                            <textarea
-                              placeholder="Brief summary of the plan capability..."
-                              value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, height: 80, resize: 'none', color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', lineHeight: 1.6 }}
-                            />
-                          </div>
+                          )}
 
-                          <div>
-                            <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CORE_FEATURES (PROTOCOLS)</label>
-                            <textarea
-                              placeholder="JWT_AUTH&#10;SSL_ENCRYPTION&#10;REGION_LOCK"
-                              value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                              style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 13, height: 90, resize: 'none', color: 'var(--accent)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'var(--ff-mono)', lineHeight: 1.6 }}
-                            />
-                          </div>
+                          {formStep === 3 && (
+                            <div style={{ opacity: 1 }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CORE_FEATURES (PROTOCOLS)</label>
+                                <textarea
+                                  placeholder="JWT_AUTH&#10;SSL_ENCRYPTION&#10;REGION_LOCK"
+                                  value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
+                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 13, height: 180, resize: 'none', color: '#a855f7', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'var(--ff-mono)', lineHeight: 1.6 }}
+                                />
+                              </div>
+                            </div>
+                          )}
 
-                          <button
-                            disabled={isSubmittingPlan}
-                            onClick={async () => {
-                              if (!newPlan.name || !newPlan.price) {
-                                toast.error("ACCESS_DENIED", "Required fields missing from payload");
-                                return;
-                              }
-                              setIsSubmittingPlan(true);
-                              try {
-                                if (editingPlanId) {
-                                  await api.put(`/v1/tenant-admin/tenant-plans/${editingPlanId}`, {
-                                    ...newPlan,
-                                    price: parseFloat(newPlan.price),
-                                  });
-                                  toast.success("RECONFIGURED", "Infrastructure node reconfigured");
+                          <div style={{ display: 'flex', gap: 16, marginTop: 'auto', paddingTop: 20 }}>
+                            <button
+                              onClick={() => {
+                                if (formStep === 1) {
+                                  setShowPlanModal(false);
+                                  setEditingPlanId(null);
+                                  setFormStep(1);
                                 } else {
-                                  await api.post('/v1/tenant-admin/tenant-plans', {
-                                    ...newPlan,
-                                    price: parseFloat(newPlan.price),
-                                  });
-                                  toast.success("DEPLOYED", "Infrastructure tier live on network");
+                                  setFormStep(formStep - 1);
                                 }
-                                setShowPlanModal(false);
-                                setEditingPlanId(null);
-                                setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
-                                fetchData();
-                              } catch (err) {
-                                toast.error("UPLINK_FAILED", editingPlanId ? "Reconfiguration protocol failed" : "Deployment signal lost");
-                              } finally {
-                                setIsSubmittingPlan(false);
-                              }
-                            }}
-                            style={{
-                              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
-                              color: 'white',
-                              borderRadius: 16,
-                              border: 'none',
-                              padding: '18px',
-                              fontWeight: 900,
-                              fontSize: 14,
-                              cursor: 'pointer',
-                              marginTop: 12,
-                              transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
-                              opacity: isSubmittingPlan ? 0.7 : 1,
-                              boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.5)',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.1em'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 25px 50px -10px rgba(99, 102, 241, 0.7)'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(99, 102, 241, 0.5)'; }}
-                          >
-                            {isSubmittingPlan ? (editingPlanId ? 'RECONFIGURING...' : 'COMMITTING...') : (editingPlanId ? 'COMMIT_RECONFIGURATION' : 'DEPLOY_INFRASTRUCTURE')}
-                          </button>
+                              }}
+                              style={{
+                                flex: 1, background: 'rgba(255,255,255,0.05)', color: 'var(--text)', borderRadius: 16, border: '1px solid var(--theme-border)', padding: '16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', textTransform: 'uppercase', letterSpacing: '0.05em'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                            >
+                              {formStep === 1 ? '← BACK_TO_LIST' : '← PREVIOUS_PHASE'}
+                            </button>
+                            
+                            {formStep < 3 ? (
+                              <button
+                                onClick={() => {
+                                  if (formStep === 1 && !newPlan.name) {
+                                    toast.error("VALIDATION_ERROR", "Identifier is required");
+                                    return;
+                                  }
+                                  setFormStep(formStep + 1);
+                                }}
+                                style={{
+                                  flex: 2, background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1', borderRadius: 16, border: '1px solid rgba(99, 102, 241, 0.3)', padding: '16px', fontWeight: 900, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', textTransform: 'uppercase', letterSpacing: '0.1em'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                              >
+                                CONTINUE_PROTOCOL &rarr;
+                              </button>
+                            ) : (
+                              <button
+                                disabled={isSubmittingPlan}
+                                onClick={() => handleCreatePlan(newPlan)}
+                                style={{
+                                  flex: 2, background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', borderRadius: 16, border: 'none', padding: '16px', fontWeight: 900, fontSize: 14, cursor: 'pointer', transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)', opacity: isSubmittingPlan ? 0.7 : 1, boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.5)', textTransform: 'uppercase', letterSpacing: '0.1em'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 25px 50px -10px rgba(99, 102, 241, 0.7)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(99, 102, 241, 0.5)'; }}
+                              >
+                                {isSubmittingPlan ? (editingPlanId ? 'RECONFIGURING...' : 'COMMITTING...') : (editingPlanId ? 'COMMIT_RECONFIGURATION' : 'DEPLOY_INFRASTRUCTURE')}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>

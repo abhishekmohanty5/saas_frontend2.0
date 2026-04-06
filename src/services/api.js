@@ -71,22 +71,27 @@ publicApi.interceptors.request.use(
 // ==================== AUTH ENDPOINTS ====================
 export const authAPI = {
   // Register new user - uses publicApi (no token needed, avoids 401 interceptor)
-  register: (userData) => publicApi.post('/v1/auth/register', userData),
+  register: (userData) => publicApi.post('v1/auth/register', userData),
 
   // Login user - uses publicApi (no token needed, avoids 401 interceptor causing redirect loop)
-  login: (credentials) => publicApi.post('/v1/auth/login', credentials),
+  login: (credentials) => publicApi.post('v1/auth/login', credentials),
 
   // Logout (client-side only - clear tokens)
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  }
+  },
+
+  // Password Reset Endpoints
+  forgotPassword: (email) => publicApi.post('v1/auth/forgot-password', { email }),
+  validateResetToken: (token) => publicApi.get(`v1/auth/validate-reset-token?token=${token}`),
+  resetPassword: (data) => publicApi.post('v1/auth/reset-password', data)
 };
 
 // ==================== PUBLIC ENDPOINTS ====================
 export const publicAPI = {
   // Get all plans (no auth required)
-  getAllPlans: (page = 0, size = 10) => publicApi.get(`/v1/public/plans?page=${page}&size=${size}`),
+  getAllPlans: (page = 0, size = 10) => publicApi.get(`v1/public/plans?page=${page}&size=${size}`),
 };
 
 // ==================== SUBSCRIPTION ENDPOINTS (Plan-based) ====================
@@ -96,120 +101,120 @@ export const subscriptionAPI = {
    * Returns { transactionId } on success.
    */
   processPayment: (paymentData) =>
-    api.post('/tenant-admin/engine-subscription/pay', paymentData),
+    api.post('tenant-admin/engine-subscription/pay', paymentData),
 
   /**
    * Step 2 – Activate the plan. Requires a valid transactionId from step 1.
    */
   subscribe: (planId, billingInterval, transactionId) =>
-    api.post('/v1/tenant-admin/billing/upgrade', {
+    api.post('v1/tenant-admin/billing/upgrade', {
       targetPlanId: planId,
       billingInterval: billingInterval || 'MONTHLY',
       transactionId,
     }),
 
   // Get current engine subscription for logged-in tenant
-  getUserSubscription: () => api.get('/v1/tenant-admin/billing'),
+  getUserSubscription: () => api.get('v1/tenant-admin/billing'),
 
   // Cancel subscription
-  cancelSubscription: () => api.put('/v1/tenant-admin/billing/cancel'),
+  cancelSubscription: () => api.put('v1/tenant-admin/billing/cancel'),
 
   // Get all plans (admin)
-  getAllPlans: (page = 0, size = 10) => api.get(`/v1/super-admin/engine-plans/all?page=${page}&size=${size}`),
+  getAllPlans: (page = 0, size = 10) => api.get(`v1/super-admin/engine-plans/all?page=${page}&size=${size}`),
 };
 
 // ==================== USER SUBSCRIPTION ENDPOINTS (Personal tracking) ====================
 export const userSubscriptionAPI = {
   // Create new subscription
   createSubscription: (subscriptionDto) =>
-    api.post('/v1/tenant-admin/user-subscriptions', subscriptionDto),
+    api.post('v1/tenant-admin/user-subscriptions', subscriptionDto),
 
   // Get all user subscriptions
   getAllSubscriptions: (page = 0, size = 10) =>
-    api.get(`/v1/tenant-admin/user-subscriptions/all?page=${page}&size=${size}`),
+    api.get(`v1/tenant-admin/user-subscriptions/all?page=${page}&size=${size}`),
 
   // Get active subscriptions only
   getActiveSubscriptions: () =>
-    api.get('/v1/tenant-admin/user-subscriptions/active'),
+    api.get('v1/tenant-admin/user-subscriptions/active'),
 
   // Get subscriptions by category
   getSubscriptionsByCategory: (categoryId) =>
-    api.get(`/v1/tenant-admin/user-subscriptions/category/${categoryId}`),
+    api.get(`v1/tenant-admin/user-subscriptions/category/${categoryId}`),
 
   // Update subscription
   updateSubscription: (id, subscriptionDto) =>
-    api.put(`/v1/tenant-admin/user-subscriptions/update/${id}`, subscriptionDto),
+    api.put(`v1/tenant-admin/user-subscriptions/update/${id}`, subscriptionDto),
 
   // Cancel subscription
   cancelSubscription: (id) =>
-    api.put(`/v1/tenant-admin/user-subscriptions/cancel/${id}`),
+    api.put(`v1/tenant-admin/user-subscriptions/cancel/${id}`),
 
   // Get upcoming renewals (default 7 days)
   getUpcomingRenewals: (days = 7) =>
-    api.get(`/v1/tenant-admin/user-subscriptions/upcoming?days=${days}`),
+    api.get(`v1/tenant-admin/user-subscriptions/upcoming?days=${days}`),
 
   // Get subscription statistics
   getStats: () =>
-    api.get('/v1/tenant-admin/user-subscriptions/stats'),
+    api.get('v1/tenant-admin/user-subscriptions/stats'),
 
   // Get smart insights
   getInsights: () =>
-    api.get('/v1/tenant-admin/user-subscriptions/insights'),
+    api.get('v1/tenant-admin/user-subscriptions/insights'),
 };
 
 // ==================== ADMIN ENDPOINTS ====================
 export const adminAPI = {
   // Create new plan
-  createPlan: (planData) => api.post('/v1/super-admin/engine-plans', {
+  createPlan: (planData) => api.post('v1/super-admin/engine-plans', {
     name: planData.name,
     price: planData.price,
     durationInDays: planData.duration
   }),
 
   // Activate plan
-  activatePlan: (planId) => api.put(`/v1/super-admin/engine-plans/${planId}/activate`),
+  activatePlan: (planId) => api.put(`v1/super-admin/engine-plans/${planId}/activate`),
 
   // Deactivate plan
-  deactivatePlan: (planId) => api.put(`/v1/super-admin/engine-plans/${planId}/deactivate`),
+  deactivatePlan: (planId) => api.put(`v1/super-admin/engine-plans/${planId}/deactivate`),
 
   // Delete plan
-  deletePlan: (planId) => api.delete(`/v1/super-admin/engine-plans/${planId}`),
+  deletePlan: (planId) => api.delete(`v1/super-admin/engine-plans/${planId}`),
 
   // Get all users
-  getAllUsers: (page = 0, size = 10) => api.get(`/v1/tenant-admin/users?page=${page}&size=${size}`),
+  getAllUsers: (page = 0, size = 10) => api.get(`v1/tenant-admin/users?page=${page}&size=${size}`),
 
   // Get all platform tenants
-  getTenants: (page = 0, size = 10) => api.get(`/v1/super-admin/tenants?page=${page}&size=${size}`),
+  getTenants: (page = 0, size = 10) => api.get(`v1/super-admin/tenants?page=${page}&size=${size}`),
 };
 
 // ==================== AI ENDPOINTS ====================
 export const aiAPI = {
   // Generate pricing plans based on business description
   generatePlans: (businessDescription) =>
-    api.post('/v1/users/ai/generate-plans', { businessDescription }),
+    api.post('v1/users/ai/generate-plans', { businessDescription }),
 
   // Get deep subscription analytics
   getAnalytics: () =>
-    api.get('/v1/users/ai/analytics'),
+    api.get('v1/users/ai/analytics'),
 
   // Predict churn for a specific user
   predictChurn: (userId) =>
-    api.get(`/v1/users/ai/predict-churn/${userId}`),
+    api.get(`v1/users/ai/predict-churn/${userId}`),
 };
 
 // ==================== DASHBOARD ENDPOINTS ====================
 export const dashboardAPI = {
   // Get main dashboard overview
-  getOverview: () => api.get('/v1/tenant-admin/dashboard'),
+  getOverview: () => api.get('v1/tenant-admin/dashboard'),
 
   // Get tenant stats (total/active subscriptions)
-  getStats: () => api.get('/v1/tenant-admin/user-subscriptions/stats'),
+  getStats: () => api.get('v1/tenant-admin/user-subscriptions/stats'),
 
   // Get tenant-defined plans
-  getTenantPlans: (page = 0, size = 10) => api.get(`/v1/tenant-admin/tenant-plans?page=${page}&size=${size}`),
+  getTenantPlans: (page = 0, size = 10) => api.get(`v1/tenant-admin/tenant-plans?page=${page}&size=${size}`),
 
   // Get tenant's end users
-  getEndUsers: (page = 0, size = 10) => api.get(`/v1/tenant-admin/users?page=${page}&size=${size}`),
+  getEndUsers: (page = 0, size = 10) => api.get(`v1/tenant-admin/users?page=${page}&size=${size}`),
 };
 
 export default api;

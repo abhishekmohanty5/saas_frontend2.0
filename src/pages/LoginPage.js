@@ -173,7 +173,7 @@ const LoginPage = () => {
                         </div>
 
                         <div style={{ marginBottom: '24px' }}>
-                            <Link to="#" style={styles.forgotLink}>Forgot password?</Link>
+                            <Link to="/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
                         </div>
 
                         <button

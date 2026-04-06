@@ -13,12 +13,15 @@ import {
 
 const InfraTrustSection = () => {
     return (
-        <section id="trust-infra" style={{
-            background: 'var(--white)',
-            padding: '140px 48px',
-            position: 'relative',
-            overflow: 'hidden'
-        }}>
+        <section
+            id="trust-infra"
+            style={{
+                background: 'var(--white)',
+                padding: '96px 48px 104px',
+                position: 'relative',
+                overflow: 'hidden'
+            }}
+        >
             {/* Ambient Background Elements */}
             <div style={{
                 position: 'absolute', top: '20%', left: '10%', width: '300px', height: '300px',
@@ -29,35 +32,36 @@ const InfraTrustSection = () => {
                 background: 'rgba(96,165,250,0.02)', filter: 'blur(120px)', borderRadius: '50%'
             }} />
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-
-                {/* Header Area */}
-                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '8px',
-                        padding: '6px 16px', borderRadius: '100px', background: 'var(--gold-dim)',
-                        border: '1px solid rgba(37,99,235,0.2)', marginBottom: '24px'
-                    }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', animation: 'pulse 2s infinite' }} />
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--gold)', letterSpacing: '1px' }}>CERTIFIED INFRASTRUCTURE</span>
+            <div className="infra-trust-shell">
+                <div className="infra-trust-header">
+                    <div className="infra-trust-badge">
+                        <div
+                            style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                background: 'var(--gold)',
+                                animation: 'pulse 2s infinite'
+                            }}
+                        />
+                        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--gold)', letterSpacing: '1px' }}>
+                            CERTIFIED INFRASTRUCTURE
+                        </span>
                     </div>
 
-                    <h2 style={{
-                        fontSize: 'clamp(36px, 5vw, 52px)', fontFamily: 'var(--ff-serif)', color: 'var(--ink)',
-                        lineHeight: 1.1, letterSpacing: '-1.5px', maxWidth: '800px', margin: '0 auto 24px'
-                    }}>
-                        Enterprise Trust, built for <em style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--gold2)' }}>Limitless Growth.</em>
+                    <h2 className="infra-trust-title">
+                        Enterprise Trust, built for{' '}
+                        <em style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--gold2)' }}>
+                            Limitless Growth.
+                        </em>
                     </h2>
 
-                    <p style={{ fontSize: '18px', color: 'var(--ink)', opacity: 0.7, maxWidth: '600px', margin: '0 auto', lineHeight: 1.6, fontFamily: 'var(--ff-sans)' }}>
-                        SubSphere isn't just a dashboard—it's a military-grade backend engine engineered for data integrity and global availability.
+                    <p className="infra-trust-copy">
+                        SubSphere isn&apos;t just a dashboard&mdash;it&apos;s a military-grade backend engine engineered for data integrity and global availability.
                     </p>
                 </div>
 
-                {/* Trust Matrix */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '40px' }}>
-
-                    {/* Security Pillar */}
+                <div className="infra-trust-grid">
                     <TrustCard
                         label="Infrastructure"
                         title="Two icons join forces to level up your security."
@@ -67,7 +71,6 @@ const InfraTrustSection = () => {
                         specs={['SOC2 Type II Ready', 'GDPR Core compliant', 'E2E Encryption']}
                     />
 
-                    {/* Scale Pillar */}
                     <TrustCard
                         label="Performance"
                         title="Powerhouse scaling for your workload."
@@ -77,7 +80,6 @@ const InfraTrustSection = () => {
                         specs={['99.99% Uptime SLA', 'Auto-Scaling Pods', 'Enterprise Backbone']}
                     />
 
-                    {/* Resilience Pillar */}
                     <TrustCard
                         label="Reliability"
                         title="Self-healing logic that never sleeps."
@@ -86,22 +88,212 @@ const InfraTrustSection = () => {
                         accent="#a855f7"
                         specs={['Failover Recovery', 'Audit Log ready', 'Instant Webhooks']}
                     />
-
                 </div>
 
-                {/* Footer Certs */}
-                <div style={{
-                    marginTop: '80px', paddingTop: '40px', borderTop: '1px solid rgba(0,0,0,0.05)',
-                    display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '60px', opacity: 0.5
-                }}>
+                <div className="infra-trust-certs">
                     {['PCI COMPLIANT', 'ISO 27001', 'SSL SECURED', 'SLA BACKED'].map((cert, i) => (
-                        <div key={i} style={{ fontSize: '10px', fontWeight: 900, color: 'var(--stone)', letterSpacing: '2.5px' }}>{cert}</div>
+                        <div
+                            key={i}
+                            style={{
+                                fontSize: '10px',
+                                fontWeight: 900,
+                                color: 'var(--stone)',
+                                letterSpacing: '2px'
+                            }}
+                        >
+                            {cert}
+                        </div>
                     ))}
                 </div>
             </div>
 
             <style>{`
                 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+                .infra-trust-shell {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    position: relative;
+                    z-index: 1;
+                }
+
+                .infra-trust-header {
+                    text-align: center;
+                    margin-bottom: 56px;
+                }
+
+                .infra-trust-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 16px;
+                    border-radius: 999px;
+                    background: var(--gold-dim);
+                    border: 1px solid rgba(37, 99, 235, 0.2);
+                    margin-bottom: 16px;
+                }
+
+                .infra-trust-title {
+                    font-size: clamp(36px, 5vw, 52px);
+                    font-family: var(--ff-serif);
+                    color: var(--ink);
+                    line-height: 1.08;
+                    letter-spacing: -1.5px;
+                    max-width: 980px;
+                    margin: 0 auto 16px;
+                }
+
+                .infra-trust-copy {
+                    font-size: 18px;
+                    color: var(--ink);
+                    opacity: 0.7;
+                    max-width: 760px;
+                    margin: 0 auto;
+                    line-height: 1.6;
+                    font-family: var(--ff-sans);
+                }
+
+                .infra-trust-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 24px;
+                    align-items: stretch;
+                }
+
+                .infra-trust-certs {
+                    margin-top: 48px;
+                    padding-top: 24px;
+                    border-top: 1px solid rgba(0, 0, 0, 0.05);
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    gap: 8px 32px;
+                    opacity: 0.42;
+                }
+
+                .infra-trust-card {
+                    background: var(--surface);
+                    border-radius: 32px;
+                    padding: 24px;
+                    box-shadow: 0 10px 24px -20px rgba(15, 23, 42, 0.24), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+                    position: relative;
+                    transition: transform 200ms ease, box-shadow 200ms ease;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 100%;
+                    overflow: hidden;
+                    cursor: default;
+                }
+
+                .infra-trust-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 18px 34px -24px rgba(15, 23, 42, 0.28), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
+                }
+
+                .infra-trust-icon {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 16px;
+                    flex-shrink: 0;
+                }
+
+                .infra-trust-label {
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: var(--muted);
+                    text-transform: uppercase;
+                    letter-spacing: 1.2px;
+                    margin-bottom: 8px;
+                }
+
+                .infra-trust-card-title {
+                    font-size: 26px;
+                    font-weight: 800;
+                    color: var(--theme-text);
+                    line-height: 1.15;
+                    letter-spacing: -1px;
+                    margin: 0 0 16px;
+                }
+
+                .infra-trust-card-copy {
+                    font-size: 15px;
+                    color: var(--muted);
+                    line-height: 1.6;
+                    font-weight: 500;
+                    margin: 0 0 24px;
+                }
+
+                .infra-trust-specs {
+                    list-style: none;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    margin: auto 0 0;
+                    padding: 0;
+                }
+
+                .infra-trust-spec {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: var(--theme-text);
+                    font-family: var(--ff-mono);
+                }
+
+                .infra-trust-spec-dot {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 999px;
+                    flex-shrink: 0;
+                }
+
+                @media (max-width: 1024px) {
+                    .infra-trust-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .infra-trust-title {
+                        max-width: 800px;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    #trust-infra {
+                        padding: 88px 24px 96px;
+                    }
+
+                    .infra-trust-header {
+                        margin-bottom: 48px;
+                    }
+
+                    .infra-trust-title {
+                        margin-bottom: 16px;
+                    }
+
+                    .infra-trust-copy {
+                        font-size: 17px;
+                    }
+
+                    .infra-trust-card {
+                        padding: 24px 20px;
+                        border-radius: 28px;
+                    }
+
+                    .infra-trust-card-title {
+                        font-size: 24px;
+                    }
+
+                    .infra-trust-certs {
+                        margin-top: 40px;
+                        gap: 8px 24px;
+                    }
+                }
             `}</style>
         </section>
     );
@@ -109,90 +301,31 @@ const InfraTrustSection = () => {
 
 const TrustCard = ({ label, title, desc, icon, accent, specs }) => {
     return (
-        <div style={{
-            background: 'var(--surface)',
-            borderRadius: '40px',
-            padding: '40px',
-            boxShadow: `0 20px 60px -15px var(--shadow-sm), inset 0 0 0 1px var(--glass-border)`,
-            position: 'relative',
-            transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            cursor: 'default'
-        }}
-            onMouseOver={e => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = `0 40px 100px -20px var(--shadow-lg), 0 0 0 1px ${accent}25`;
-            }}
-            onMouseOut={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = `0 20px 60px -15px var(--shadow-sm), inset 0 0 0 1px var(--glass-border)`;
-            }}
-        >
-            <div style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '16px',
-                background: `linear-gradient(135deg, ${accent}20, ${accent}05)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: accent,
-                boxShadow: `0 10px 20px ${accent}15`,
-                marginBottom: '28px'
-            }}>
-                {React.cloneElement(icon, { size: 24 })}
+        <div className="infra-trust-card">
+            <div
+                className="infra-trust-icon"
+                style={{
+                    background: `linear-gradient(135deg, ${accent}20, ${accent}05)`,
+                    color: accent
+                }}
+            >
+                {React.cloneElement(icon, { size: 22 })}
             </div>
 
-            <div style={{
-                fontSize: '11px',
-                fontWeight: 800,
-                color: 'var(--muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '1.2px',
-                marginBottom: '12px'
-            }}>
-                {label}
-            </div>
+            <div className="infra-trust-label">{label}</div>
 
-            <h3 style={{
-                fontSize: '28px',
-                fontWeight: 800,
-                color: 'var(--theme-text)',
-                lineHeight: 1.15,
-                letterSpacing: '-1.2px',
-                marginBottom: '20px'
-            }}>
-                {title}
-            </h3>
+            <h3 className="infra-trust-card-title">{title}</h3>
 
-            <p style={{
-                fontSize: '15px',
-                color: 'var(--muted)',
-                lineHeight: 1.6,
-                fontWeight: 500,
-                marginBottom: '32px'
-            }}>
-                {desc}
-            </p>
+            <p className="infra-trust-card-copy">{desc}</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: 'auto' }}>
+            <ul className="infra-trust-specs">
                 {specs.map((spec, i) => (
-                    <div key={i} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        color: 'var(--theme-text)',
-                        fontFamily: 'var(--ff-mono)'
-                    }}>
-                        <div style={{ width: 5, height: 5, borderRadius: '50%', background: accent }} />
-                        {spec}
-                    </div>
+                    <li key={i} className="infra-trust-spec">
+                        <span className="infra-trust-spec-dot" style={{ background: accent }} />
+                        <span>{spec}</span>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
 };

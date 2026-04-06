@@ -1,150 +1,125 @@
 import React from 'react';
+import './Testimonials.css';
+
+const STAR = String.fromCharCode(9733);
+
+const testimonials = [
+    {
+        quote: 'The automated billing cycles and tenant isolation felt production-ready on day one. We moved from prototype to launch mode without rewriting the basics.',
+        name: 'Biswaranjan',
+        role: 'Software Architect',
+        company: 'TechNova',
+        avatar: 'B',
+        gradient: 'linear-gradient(135deg, #7c6cf4 0%, #38bdf8 100%)'
+    },
+    {
+        quote: 'SubSphere stayed calm under peak traffic and gave our team the confidence to scale faster. The analytics layer helped us catch churn signals earlier than expected.',
+        name: 'Sasi Kumar',
+        role: 'CTO',
+        company: 'CloudScale',
+        avatar: 'S',
+        gradient: 'linear-gradient(135deg, #2d6a4f 0%, #40916c 100%)'
+    },
+    {
+        quote: 'The API contract was predictable, the auth flow was clean, and the entire developer experience felt unusually polished for a fast-moving SaaS stack.',
+        name: 'Gaurav Kumar',
+        role: 'Engineering Manager',
+        company: 'FinFlow',
+        avatar: 'G',
+        gradient: 'linear-gradient(135deg, #c9a84c 0%, #e2be6a 100%)'
+    },
+    {
+        quote: 'We wanted enterprise structure without enterprise drag. The platform gave us governance, billing, and observability in a way that still felt lightweight.',
+        name: 'Ananya Rao',
+        role: 'VP Product',
+        company: 'Northstar Labs',
+        avatar: 'A',
+        gradient: 'linear-gradient(135deg, #fb7185 0%, #f97316 100%)'
+    },
+    {
+        quote: 'The dashboard interactions are quick, the data model is thoughtful, and the system leaves room for teams to grow instead of boxing them into rigid workflows.',
+        name: 'Raghav Menon',
+        role: 'Platform Lead',
+        company: 'OrbitOps',
+        avatar: 'R',
+        gradient: 'linear-gradient(135deg, #06b6d4 0%, #2563eb 100%)'
+    },
+    {
+        quote: 'From onboarding to subscription controls, every surface feels intentional. It has the same kind of restraint and clarity we look for in premium developer tools.',
+        name: 'Meera Sharma',
+        role: 'Founder',
+        company: 'Lattice Cloud',
+        avatar: 'M',
+        gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)'
+    }
+];
+
+const splitIndex = Math.ceil(testimonials.length / 2);
+const testimonialRows = [testimonials.slice(0, splitIndex), testimonials.slice(splitIndex)];
 
 const Testimonials = () => {
-    const testimonials = [
-        {
-            stars: 5,
-            quote: "The automated billing cycles and multi-tenant isolation were ready within hours. It's rare to find a Spring Boot engine this polished and developer-friendly.",
-            name: "Biswaranjan",
-            role: "Software Architect · TechNova",
-            avatar: "B",
-            gradient: "linear-gradient(135deg,#7c6cf4,#38bdf8)"
-        },
-        {
-            stars: 5,
-            quote: "SubSphere handled our 50k requests/sec effortlessly. The AI churn prediction is scarily accurate—we reduced customer churn by 18% in the first month.",
-            name: "Sasi Kumar",
-            role: "CTO · CloudScale",
-            avatar: "S",
-            gradient: "linear-gradient(135deg,#2D6A4F,#40916C)"
-        },
-        {
-            stars: 5,
-            quote: "Integration was seamless. The predictable AppResponse wrapper and the JWT handshake saved us weeks of security audit preparations. Billion-dollar infra indeed.",
-            name: "Gaurav Kumar",
-            role: "Engineering Manager · FinFlow",
-            avatar: "G",
-            gradient: "linear-gradient(135deg,#C9A84C,#E2BE6A)"
-        }
-    ];
-
     return (
-        <div style={{
-            background: 'var(--bg)', // Unified background that flips properly
-            padding: '120px 48px',
-            position: 'relative',
-            overflow: 'hidden',
-            borderTop: '1px solid var(--theme-border)'
-        }}>
-            {/* Subtle background texture */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: '1px',
-                background: 'linear-gradient(90deg, transparent, var(--theme-border), transparent)'
-            }} />
+        <section className="testimonials-premium-section">
+            <div className="testimonials-premium-shell reveal">
+                <div className="testimonials-premium-eyebrow">TESTIMONIALS</div>
 
-            <div style={{ maxWidth: '1280px', margin: '0 auto', position: 'relative' }} className="reveal">
-                <div style={{
-                    fontSize: '11px',
-                    fontWeight: 800,
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    color: 'var(--gold2)',
-                    marginBottom: '20px',
-                    textAlign: 'center'
-                }}>
-                    TESTIMONIALS
-                </div>
-                <h2 style={{
-                    fontFamily: 'var(--ff-serif)',
-                    fontSize: 'clamp(36px, 5vw, 56px)',
-                    lineHeight: 1.1,
-                    letterSpacing: '-1.5px',
-                    color: 'var(--theme-text)',
-                    fontWeight: 400,
-                    maxWidth: '800px',
-                    margin: '0 auto',
-                    textAlign: 'center'
-                }}>
+                <h2 className="testimonials-premium-title">
                     Trusted by engineers <br />
-                    <em style={{ fontStyle: 'italic', color: 'var(--gold2)' }}>scaling the future.</em>
+                    <em>scaling the future.</em>
                 </h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px', marginTop: '72px' }}>
-                    {testimonials.map((testimonial, i) => (
-                        <TestimonialCard key={i} {...testimonial} />
-                    ))}
+                <div className="testimonials-marquee-stack">
+                    <MarqueeRow testimonials={testimonialRows[0]} direction="left" duration="34s" />
+                    <MarqueeRow testimonials={testimonialRows[1]} direction="right" duration="38s" secondary />
                 </div>
+            </div>
+        </section>
+    );
+};
+
+const MarqueeRow = ({ testimonials: rowTestimonials, direction, duration, secondary = false }) => {
+    const items = [...rowTestimonials, ...rowTestimonials];
+
+    return (
+        <div className={`testimonials-marquee ${secondary ? 'testimonials-marquee-secondary' : ''}`}>
+            <div
+                className={`testimonials-track testimonials-track-${direction}`}
+                style={{ '--testimonial-duration': duration }}
+            >
+                {items.map((testimonial, index) => (
+                    <TestimonialCard
+                        key={`${testimonial.name}-${testimonial.company}-${index}`}
+                        {...testimonial}
+                    />
+                ))}
             </div>
         </div>
     );
 };
 
-const TestimonialCard = ({ stars, quote, name, role, avatar, gradient }) => {
+const TestimonialCard = ({ quote, name, role, company, avatar, gradient }) => {
     return (
-        <div
-            style={{
-                background: 'var(--testimonial-bg)',
-                border: '1px solid var(--theme-border)',
-                borderRadius: '24px',
-                padding: '40px',
-                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-                boxShadow: '0 4px 20px -4px rgba(0,0,0,0.05)'
-            }}
-            onMouseOver={e => {
-                e.currentTarget.style.transform = 'translateY(-8px)';
-                e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,0.15)';
-                e.currentTarget.style.borderColor = 'var(--gold2)';
-            }}
-            onMouseOut={e => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px -4px rgba(0,0,0,0.05)';
-                e.currentTarget.style.borderColor = 'var(--theme-border)';
-            }}
-        >
-            <div style={{ color: 'var(--gold2)', fontSize: '13px', letterSpacing: '2px', marginBottom: '24px' }}>
-                {'★'.repeat(stars)}
+        <article className="testimonial-premium-card">
+            <div className="testimonial-card-topline">
+                <div className="testimonial-rating" aria-hidden="true">
+                    {STAR.repeat(5)}
+                </div>
+                <span className="testimonial-chip">Verified Team</span>
             </div>
 
-            <div style={{
-                fontFamily: 'var(--ff-serif)',
-                fontSize: '18px',
-                color: 'var(--theme-text)',
-                lineHeight: 1.6,
-                fontStyle: 'italic',
-                marginBottom: '32px'
-            }}>
-                "{quote}"
-            </div>
+            <p className="testimonial-premium-quote">"{quote}"</p>
 
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                paddingTop: '32px',
-                borderTop: '1px solid var(--theme-border)'
-            }}>
-                <div style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '14px',
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: '#ffffff',
-                    background: gradient,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
+            <div className="testimonial-premium-author">
+                <div className="testimonial-premium-avatar" style={{ backgroundImage: gradient }}>
                     {avatar}
                 </div>
+
                 <div>
-                    <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--theme-text)' }}>{name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px', fontWeight: 500 }}>{role}</div>
+                    <div className="testimonial-premium-name">{name}</div>
+                    <div className="testimonial-premium-role">{role} - {company}</div>
                 </div>
             </div>
-        </div>
+        </article>
     );
 };
 
