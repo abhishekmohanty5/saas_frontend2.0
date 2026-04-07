@@ -2,7 +2,17 @@ import axios from 'axios';
 
 // Backend base URL
 // Backend base URL - Dynamic
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backendasservice-production.up.railway.app/api';
+let API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backendasservice-production.up.railway.app/api';
+
+// Safety check: Ensure URL is absolute and starts with http/https
+if (API_BASE_URL && !API_BASE_URL.startsWith('http')) {
+  API_BASE_URL = `https://${API_BASE_URL}`;
+}
+
+// Clean up: removes any trailing slash to avoid double slashes in calls
+if (API_BASE_URL.endsWith('/')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -1);
+}
 
 // Create axios instance
 const api = axios.create({
