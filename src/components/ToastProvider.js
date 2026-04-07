@@ -53,9 +53,6 @@ export const ToastProvider = ({ children }) => {
 };
 
 const ToastCard = ({ toast, onRemove }) => {
-    const isSuccess = toast.type === 'success';
-    const isError = toast.type === 'error' || toast.type === 'warning';
-
     const getThemeColor = () => {
         if (toast.type === 'success') return '16, 185, 129'; // Emerald
         if (toast.type === 'error') return '239, 68, 68'; // Rose

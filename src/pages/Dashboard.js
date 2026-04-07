@@ -4,7 +4,7 @@ import ConsoleSidebar from '../components/ConsoleSidebar';
 import Navbar from '../components/Navbar';
 import ApiCredentialsSection from '../components/ApiCredentialsSection';
 import { useToast } from '../components/ToastProvider';
-import api, { aiAPI, dashboardAPI, adminAPI, userSubscriptionAPI } from '../services/api';
+import api, { aiAPI, dashboardAPI } from '../services/api';
 import { useTheme } from '../utils/ThemeContext';
 import { motion } from 'framer-motion';
 
@@ -60,39 +60,6 @@ const PaginationControl = ({ current, total, onPageChange }) => {
   );
 };
 
-// Simple Sparkline Mockup
-const Sparkline = ({ color }) => (
-  <svg width="100" height="40" viewBox="0 0 80 30" style={{
-    opacity: 0.9,
-    filter: `drop-shadow(0 0 4px ${color}33) drop-shadow(0 0 12px ${color}22)`
-  }}>
-    <defs>
-      <linearGradient id={`grad-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor={color} stopOpacity="0.4" />
-        <stop offset="100%" stopColor={color} stopOpacity="0" />
-      </linearGradient>
-    </defs>
-    <path
-      d="M0 25 L10 20 L20 23 L30 15 L40 18 L50 10 L60 12 L70 5 L80 8"
-      fill={`url(#grad-${color.replace('#', '')})`}
-      style={{ transition: 'all 0.5s ease' }}
-    />
-    <path
-      d="M0 25 L10 20 L20 23 L30 15 L40 18 L50 10 L60 12 L70 5 L80 8"
-      fill="none"
-      stroke={color}
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{
-        filter: `drop-shadow(0 0 5px ${color}) drop-shadow(0 0 15px ${color}88)`,
-        strokeDasharray: '200',
-        strokeDashoffset: '0',
-        animation: 'drawPath 3s linear infinite'
-      }}
-    />
-  </svg>
-);
 // ─── CENTRAL TELEMETRY COMPONENTS ──────────────────────────────────────────
 
 
@@ -170,7 +137,7 @@ function TelemetryUnit({ dashboard }) {
       setVisibleSteps([]);
       setPhase("typing");
     }
-  }, [phase, charIdx, lineIdx, stepIdx, flowIdx]);
+  }, [phase, charIdx, lineIdx, stepIdx, flowIdx, flow.steps]);
 
   const buildTypingLine = (line, charCount) => {
     let remaining = charCount;
@@ -738,11 +705,6 @@ const FLOWS = [
     ]
   }
 ];
-
-const CHAR_DELAY = 18;
-const LINE_DELAY = 60;
-const STEP_PAUSE = 600;
-const FLOW_PAUSE = 2000;
 
 // DECOMMISSIONED LiveTerminal - integrated into TelemetryUnit
 

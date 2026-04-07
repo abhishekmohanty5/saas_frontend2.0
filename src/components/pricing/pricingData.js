@@ -143,11 +143,6 @@ export const normalizePlanFromBackend = (plan) => {
   const canonicalPrice = CANONICAL_PRICES[key];
   const price = canonicalPrice !== undefined ? canonicalPrice : Number.parseFloat(plan?.price);
 
-  const featuresArray = Array.isArray(plan?.features) ? plan.features : [];
-  const formattedFeatures = featuresArray
-    .map((f) => (typeof f === 'string' ? { text: f, included: true } : f))
-    .filter(Boolean);
-
   return {
     id: plan?.id,
     name,
