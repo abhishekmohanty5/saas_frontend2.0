@@ -90,7 +90,8 @@ const LoginPage = () => {
                 if (user?.role === 'ROLE_SUPER_ADMIN') {
                     navigate('/super-admin');
                 } else if (user?.role === 'ROLE_TENANT_ADMIN') {
-                    navigate('/dashboard');
+                    // Redirect to pricing with a welcome flag to show the trial onboarding
+                    navigate('/pricing?welcome=true');
                 } else {
                     navigate('/my-subscriptions');
                 }
@@ -128,15 +129,15 @@ const LoginPage = () => {
             <BackgroundElements />
 
             <div style={styles.page}>
-                <div style={styles.card}>
-                    <h1 style={styles.heading}>Sign in</h1>
+                <div style={styles.card} className="login-card">
+                    <h1 style={styles.heading} className="login-heading">Sign in</h1>
                     <p style={styles.subtext}>
                         New user? <Link to="/register" style={styles.switchLink}>Create an account</Link>
                     </p>
 
                     <form onSubmit={handleSubmit} noValidate style={{ marginTop: '32px' }}>
                         <div style={{ marginBottom: '16px' }}>
-                            <div style={styles.inputWrapper(errors.email)}>
+                            <div style={styles.inputWrapper(errors.email)} className="login-input-wrapper">
                                 <div style={styles.inputIcon}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                                 </div>
@@ -216,6 +217,18 @@ const LoginPage = () => {
                     0% { transform: scale(1) translate(0, 0); }
                     50% { transform: scale(1.1) translate(5%, 5%); }
                     100% { transform: scale(0.9) translate(-5%, -5%); }
+                }
+                @media (max-width: 768px) {
+                    .login-card {
+                        padding: 32px 24px !important;
+                        margin: 0 16px;
+                    }
+                    .login-heading {
+                        fontSize: 28px !important;
+                    }
+                    .login-input-wrapper {
+                        height: 50px !important;
+                    }
                 }
             `}</style>
         </div>

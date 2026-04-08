@@ -196,7 +196,7 @@ const EngineShowcase = () => {
     }, [scene]);
 
     return (
-        <section id="engine-showcase" style={{
+        <section id="engine-showcase" className="engine-showcase-section" style={{
             background: 'var(--white)',
             padding: '120px 48px',
             minHeight: '800px',
@@ -216,7 +216,7 @@ const EngineShowcase = () => {
                 pointerEvents: 'none'
             }} />
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(500px, 1fr) 450px', gap: '80px', maxWidth: '1280px', width: '100%', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+            <div className="engine-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(500px, 1fr) 450px', gap: '80px', maxWidth: '1280px', width: '100%', alignItems: 'center', position: 'relative', zIndex: 1 }}>
 
                 {/* ══ LEFT: THE SHOWCASE SCREEN ══════════════ */}
                 <div style={{ position: 'relative' }}>
@@ -354,6 +354,11 @@ const EngineShowcase = () => {
                 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes fadeInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+                @media (max-width: 960px) {
+                    .engine-showcase-section { padding: 80px 20px !important; }
+                    .engine-grid { gridTemplateColumns: 1fr !important; gap: 48px !important; }
+                    .engine-grid > div:first-child { min-width: 0 !important; }
+                }
             `}</style>
         </section>
     );

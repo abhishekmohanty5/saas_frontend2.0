@@ -92,7 +92,9 @@ const RegisterPage = () => {
             });
             setIsSuccess(true);
         } catch (err) {
-            setApiError(err.response?.data?.message || 'Registration failed');
+            // Check if backend sent a specific message in our AppResponse format
+            const backendMessage = err.response?.data?.message;
+            setApiError(backendMessage || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -104,7 +106,7 @@ const RegisterPage = () => {
                 <Navbar />
                 <BackgroundElements />
                 <div style={styles.page}>
-                    <div style={styles.card}>
+                    <div style={styles.card} className="register-card">
                         <div style={{ textAlign: 'center' }}>
                             <div style={{
                                 width: '64px', height: '64px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e',
@@ -112,7 +114,7 @@ const RegisterPage = () => {
                             }}>
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             </div>
-                            <h1 style={styles.heading}>Check your inbox</h1>
+                            <h1 style={styles.heading} className="register-heading">Check your inbox</h1>
                             <p style={styles.p}>
                                 We've sent a verification link to <strong style={{color: 'var(--ink)'}}>{form.email}</strong>. 
                                 Please click the link in your email to activate your account.
@@ -140,8 +142,8 @@ const RegisterPage = () => {
             <BackgroundElements />
 
             <div style={styles.page}>
-                <div style={styles.card}>
-                    <h1 style={styles.heading}>Create account</h1>
+                <div style={styles.card} className="register-card">
+                    <h1 style={styles.heading} className="register-heading">Create account</h1>
                     <p style={styles.subtext}>
                         Already have an account? <Link to="/login" style={styles.switchLink}>Sign in</Link>
                     </p>
@@ -150,7 +152,7 @@ const RegisterPage = () => {
 
                     <form onSubmit={handleSubmit} noValidate style={{ marginTop: '32px' }}>
                         <div style={{ marginBottom: '16px' }}>
-                            <div style={styles.inputWrapper(errors.tenantName)}>
+                            <div style={styles.inputWrapper(errors.tenantName)} className="register-input-wrapper">
                                 <div style={styles.inputIcon}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"></path><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3"></path><path d="M19 21V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v14"></path><path d="M9 21v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4"></path></svg>
                                 </div>
@@ -260,6 +262,18 @@ const RegisterPage = () => {
                     0% { transform: scale(1) translate(0, 0); }
                     50% { transform: scale(1.1) translate(5%, 5%); }
                     100% { transform: scale(0.9) translate(-5%, -5%); }
+                }
+                @media (max-width: 768px) {
+                    .register-card {
+                        padding: 32px 24px !important;
+                        margin: 0 16px;
+                    }
+                    .register-heading {
+                        fontSize: 28px !important;
+                    }
+                    .register-input-wrapper {
+                        height: 50px !important;
+                    }
                 }
             `}</style>
         </div>

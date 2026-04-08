@@ -41,12 +41,12 @@ const TickerBar = () => {
             }} />
 
             {/* Cinematic Masks */}
-            <div style={{
+            <div className="ticker-mask-l" style={{
                 position: 'absolute', top: 0, bottom: 0, left: 0, width: '250px',
                 background: 'linear-gradient(to right, var(--bg), transparent)',
                 zIndex: 2, pointerEvents: 'none'
             }} />
-            <div style={{
+            <div className="ticker-mask-r" style={{
                 position: 'absolute', top: 0, bottom: 0, right: 0, width: '250px',
                 background: 'linear-gradient(to left, var(--bg), transparent)',
                 zIndex: 2, pointerEvents: 'none'
@@ -82,6 +82,10 @@ const TickerBar = () => {
                     0%, 100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(37, 99, 235, 0.5); }
                     50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 15px rgba(37, 99, 235, 0.8); }
                 }
+                @media (max-width: 860px) {
+                    .ticker-mask-l, .ticker-mask-r { width: 80px !important; }
+                    .ticker-item-c { padding: 0 32px !important; font-size: 9px !important; }
+                }
             `}</style>
         </div>
     );
@@ -90,6 +94,7 @@ const TickerBar = () => {
 const TickerItem = ({ text, highlight }) => {
     return (
         <div
+            className="ticker-item-c"
             style={{
                 display: 'inline-flex',
                 alignItems: 'center',

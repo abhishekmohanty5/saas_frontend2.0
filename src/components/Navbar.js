@@ -8,7 +8,9 @@ import {
   User, 
   ChevronDown, 
   LogOut,
-  Activity
+  Activity,
+  Menu,
+  X
 } from 'lucide-react';
 import { useAuth } from '../utils/AuthContext';
 import { useTheme } from '../utils/ThemeContext';
@@ -22,6 +24,15 @@ const Navbar = () => {
     const dropdownRef = useRef(null);
     const dashboardRoute = user?.role === 'ROLE_SUPER_ADMIN' ? '/super-admin' : '/dashboard';
     const dashboardLabel = user?.role === 'ROLE_SUPER_ADMIN' ? 'Admin Console' : 'Developer Console';
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const handleNav = (id) => {
+        if (user?.role === 'ROLE_SUPER_ADMIN') {
+            navigate(`/super-admin?tab=${id}`);
+        } else {
+            navigate(`/dashboard?tab=${id}`);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -76,6 +87,17 @@ const Navbar = () => {
                 boxShadow: isScrolled ? '0 10px 40px -10px rgba(0,0,0,0.2)' : 'none',
                 transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)'
             }}>
+                <style>{`
+                    @media (max-width: 860px) {
+                        .nav-center { display: none !important; }
+                        .nav-right-desktop { display: none !important; }
+                        .nav-mobile-toggle { display: flex !important; }
+                    }
+                    @media (min-width: 861px) {
+                        .nav-mobile-toggle { display: none !important; }
+                        .nav-mobile-menu { display: none !important; }
+                    }
+                `}</style>
                 {/* Logo */}
                 <div style={{ flex: 1 }}>
                     <Link to="/" style={{
@@ -94,7 +116,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Center Navigation */}
-                <div style={{
+                <div className="nav-center" style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -106,8 +128,8 @@ const Navbar = () => {
                     <NavLink onClick={() => navigate('/pricing')} icon={<CreditCard size={18} />}>Pricing</NavLink>
                 </div>
 
-                {/* Right Actions */}
-                <div style={{
+                {/* Right Actions - Desktop */}
+                <div className="nav-right-desktop" style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'flex-end',
@@ -357,6 +379,104 @@ const Navbar = () => {
                         </>
                     )}
                 </div>
+
+                {/* Mobile Menu Toggle */}
+                <div className="nav-mobile-toggle" style={{ 
+                    display: 'none', 
+                    alignItems: 'center', 
+                    justifyContent: 'flex-end', 
+                    flex: 1 
+                }}>
+                    <button 
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--theme-text)',
+                            cursor: 'pointer',
+                            padding: '8px'
+                        }}
+                    >
+                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+
+                {/* Mobile Menu Overlay */}
+                <AnimatePresence>
+                    {isMobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="nav-mobile-menu"
+                            style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                right: 0,
+                                marginTop: '12px',
+                                background: 'var(--nav-glass-bg, rgba(255,255,255,0.9))',
+                                backdropFilter: 'blur(20px)',
+                                border: '1px solid var(--nav-glass-border, rgba(255,255,255,0.1))',
+                                borderRadius: '24px',
+                                padding: '24px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '16px',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                                zIndex: 300
+                            }}
+                        >
+                            <NavLink onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }} icon={<Home size={18} />}>Home</NavLink>
+                            <NavLink onClick={() => { scrollToSection('how-it-works'); setIsMobileMenuOpen(false); }} icon={<LayoutDashboard size={18} />}>How It Works</NavLink>
+                            <NavLink onClick={() => { navigate('/pricing'); setIsMobileMenuOpen(false); }} icon={<CreditCard size={18} />}>Pricing</NavLink>
+                            
+                            <div style={{ height: '1px', background: 'var(--nav-glass-border, rgba(0,0,0,0.05))', margin: '8px 0' }} />
+                            
+                            {isAuthenticated ? (
+                                <>
+                                    <div style={{ fontSize: '10px', fontWeight: 900, color: 'var(--muted)', letterSpacing: '0.1em', marginBottom: '8px' }}>{user?.role === 'ROLE_SUPER_ADMIN' ? 'ADMIN_CONSOLE' : 'DASHBOARD_NAVIGATION'}</div>
+                                    {user?.role === 'ROLE_SUPER_ADMIN' ? (
+                                        <>
+                                            <NavLink onClick={() => { handleNav('overview'); setIsMobileMenuOpen(false); }} icon={<Activity size={18} />}>Overview</NavLink>
+                                            <NavLink onClick={() => { handleNav('tenants'); setIsMobileMenuOpen(false); }} icon={<Activity size={18} />}>Tenants</NavLink>
+                                            <NavLink onClick={() => { handleNav('plans'); setIsMobileMenuOpen(false); }} icon={<CreditCard size={18} />}>Plans</NavLink>
+                                            <NavLink onClick={() => { handleNav('users'); setIsMobileMenuOpen(false); }} icon={<User size={18} />}>Users</NavLink>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <NavLink onClick={() => { handleNav('overview'); setIsMobileMenuOpen(false); }} icon={<Activity size={18} />}>Overview</NavLink>
+                                            <NavLink onClick={() => { handleNav('credentials'); setIsMobileMenuOpen(false); }} icon={<CreditCard size={18} />}>Credentials</NavLink>
+                                            <NavLink onClick={() => { handleNav('plans'); setIsMobileMenuOpen(false); }} icon={<LayoutDashboard size={18} />}>Subscription Plans</NavLink>
+                                            <NavLink onClick={() => { handleNav('subscribers'); setIsMobileMenuOpen(false); }} icon={<User size={18} />}>Subscribers</NavLink>
+                                            <NavLink onClick={() => { handleNav('services'); setIsMobileMenuOpen(false); }} icon={<Activity size={18} />}>System Services</NavLink>
+                                        </>
+                                    )}
+                                    
+                                    <div style={{ height: '1px', background: 'var(--nav-glass-border, rgba(0,0,0,0.05))', margin: '8px 0' }} />
+                                    <button
+                                        onClick={handleLogout}
+                                        style={{ 
+                                            padding: '12px', 
+                                            background: '#ef4444', 
+                                            color: '#fff', 
+                                            border: 'none', 
+                                            borderRadius: '12px', 
+                                            fontWeight: 700 
+                                        }}
+                                    >
+                                        Log Out
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }} style={{ padding: '12px', border: '1px solid var(--nav-glass-border)', borderRadius: '12px', background: 'none', color: 'var(--theme-text)', fontWeight: 600 }}>Sign In</button>
+                                    <button onClick={() => { navigate('/register'); setIsMobileMenuOpen(false); }} style={{ padding: '12px', border: 'none', borderRadius: '12px', background: 'var(--theme-text)', color: 'var(--bg)', fontWeight: 700 }}>Start Free Trial</button>
+                                </>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </nav>
         </div>
     );

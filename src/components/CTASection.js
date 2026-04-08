@@ -5,8 +5,8 @@ const CTASection = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto', background: 'var(--bg)' }} className="reveal">
-            <div style={{
+        <div id="cta-section" className="cta-container-shell" style={{ padding: '100px 48px', maxWidth: '1280px', margin: '0 auto', background: 'var(--bg)' }}>
+            <div className="cta-content-inner" style={{
                 background: 'var(--testimonial-bg)',
                 borderRadius: '24px',
                 padding: '80px 80px',
@@ -60,7 +60,7 @@ const CTASection = () => {
                         Connect your frontend to the SubSphere backend in minutes. JWT auth, plan management, automated renewals — all ready to go.
                     </p>
 
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '36px', flexWrap: 'wrap' }}>
+                    <div className="cta-buttons" style={{ display: 'flex', gap: '12px', marginTop: '36px', flexWrap: 'wrap' }}>
                         <button
                             onClick={() => navigate('/pricing')}
                             style={{
@@ -135,6 +135,26 @@ const CTASection = () => {
                     </div>
                 </div>
             </div>
+            <style>{`
+                @media (max-width: 860px) {
+                    .cta-container-shell { padding: 60px 20px !important; }
+                    .cta-content-inner {
+                        grid-template-columns: 1fr !important;
+                        padding: 60px 32px !important;
+                        text-align: center;
+                    }
+                    .cta-content-inner p { margin: 16px auto !important; }
+                    .cta-content-inner > div { align-items: center !important; }
+                    .cta-content-inner .cta-buttons { justify-content: center !important; }
+                    .cta-content-inner > div:last-child { 
+                        width: 100% !important; 
+                        margin-top: 20px; 
+                    }
+                    .cta-content-inner > div:last-child > div {
+                        min-width: 0 !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

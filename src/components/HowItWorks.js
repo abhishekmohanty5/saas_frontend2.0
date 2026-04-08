@@ -46,7 +46,7 @@ const HowItWorks = () => {
     ];
 
     return (
-        <div id="how-it-works" style={{
+        <div id="how-it-works" className="how-it-works-section" style={{
             background: 'var(--bg)',
             padding: '140px 48px',
             position: 'relative',
@@ -80,7 +80,7 @@ const HowItWorks = () => {
                 </h2>
 
                 {/* Steps Container with 3D context */}
-                <div style={{
+                <div className="steps-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(4, 1fr)',
                     gap: '40px',
@@ -88,7 +88,7 @@ const HowItWorks = () => {
                     transformStyle: 'preserve-3d'
                 }}>
                     {/* Progress Track - Elevated in 3D */}
-                    <div style={{
+                    <div className="progress-track-3d" style={{
                         position: 'absolute',
                         top: '40px',
                         left: '12.5%',
@@ -158,6 +158,11 @@ const HowItWorks = () => {
                 @keyframes subtleEntry {
                     from { opacity: 0; transform: translateY(20px) translateZ(-50px); }
                     to { opacity: 1; transform: translateY(0) translateZ(0); }
+                }
+                @media (max-width: 860px) {
+                    .how-it-works-section { padding: 80px 20px !important; }
+                    .steps-grid { grid-template-columns: 1fr !important; gap: 60px !important; }
+                    .progress-track-3d { display: none !important; }
                 }
             `}</style>
         </div>

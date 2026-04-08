@@ -22,7 +22,7 @@ const HeroSubSphere = () => {
     };
 
     return (
-        <section style={{
+        <section className="hero-section" style={{
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
@@ -91,9 +91,9 @@ const HeroSubSphere = () => {
             }} />
 
             {/* ═ THE AEGIS SPATIAL GLOBE (Pure CSS 3D - Setup for Perf) ═ */}
-            <div style={{
+            <div className="aegis-globe-container" style={{
                 position: 'absolute',
-                top: '60%', left: '50%',
+                top: '50%', left: '50%',
                 /* Drastically simplified parallax - translation is much faster than 3D rotation */
                 transform: `translate(-50%, -50%) translate3d(${tilt.x * -0.5}px, ${tilt.y * -0.5}px, 0)`,
                 width: '800px', height: '800px',
@@ -247,9 +247,9 @@ const HeroSubSphere = () => {
                     Unified auth and subscription lifecycles in one spatial engine.
                 </p>
 
-                <div style={{
+                <div className="hero-cta-container" style={{
                     display: 'flex',
-                    gap: '32px',
+                    gap: '24px',
                     justifyContent: 'center',
                     alignItems: 'center',
                     animation: 'fadeSlideUp 0.8s 0.3s ease both'
@@ -298,7 +298,7 @@ const HeroSubSphere = () => {
             </div>
 
             {/* ═ PREMIUM GLASSMORPHIC ACCENTS ═ */}
-            <div style={{
+            <div className="floating-badge-mobile-hide" style={{
                 position: 'absolute',
                 inset: 0,
                 pointerEvents: 'none',
@@ -329,6 +329,24 @@ const HeroSubSphere = () => {
                 @keyframes floatGlass {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-15px); }
+                }
+                @media (max-width: 860px) {
+                    .hero-section { padding: 100px 20px !important; }
+                    .aegis-globe-container { 
+                        width: 400px !important; 
+                        height: 400px !important; 
+                        top: 45% !important;
+                    }
+                    .hero-cta-container {
+                        flex-direction: column !important;
+                        gap: 16px !important;
+                        width: 100%;
+                    }
+                    .hero-cta-container button {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    .floating-badge-mobile-hide { display: none !important; }
                 }
             `}</style>
         </section>

@@ -851,9 +851,34 @@ export default function Dashboard() {
         .dashboard-container {
           background-image: ${isDark ? "radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.15), transparent 50%)" : "radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.08), transparent 45%)"};
         }
+        @media (max-width: 900px) {
+          .dashboard-main-layout {
+            flex-direction: column !important;
+          }
+          .dashboard-content-main {
+            padding: 100px 16px 24px !important;
+          }
+          .responsive-grid-3 {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .table-container {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+          }
+          .dashboard-header-row {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 16px !important;
+          }
+          .header-actions {
+            width: 100% !important;
+            justify-content: flex-start !important;
+          }
+        }
       `}</style>
       <Navbar />
-      <div style={{ display: "flex", minHeight: "calc(100vh - 68px)" }}>
+      <div className="dashboard-main-layout" style={{ display: "flex", minHeight: "calc(100vh - 68px)" }}>
         <ConsoleSidebar
           sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
           activeTab={activeTab} tenantName={dashboard?.tenantName}
@@ -861,7 +886,7 @@ export default function Dashboard() {
           daysRemaining={dashboard?.daysRemaining}
         />
 
-        <main style={{
+        <main className="dashboard-content-main" style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
@@ -1077,7 +1102,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
+                <div className="responsive-grid-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
                   {plans.length > 0 ? plans.map((plan, i) => (
                     <PlanCard
                       key={i}
@@ -1478,7 +1503,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div style={{ 
+                <div className="table-container" style={{ 
                   background: isDark ? "rgba(10, 10, 15, 0.4)" : "rgba(255, 255, 255, 0.8)", 
                   backdropFilter: "blur(12px)", 
                   borderRadius: 24, 

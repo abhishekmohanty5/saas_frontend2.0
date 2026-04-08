@@ -119,7 +119,7 @@ const ApiDocsSection = () => {
     }, [selectedEndpoint]);
 
     return (
-        <section id="api-reference" style={{
+        <section id="api-reference" className="api-docs-section" style={{
             background: 'var(--white)',
             padding: '120px 48px',
             fontFamily: 'var(--ff-sans)',
@@ -154,7 +154,7 @@ const ApiDocsSection = () => {
                     </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1.2fr', gap: '60px', alignItems: 'start' }}>
+                <div className="api-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 1.2fr', gap: '60px', alignItems: 'start' }}>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         {endpoints.map((ep, i) => (
@@ -276,6 +276,12 @@ const ApiDocsSection = () => {
 
                 </div>
             </div>
+            <style>{`
+                @media (max-width: 960px) {
+                    .api-docs-section { padding: 80px 20px !important; }
+                    .api-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+                }
+            `}</style>
         </section>
     );
 };

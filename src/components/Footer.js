@@ -35,9 +35,9 @@ const Footer = () => {
             <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                 
                 {/* Main Content Area: Shorter and more focused */}
-                <div style={{
+                <div className="footer-main-grid" style={{
                     display: 'flex',
-                    flexDirection: window.innerWidth > 768 ? 'row' : 'column',
+                    flexDirection: 'row',
                     justifyContent: 'space-between',
                     gap: '40px',
                     marginBottom: '32px'
@@ -104,7 +104,7 @@ const Footer = () => {
                 </div>
 
                 {/* Bottom Section: Clean, Apple-like footer bar */}
-                <div style={{
+                <div className="footer-bottom-bar" style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -135,6 +135,10 @@ const Footer = () => {
                             .footer-bottom-link:hover {
                                 color: var(--ink);
                                 opacity: 1;
+                            }
+                            @media (max-width: 860px) {
+                                .footer-main-grid { flex-direction: column !important; gap: 40px !important; }
+                                .footer-bottom-bar { flex-direction: column !important; align-items: flex-start !important; }
                             }
                         `}</style>
                     </div>

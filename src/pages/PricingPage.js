@@ -22,6 +22,7 @@ const PricingPage = () => {
   const selectedPlanParam = searchParams.get('plan'); // can be id or name
   const selectedPlanNameParam = searchParams.get('planName'); // name
   const billingParam = searchParams.get('billing'); // monthly | annual
+const isWelcomeMode = searchParams.get('welcome') === 'true';
 
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -210,6 +211,25 @@ const PricingPage = () => {
             All plans include the full API suite, multi-tenant JWT auth, and automated dev consoles.
           </p>
 
+          {isWelcomeMode && (
+            <div style={{
+              marginTop: '32px',
+              padding: '24px 32px',
+              background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.1))',
+              border: '1px solid var(--border2)',
+              borderRadius: '24px',
+              maxWidth: '600px',
+              animation: 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '24px', marginBottom: '8px' }}>🚀</div>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)', marginBottom: '8px' }}>Welcome to Aegis, {user?.name || 'Explorer'}!</h2>
+              <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5 }}>
+                Your <strong>14-day Free Trial</strong> is already active. Explore the dashboard below or choose a paid plan to unlock enterprise-scale throughput immediately.
+              </p>
+            </div>
+          )}
+
           {/* Toggle */}
           <div
             role="group"
@@ -337,23 +357,19 @@ const PricingPage = () => {
         )}
 
         {/* Cards Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '32px',
-          alignItems: 'stretch',
-          perspective: '1200px',
-          paddingBottom: '40px'
-        }}>
+        <div className="pricing-grid">
           {filteredPlans.map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
               billingInterval={billingInterval}
               subscribing={subscribingPlanId === plan.id}
-              onAction={handleSubscribe}
+              onAction={plan.price === 0 && isWelcomeMode ? () => navigate('/dashboard') : handleSubscribe}
               disabled={isSuperAdmin}
-              actionLabel={isSuperAdmin ? 'Admin cannot subscribe' : undefined}
+              actionLabel={
+                isSuperAdmin ? 'Admin view only' : 
+                (plan.price === 0 && isWelcomeMode ? 'Go to Dashboard' : undefined)
+              }
             />
           ))}
         </div>
@@ -378,6 +394,32 @@ const PricingPage = () => {
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .pricing-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 32px;
+          align-items: stretch;
+          perspective: 1200px;
+          padding-bottom: 40px;
+        }
+        @media (max-width: 1100px) {
+          .pricing-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 768px) {
+          .pricing-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+          section {
+            padding: 60px 20px 30px !important;
+          }
         }
       `}</style>
     </div>
