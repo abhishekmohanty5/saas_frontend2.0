@@ -95,7 +95,10 @@ export const authAPI = {
   // Password Reset Endpoints
   forgotPassword: (email) => publicApi.post('v1/auth/forgot-password', { email }),
   validateResetToken: (token) => publicApi.get(`v1/auth/validate-reset-token?token=${token}`),
-  resetPassword: (data) => publicApi.post('v1/auth/reset-password', data)
+  resetPassword: (data) => publicApi.post('v1/auth/reset-password', data),
+
+  // Email Verification
+  verifyEmail: (token) => publicApi.get(`v1/auth/verify-email?token=${token}`)
 };
 
 // ==================== PUBLIC ENDPOINTS ====================

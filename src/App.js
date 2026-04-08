@@ -14,6 +14,7 @@ import SubscriptionsPage from './pages/SubscriptionsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 import './App.css';
 
@@ -32,6 +33,7 @@ function App() {
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
 
               {/* ── Tenant Admin Dashboard ── */}
               <Route

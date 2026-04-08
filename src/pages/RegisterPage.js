@@ -76,37 +76,57 @@ const RegisterPage = () => {
         return Object.keys(errs).length === 0;
     };
 
+    const [isSuccess, setIsSuccess] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
         setLoading(true);
         setApiError('');
         try {
-            const res = await authAPI.register({
+            await authAPI.register({
                 tenantName: form.tenantName.trim(),
                 userName: form.userName.trim(),
                 email: form.email.trim(),
                 password: form.password,
             });
-            const token = res.data?.data?.token;
-            if (token) {
-                localStorage.setItem('token', token);
-                const user = {
-                    email: res.data?.data?.email || form.email,
-                    name: form.userName.trim(),
-                    role: 'ROLE_TENANT_ADMIN'
-                };
-                localStorage.setItem('user', JSON.stringify(user));
-                navigate(decodeURIComponent(redirectTo));
-            } else {
-                navigate('/login');
-            }
+            setIsSuccess(true);
         } catch (err) {
             setApiError(err.response?.data?.message || 'Registration failed');
         } finally {
             setLoading(false);
         }
     };
+
+    if (isSuccess) {
+        return (
+            <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+                <Navbar />
+                <BackgroundElements />
+                <div style={styles.page}>
+                    <div style={styles.card}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{
+                                width: '64px', height: '64px', background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e',
+                                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px'
+                            }}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <h1 style={styles.heading}>Check your inbox</h1>
+                            <p style={styles.p}>
+                                We've sent a verification link to <strong style={{color: 'var(--ink)'}}>{form.email}</strong>. 
+                                Please click the link in your email to activate your account.
+                            </p>
+                            <div style={{ marginTop: '32px' }}>
+                                <Link to="/login" style={styles.submitBtn}>Go to Login</Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -282,6 +302,12 @@ const styles = {
         fontSize: '15px',
         color: 'var(--muted)',
         marginBottom: '24px',
+    },
+    p: {
+        fontSize: '16px',
+        color: 'var(--muted)',
+        lineHeight: 1.6,
+        marginBottom: '30px',
     },
     switchLink: {
         color: '#3b82f6',
