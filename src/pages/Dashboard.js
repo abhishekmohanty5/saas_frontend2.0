@@ -740,6 +740,50 @@ export default function Dashboard() {
   const [aiSuggestedResult, setAiSuggestedResult] = useState(null);
 
   const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const docsShellStyle = {
+    marginTop: 16,
+    borderRadius: 32,
+    overflow: 'hidden',
+    border: `1px solid ${isDark ? 'rgba(99, 102, 241, 0.16)' : 'rgba(99, 102, 241, 0.10)'}`,
+    background: isDark
+      ? 'linear-gradient(180deg, rgba(10, 10, 15, 0.98) 0%, rgba(8, 10, 18, 0.92) 100%)'
+      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 255, 0.88) 100%)',
+    boxShadow: isDark
+      ? '0 30px 80px -24px rgba(0, 0, 0, 0.70), 0 0 0 1px rgba(255,255,255,0.03) inset'
+      : '0 30px 70px -28px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(255,255,255,0.75) inset'
+  };
+  const docsHeaderStyle = {
+    padding: 28,
+    borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15, 23, 42, 0.08)'}`,
+    background: isDark
+      ? 'linear-gradient(135deg, rgba(30, 41, 59, 0.45), rgba(15, 23, 42, 0.1))'
+      : 'linear-gradient(135deg, rgba(255,255,255,0.8), rgba(241, 245, 249, 0.75))'
+  };
+  const docsGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 0.95fr) minmax(0, 1.05fr)',
+    gap: 24,
+    padding: 28
+  };
+  const docsStatStyle = {
+    padding: '14px 16px',
+    borderRadius: 18,
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15, 23, 42, 0.08)'}`,
+    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.72)',
+    boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'inset 0 1px 0 rgba(255,255,255,0.7)'
+  };
+  const docsSnippet = `fetch("/api/v1/users/register", {
+  method: "POST",
+  headers: {
+    "X-API-CLIENT-ID": "${dashboard?.clientId || 'YOUR_CLIENT_ID'}",
+    "X-API-CLIENT-SECRET": "YOUR_SECRET",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    name: "Jane Doe",
+    email: "jane@company.com"
+  })
+})`;
 
   const handleUnauth = useCallback(() => {
     localStorage.removeItem('token');
@@ -788,10 +832,10 @@ export default function Dashboard() {
       };
 
       if (editingPlanId) {
-        await api.put(`/v1/tenant-admin/tenant-plans/${editingPlanId}`, payload);
+        await dashboardAPI.updateTenantPlan(editingPlanId, payload);
         toast.success("RECONFIGURED", "Infrastructure node reconfigured");
       } else {
-        await api.post('/v1/tenant-admin/tenant-plans', payload);
+        await dashboardAPI.createTenantPlan(payload);
         toast.success("DEPLOYED", "Infrastructure tier live on network");
       }
       
@@ -985,35 +1029,150 @@ export default function Dashboard() {
                   clientSecret={dashboard?.clientSecret} 
                 />
 
-                  {/* Quick Start Module */}
-                  <div style={{
-                    marginTop: 16,
-                    padding: 32,
-                    background: "#0f172a",
-                    borderRadius: 24,
-                    border: "1px solid rgba(255,255,255,0.05)",
-                    boxShadow: '0 25px 60px -12px var(--theme-border)'
-                  }}>
-                    <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.15em', marginBottom: 24, textTransform: 'uppercase' }}>
-                      QUICK START // INTEGRATION
+                {/* Quick Start Module */}
+                <div style={docsShellStyle}>
+                  <div style={docsHeaderStyle}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                      <div style={{ maxWidth: 620 }}>
+                        <div style={{ fontSize: 11, fontWeight: 900, color: '#6366f1', letterSpacing: '0.18em', marginBottom: 14, textTransform: 'uppercase' }}>
+                          QUICK START // INTEGRATION
+                        </div>
+                        <h3 style={{ fontSize: 30, lineHeight: 1.08, margin: 0, color: 'var(--theme-text)', letterSpacing: '-0.04em', fontWeight: 900, fontFamily: 'var(--ff-h)' }}>
+                          Connect your tenant in minutes
+                        </h3>
+                        <p style={{ margin: '14px 0 0', color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, maxWidth: 560, fontWeight: 500 }}>
+                          Keep your keys server-side, send signed requests to the tenant API, and let the dashboard handle the rest with secure, observable integration flows.
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px, 1fr))', gap: 12, minWidth: 320, flex: '1 1 320px' }}>
+                        {[
+                          { label: 'Endpoint', value: '/api/v1/users/register' },
+                          { label: 'Auth', value: 'Client ID + Secret' },
+                          { label: 'Mode', value: 'Production Ready' }
+                        ].map((item) => (
+                          <div key={item.label} style={docsStatStyle}>
+                            <div style={{ fontSize: 10, fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+                              {item.label}
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--theme-text)', lineHeight: 1.4 }}>
+                              {item.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <pre style={{
-                      margin: 0,
-                      color: 'var(--muted)',
-                      fontSize: 13,
-                      fontFamily: 'var(--ff-mono)',
-                      lineHeight: 1.7,
-                      overflowX: 'auto'
-                    }}>
-                      <span style={{ color: '#8b5cf6' }}>fetch</span>(<span style={{ color: '#22d3ee' }}>"/api/v1/users/register"</span>, &#123;{"\n"}
-                      {"  "}headers: &#123;{"\n"}
-                      {"    "}<span style={{ color: '#f43f5e' }}>"X-API-CLIENT-ID"</span>: <span style={{ color: '#22d3ee' }}>"{dashboard?.clientId || 'YOUR_CLIENT_ID'}"</span>,{"\n"}
-                      {"    "}<span style={{ color: '#f43f5e' }}>"X-API-CLIENT-SECRET"</span>: <span style={{ color: '#22d3ee' }}>"YOUR_SECRET"</span>,{"\n"}
-                      {"    "}<span style={{ color: '#f43f5e' }}>"Content-Type"</span>: <span style={{ color: '#22d3ee' }}>"application/json"</span>{"\n"}
-                      {"  "}&#125;{"\n"}
-                      &#125;)
-                    </pre>
                   </div>
+
+                  <div style={docsGridStyle}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      {[
+                        {
+                          title: '1. Store credentials securely',
+                          text: 'Keep the client ID and secret in environment variables on your backend. Never expose the secret in browser code.'
+                        },
+                        {
+                          title: '2. Send the request',
+                          text: 'Call the tenant endpoint with the required headers and a JSON payload that matches the endpoint contract.'
+                        },
+                        {
+                          title: '3. Handle the response',
+                          text: 'Treat 2xx responses as success, and surface 4xx or 5xx responses in your integration logs or observability tools.'
+                        }
+                      ].map((step) => (
+                        <div key={step.title} style={{
+                          padding: 18,
+                          borderRadius: 20,
+                          border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.08)'}`,
+                          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.74)',
+                          boxShadow: isDark ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'inset 0 1px 0 rgba(255,255,255,0.72)'
+                        }}>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--theme-text)', marginBottom: 8, letterSpacing: '-0.02em' }}>
+                            {step.title}
+                          </div>
+                          <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--muted)', fontWeight: 500 }}>
+                            {step.text}
+                          </div>
+                        </div>
+                      ))}
+
+                      <div style={{
+                        padding: 18,
+                        borderRadius: 20,
+                        border: `1px solid ${isDark ? 'rgba(96,165,250,0.18)' : 'rgba(59,130,246,0.16)'}`,
+                        background: isDark ? 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(16,185,129,0.06))' : 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.05))'
+                      }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#3b82f6', letterSpacing: '0.14em', marginBottom: 8, textTransform: 'uppercase' }}>
+                          Security note
+                        </div>
+                        <div style={{ fontSize: 13, lineHeight: 1.7, color: 'var(--muted)', fontWeight: 500 }}>
+                          Rotate secrets periodically and avoid putting tenant credentials in client-side bundles or mobile app code.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      borderRadius: 24,
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.08)'}`,
+                      background: isDark ? 'linear-gradient(180deg, rgba(2,6,23,0.98), rgba(15,23,42,0.94))' : 'linear-gradient(180deg, rgba(15,23,42,0.98), rgba(10,14,30,0.95))',
+                      boxShadow: isDark ? '0 24px 50px -20px rgba(0,0,0,0.55)' : '0 24px 50px -20px rgba(15,23,42,0.35)',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '14px 18px',
+                        borderBottom: '1px solid rgba(255,255,255,0.08)',
+                        background: 'rgba(255,255,255,0.02)'
+                      }}>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} />
+                          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} />
+                          <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} />
+                        </div>
+                        <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+                          Tenant Integration Snippet
+                        </div>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard.writeText(docsSnippet);
+                              toast?.success?.('Integration snippet copied');
+                            } catch (error) {
+                              toast?.error?.('Copy failed');
+                            }
+                          }}
+                          style={{
+                            border: '1px solid rgba(255,255,255,0.10)',
+                            background: 'rgba(255,255,255,0.06)',
+                            color: '#fff',
+                            borderRadius: 999,
+                            padding: '8px 14px',
+                            fontSize: 12,
+                            fontWeight: 800,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Copy Snippet
+                        </button>
+                      </div>
+                      <pre style={{
+                        margin: 0,
+                        padding: '20px 20px 24px',
+                        color: '#cbd5e1',
+                        fontSize: 13,
+                        fontFamily: 'var(--ff-mono)',
+                        lineHeight: 1.8,
+                        overflowX: 'auto',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        <code>{docsSnippet}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1055,11 +1214,11 @@ export default function Dashboard() {
                       style={{
                         background: "rgba(99, 102, 241, 0.05)",
                         color: "#6366f1",
-                        borderRadius: 14,
+                        borderRadius: 12,
                         border: "1px solid rgba(99, 102, 241, 0.15)",
-                        padding: "12px 24px",
+                        padding: "8px 16px",
                         fontWeight: 800,
-                        fontSize: 13,
+                        fontSize: 12,
                         cursor: "pointer",
                         transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
                         display: 'flex',
@@ -1071,7 +1230,7 @@ export default function Dashboard() {
                       onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                       onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                     >
-                      <Icon name="zap" size={14} color="#6366f1" />
+                      <Icon name="zap" size={13} color="#6366f1" />
                       AI Insights
                     </button>
 
@@ -1080,11 +1239,11 @@ export default function Dashboard() {
                       style={{
                         background: "#0a0a0a",
                         color: "#FFF",
-                        borderRadius: 14,
+                        borderRadius: 12,
                         border: "1px solid rgba(255,255,255,0.1)",
-                        padding: "12px 24px",
+                        padding: "8px 16px",
                         fontWeight: 800,
-                        fontSize: 13,
+                        fontSize: 12,
                         cursor: "pointer",
                         boxShadow: "0 10px 30px var(--theme-border)",
                         transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
@@ -1123,7 +1282,7 @@ export default function Dashboard() {
                       onDelete={async (id) => {
                         if (window.confirm("Are you sure you want to decommission this plan?")) {
                           try {
-                            await api.delete(`/v1/tenant-admin/tenant-plans/${id}`);
+                            await dashboardAPI.deleteTenantPlan(id);
                             toast.success("Decommissioned", "Plan has been removed from infrastructure");
                             fetchData();
                           } catch (err) {
@@ -1282,26 +1441,18 @@ export default function Dashboard() {
                   <div style={{
                     position: 'fixed', inset: 0, zIndex: 1000,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(7, 7, 10, 0.6)', backdropFilter: 'blur(20px)',
+                    background: 'rgba(7, 7, 10, 0.4)', backdropFilter: 'blur(30px)',
                     perspective: '2000px'
                   }}>
-                    <div className="telemetry-3d-card" style={{
-                      width: '100%', maxWidth: '460px', background: 'var(--glass-bg)',
-                      borderRadius: 32, padding: '40px', position: 'relative',
-                      boxShadow: '0 40px 100px -20px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
-                      animation: 'modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                    <div className="premium-modal" style={{
+                      width: '100%', maxWidth: '520px', background: isDark ? 'rgba(15, 15, 20, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: 32, padding: '48px', position: 'relative',
+                      boxShadow: '0 40px 100px -20px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05)',
+                      animation: 'modalSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                       border: '1px solid var(--theme-border)',
-                      transform: 'rotateX(4deg) translateY(-20px)',
-                      backdropFilter: 'blur(40px) saturate(180%)',
+                      transform: 'rotateX(2deg)',
                       overflow: 'hidden'
                     }}>
-                      {/* Scanning Line FX */}
-                      <div style={{ 
-                        position: 'absolute', top: '-100%', left: 0, width: '100%', height: '50%',
-                        background: 'linear-gradient(to bottom, transparent, rgba(99, 102, 241, 0.08), transparent)',
-                        animation: 'scanningLine 6s linear infinite', pointerEvents: 'none'
-                      }} />
-
                       <button
                         onClick={() => {
                           setShowPlanModal(false);
@@ -1309,159 +1460,127 @@ export default function Dashboard() {
                           setFormStep(1);
                           setNewPlan({ name: "", description: "", price: "", billingCycle: "MONTHLY", features: "", active: true });
                         }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--theme-border)', cursor: 'pointer', color: 'var(--muted)', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s', zIndex: 10 }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'var(--red)'; e.currentTarget.style.color = 'white'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--muted)'; }}
+                        style={{ position: 'absolute', top: 28, right: 28, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', zIndex: 10 }}
+                        onMouseOver={(e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'none'; }}
                       >
                         <Icon name="close" size={20} />
                       </button>
 
                       <div style={{ position: 'relative', zIndex: 1 }}>
-                        {/* STEP PROGRESS INDICATOR */}
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 32, padding: '2px' }}>
-                          {[1, 2, 3].map(s => (
+                        <div style={{ display: 'flex', gap: 6, marginBottom: 40 }}>
+                          {[1, 2].map(s => (
                             <div key={s} style={{ 
-                              flex: 1, height: 4, borderRadius: 2, 
-                              background: formStep >= s ? 'linear-gradient(90deg, #6366f1, #a855f7)' : 'rgba(255,255,255,0.1)',
-                              transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                              boxShadow: formStep === s ? '0 0 10px rgba(99, 102, 241, 0.4)' : 'none'
+                              flex: 1, height: 3, borderRadius: 2, 
+                              background: formStep >= s ? '#6366f1' : 'rgba(148, 163, 184, 0.1)',
+                              transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                             }} />
                           ))}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                          <div style={{ width: 40, height: 40, borderRadius: 14, background: 'rgba(99, 102, 241, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Icon name={formStep === 1 ? "edit" : (formStep === 2 ? "zap" : "check")} size={24} color="#6366f1" />
-                          </div>
-                          <div>
-                            <h2 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', margin: 0, letterSpacing: '-1px', fontFamily: 'var(--ff-h)' }}>
-                              {formStep === 1 ? 'STEP_01: IDENTITY' : (formStep === 2 ? 'STEP_02: ECONOMY' : 'STEP_03: PROTOCOLS')}
-                            </h2>
-                            <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0, fontWeight: 600 }}>
-                              {formStep === 1 ? 'Defining the infrastructure core' : (formStep === 2 ? 'Configuring resource allocation' : 'Finalizing security protocols')}
-                            </p>
-                          </div>
+                        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                          <h2 style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', margin: '0 0 12px 0', letterSpacing: '-1.5px', fontFamily: 'var(--ff-h)' }}>
+                            {formStep === 1 ? 'Plan Identity' : 'Commercials'}
+                          </h2>
+                          <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0, fontWeight: 500, opacity: 0.8 }}>
+                            {formStep === 1 ? 'Refine the core identity of your tier.' : 'Define the economic parameters.'}
+                          </p>
                         </div>
-                        
-                        <p style={{ color: 'var(--muted)', marginBottom: 32, fontSize: 13, fontWeight: 500, lineHeight: 1.6 }}>
-                          {formStep === 1 ? 'Enter the unique identifier and operational summary for this new infrastructure tier.' : 
-                           formStep === 2 ? 'Set the credit requirements and synchronization interval for the sub-mesh network.' : 
-                           'Define the core features and security protocols that will be deployed across the nodes.'}
-                        </p>
 
-                        <div style={{ display: 'grid', gap: 24, minHeight: '300px' }}>
+                        <div style={{ display: 'grid', gap: 28, minHeight: '280px' }}>
                           {formStep === 1 && (
-                            <div style={{ opacity: 1 }}>
-                              <div style={{ marginBottom: 24 }}>
-                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: '#6366f1', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>PLAN_IDENTIFIER</label>
+                            <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                              <div style={{ marginBottom: 28 }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Display Name</label>
                                 <input
-                                  type="text" placeholder="e.g. ULTIMATE_NODE"
+                                  type="text" placeholder="e.g. Professional Node"
                                   value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
-                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.3s' }}
-                                  onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-                                  onBlur={(e) => e.target.style.borderColor = 'var(--theme-border)'}
+                                  style={{ width: '100%', padding: '16px 20px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 15, color: 'var(--text)', background: 'rgba(0,0,0,0.02)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', fontWeight: 500 }}
+                                  onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.05)'; }}
+                                  onBlur={(e) => { e.target.style.borderColor = 'var(--theme-border)'; e.target.style.boxShadow = 'none'; }}
                                 />
                               </div>
                               <div>
-                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>OPERATIONAL_DESCRIPTION</label>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Mission Summary</label>
                                 <textarea
-                                  placeholder="Brief summary of the plan capability..."
+                                  placeholder="Describe the target scale and purpose..."
                                   value={newPlan.description} onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, height: 120, resize: 'none', color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', lineHeight: 1.6 }}
+                                  style={{ width: '100%', padding: '16px 20px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 15, height: 120, resize: 'none', color: 'var(--text)', background: 'rgba(0,0,0,0.02)', lineHeight: 1.6, fontWeight: 500 }}
                                 />
                               </div>
                             </div>
                           )}
 
                           {formStep === 2 && (
-                            <div style={{ opacity: 1 }}>
-                              <div style={{ display: 'grid', gap: 24 }}>
+                            <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                              <div style={{ display: 'grid', gap: 28 }}>
                                 <div>
-                                  <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CREDITS_PER_CYCLE</label>
+                                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Market Price (INR)</label>
                                   <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontWeight: 800, fontSize: 14 }}>₹</span>
+                                    <span style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontWeight: 700, fontSize: 16 }}>₹</span>
                                     <input
                                       type="number" placeholder="0"
                                       value={newPlan.price} onChange={(e) => setNewPlan({ ...newPlan, price: e.target.value })}
-                                      style={{ width: '100%', padding: '14px 18px 14px 34px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, color: 'var(--text)', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                      style={{ width: '100%', padding: '16px 20px 16px 40px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 18, color: 'var(--text)', background: 'rgba(0,0,0,0.02)', fontWeight: 800 }}
                                     />
                                   </div>
                                 </div>
                                 <div>
-                                  <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>SYNC_INTERVAL</label>
+                                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Billing Sequence</label>
                                   <select
                                     value={newPlan.billingCycle} onChange={(e) => setNewPlan({ ...newPlan, billingCycle: e.target.value })}
-                                    style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 14, background: 'rgba(0, 0, 0, 0.25)', color: 'var(--text)', cursor: 'pointer', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}
+                                    style={{ width: '100%', padding: '16px 20px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 15, background: 'rgba(0,0,0,0.02)', color: 'var(--text)', cursor: 'pointer', appearance: 'none', fontWeight: 600 }}
                                   >
-                                    <option value="MONTHLY">Monthly cycle</option>
-                                    <option value="YEARLY">Yearly cycle</option>
+                                    <option value="MONTHLY">Monthly Retainer</option>
+                                    <option value="YEARLY">Annual Commitment</option>
                                   </select>
                                 </div>
                               </div>
                             </div>
                           )}
 
-                          {formStep === 3 && (
-                            <div style={{ opacity: 1 }}>
-                              <div>
-                                <label style={{ display: 'block', fontSize: 10, fontWeight: 900, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.15em' }}>CORE_FEATURES (PROTOCOLS)</label>
-                                <textarea
-                                  placeholder="JWT_AUTH&#10;SSL_ENCRYPTION&#10;REGION_LOCK"
-                                  value={newPlan.features} onChange={(e) => setNewPlan({ ...newPlan, features: e.target.value })}
-                                  style={{ width: '100%', padding: '14px 18px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 13, height: 180, resize: 'none', color: '#a855f7', background: 'rgba(0, 0, 0, 0.25)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)', fontFamily: 'var(--ff-mono)', lineHeight: 1.6 }}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          <div style={{ display: 'flex', gap: 16, marginTop: 'auto', paddingTop: 20 }}>
-                            <button
-                              onClick={() => {
-                                if (formStep === 1) {
-                                  setShowPlanModal(false);
-                                  setEditingPlanId(null);
-                                  setFormStep(1);
-                                } else {
-                                  setFormStep(formStep - 1);
-                                }
-                              }}
-                              style={{
-                                flex: 1, background: 'rgba(255,255,255,0.05)', color: 'var(--text)', borderRadius: 16, border: '1px solid var(--theme-border)', padding: '16px', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', textTransform: 'uppercase', letterSpacing: '0.05em'
-                              }}
-                              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                            >
-                              {formStep === 1 ? '← BACK_TO_LIST' : '← PREVIOUS_PHASE'}
-                            </button>
+                          <div style={{ display: 'flex', gap: 12, marginTop: 'auto', paddingTop: 20 }}>
+                            {formStep > 1 && (
+                              <button
+                                onClick={() => setFormStep(formStep - 1)}
+                                style={{
+                                  background: 'none', color: 'var(--muted)', borderRadius: 14, border: '1px solid var(--theme-border)', padding: '12px 20px', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s'
+                                }}
+                                onMouseOver={(e) => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'none'; }}
+                              >
+                                &larr; Back
+                              </button>
+                            )}
                             
-                            {formStep < 3 ? (
+                            {formStep < 2 ? (
                               <button
                                 onClick={() => {
                                   if (formStep === 1 && !newPlan.name) {
-                                    toast.error("VALIDATION_ERROR", "Identifier is required");
+                                    toast.error("Required", "Please provide a name for this plan");
                                     return;
                                   }
                                   setFormStep(formStep + 1);
                                 }}
                                 style={{
-                                  flex: 2, background: 'rgba(99, 102, 241, 0.2)', color: '#6366f1', borderRadius: 16, border: '1px solid rgba(99, 102, 241, 0.3)', padding: '16px', fontWeight: 900, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', textTransform: 'uppercase', letterSpacing: '0.1em'
+                                  flex: 1, background: '#0a0a0a', color: 'white', borderRadius: 14, border: 'none', padding: '12px', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
                                 }}
-                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#0a0a0a'; }}
                               >
-                                CONTINUE_PROTOCOL &rarr;
+                                Continue &rarr;
                               </button>
                             ) : (
                               <button
                                 disabled={isSubmittingPlan}
                                 onClick={() => handleCreatePlan(newPlan)}
                                 style={{
-                                  flex: 2, background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: 'white', borderRadius: 16, border: 'none', padding: '16px', fontWeight: 900, fontSize: 14, cursor: 'pointer', transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)', opacity: isSubmittingPlan ? 0.7 : 1, boxShadow: '0 20px 40px -10px rgba(99, 102, 241, 0.5)', textTransform: 'uppercase', letterSpacing: '0.1em'
+                                  flex: 1, background: '#0a0a0a', color: 'white', borderRadius: 14, border: 'none', padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', opacity: isSubmittingPlan ? 0.7 : 1, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', letterSpacing: '0.05em'
                                 }}
-                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 25px 50px -10px rgba(99, 102, 241, 0.7)'; }}
-                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(99, 102, 241, 0.5)'; }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#0a0a0a'; }}
                               >
-                                {isSubmittingPlan ? (editingPlanId ? 'RECONFIGURING...' : 'COMMITTING...') : (editingPlanId ? 'COMMIT_RECONFIGURATION' : 'DEPLOY_INFRASTRUCTURE')}
+                                {isSubmittingPlan ? 'Synchronizing...' : (editingPlanId ? 'Update Protocol' : 'Deploy Protocol')}
                               </button>
                             )}
                           </div>
@@ -1755,50 +1874,54 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-          <Footer />
+          <Footer isDark={isDark} />
         </main>
       </div>
     </div>
   );
 }
 
-function Footer() {
+function Footer({ isDark = false }) {
   return (
     <footer style={{
       marginTop: "auto",
-      padding: "32px",
+      padding: "28px 32px 32px",
       borderTop: "1px solid var(--theme-border)",
-      background: "var(--glass-bg)",
-      backdropFilter: "blur(10px)"
+      background: isDark
+        ? "linear-gradient(180deg, rgba(8,12,24,0.9), rgba(2,6,23,0.96))"
+        : "linear-gradient(180deg, rgba(255,255,255,0.72), rgba(248,250,252,0.92))",
+      backdropFilter: "blur(18px) saturate(160%)"
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "var(--text)", letterSpacing: "-0.02em", padding: "10px 14px", borderRadius: 999, border: "1px solid var(--theme-border)", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.72)" }}>
             AEGIS<span style={{ color: "#3b82f6" }}>.</span>
           </div>
-          <div style={{ display: "flex", gap: 16, fontSize: 13, color: "var(--muted)", fontWeight: 600 }}>
-            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Docs</span>
-            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Support</span>
-            <span style={{ cursor: "pointer", transition: "color 0.2s" }}>Security</span>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {["Docs", "Support", "Security"].map((label) => (
+              <span key={label} style={{ cursor: "pointer", transition: "all 0.2s", fontSize: 13, color: "var(--muted)", fontWeight: 700, padding: "9px 14px", borderRadius: 999, border: "1px solid var(--theme-border)", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.45)" }}>
+                {label}
+              </span>
+            ))}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 32 }}>
-          <div style={{ textAlign: "right" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <div style={{ textAlign: "right", minWidth: 160, padding: "12px 16px", borderRadius: 18, border: "1px solid var(--theme-border)", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.55)" }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "1px" }}>System Region</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>ASIA-SOUTH-1</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>ASIA-SOUTH-1</div>
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div style={{ textAlign: "right", minWidth: 160, padding: "12px 16px", borderRadius: 18, border: "1px solid var(--theme-border)", background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.55)" }}>
             <div style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "1px" }}>Build Version</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>v4.2.0-stable</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--text)", marginTop: 4 }}>v4.2.0-stable</div>
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed var(--theme-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px dashed var(--theme-border)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 500 }}>
-          © 2026 Aegis. All protocols reserved.
+          {"\u00A9"} 2026 Aegis. All protocols reserved.
         </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981" }} />
+        <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(16,185,129,0.18)", background: "rgba(16,185,129,0.08)" }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px rgba(16,185,129,0.65)" }} />
           <span style={{ fontSize: 11, fontWeight: 800, color: "#10b981", letterSpacing: "0.5px" }}>ALL SYSTEMS OPERATIONAL</span>
         </div>
       </div>
@@ -1898,109 +2021,127 @@ function StatCard({ label, value, icon, iconColor, subValue = "System Data Linke
 
 function PlanCard({ plan, onDelete, onEdit }) {
   const [hovered, setHovered] = useState(false);
+  const [coord, setCoord] = useState({ x: 0, y: 0 });
   const features = plan.features ? plan.features.split(/[,\n]/).filter(f => f.trim()) : [];
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - card.left) / card.width;
+    const y = (e.clientY - card.top) / card.height;
+    setCoord({ x, y });
+  };
 
   return (
     <div 
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setCoord({ x: 0.5, y: 0.5 }); }}
+      onMouseMove={handleMouseMove}
       style={{
         background: "var(--surface)",
-        backgroundImage: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.03))",
-        borderRadius: "32px",
-        padding: "24px 28px",
+        backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%)",
+        borderRadius: "28px",
+        padding: "32px",
         display: "flex",
         flexDirection: "column",
         boxShadow: hovered 
-          ? "0 40px 80px -20px var(--shadow-lg), 0 0 0 1px var(--theme-border)"
-          : "0 15px 40px -15px var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.05)",
-        transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+          ? "0 40px 100px -20px rgba(0,0,0,0.3), 0 0 0 1px rgba(99, 102, 241, 0.1)"
+          : "0 10px 40px -15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.02)",
+        transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
         position: 'relative',
         border: '1px solid var(--theme-border)',
         cursor: 'default',
-        transform: hovered ? "translateY(-4px) scale(1.01)" : "translateY(0) scale(1)",
+        transform: hovered 
+          ? `perspective(1000px) rotateX(${(coord.y - 0.5) * -8}deg) rotateY(${(coord.x - 0.5) * 8}deg) translateY(-8px)` 
+          : "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)",
         overflow: 'hidden',
-        height: '100%'
+        height: '100%',
+        zIndex: hovered ? 10 : 1
       }}>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
+      {/* Glossy Overlay */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: `radial-gradient(circle at ${coord.x * 100}% ${coord.y * 100}%, rgba(255,255,255,0.08) 0%, transparent 60%)`,
+        opacity: hovered ? 1 : 0,
+        transition: 'opacity 0.4s',
+        pointerEvents: 'none'
+      }} />
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, position: 'relative', zIndex: 2 }}>
         <div>
-          <div style={{ fontSize: "10px", fontWeight: 800, color: "var(--muted)", textTransform: 'uppercase', letterSpacing: "1.2px", marginBottom: 4 }}>Infrastructure Node</div>
-          <h4 style={{ fontSize: "22px", fontWeight: 900, color: "var(--theme-text)", margin: 0, letterSpacing: "-1px" }}>{plan.name}</h4>
-          <div style={{ display: 'flex', marginTop: 10 }}>
+          <div style={{ fontSize: "9px", fontWeight: 900, color: "var(--muted)", textTransform: 'uppercase', letterSpacing: "0.2em", marginBottom: 6, opacity: 0.6 }}>ENGINE_NODE</div>
+          <h4 style={{ fontSize: "20px", fontWeight: 900, color: "var(--theme-text)", margin: 0, letterSpacing: "-0.03em", fontFamily: 'var(--ff-h)' }}>{plan.name}</h4>
+          <div style={{ display: 'flex', marginTop: 12 }}>
             <span style={{
-              fontSize: "9px",
+              fontSize: "8px",
               fontWeight: 900,
               textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              background: plan.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
+              letterSpacing: '0.15em',
+              background: plan.active ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
               color: plan.active ? '#10b981' : '#f43f5e',
-              padding: '4px 10px',
-              borderRadius: 20,
-              border: `1px solid ${plan.active ? '#10b98133' : '#f43f5e33'}`
+              padding: '4px 12px',
+              borderRadius: '100px',
+              border: `1px solid ${plan.active ? '#10b98122' : '#f43f5e22'}`
             }}>
-              {plan.active ? 'PROVISIONED' : 'HALTED'}
+              {plan.active ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 10 }}>
           <button
             onClick={() => onEdit?.(plan)}
             style={{
-              background: 'var(--theme-bg-secondary)',
+              background: 'rgba(255,255,255,0.03)',
               border: '1px solid var(--theme-border)',
-              width: "34px", height: "34px", borderRadius: "10px",
+              width: "36px", height: "36px", borderRadius: "12px",
               cursor: 'pointer', color: 'var(--muted)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s'
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
+            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1'; e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
           >
             <Icon name="edit" size={14} />
           </button>
           <button
             onClick={() => onDelete?.(plan.id)}
             style={{
-              background: 'rgba(244, 63, 94, 0.05)',
-              border: '1px solid rgba(244, 63, 94, 0.1)',
-              width: "34px", height: "34px", borderRadius: "10px",
-              cursor: 'pointer', color: '#f43f5e',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid var(--theme-border)',
+              width: "36px", height: "36px", borderRadius: "12px",
+              cursor: 'pointer', color: 'var(--muted)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.2s'
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
+            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#f43f5e'; e.currentTarget.style.color = '#f43f5e'; e.currentTarget.style.background = 'rgba(244, 63, 94, 0.1)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
           >
             <Icon name="trash" size={14} />
           </button>
         </div>
       </div>
 
-      <div style={{ fontSize: "32px", fontWeight: 950, color: "var(--theme-text)", marginBottom: 12, letterSpacing: "-1.5px", display: 'flex', alignItems: 'baseline' }}>
+      <div style={{ fontSize: "36px", fontWeight: 950, color: "var(--theme-text)", marginBottom: 12, letterSpacing: "-2px", display: 'flex', alignItems: 'baseline', position: 'relative', zIndex: 2 }}>
         {plan.price === 0 ? "Free" : `₹${plan.price}`}
-        <span style={{ fontSize: 13, color: "var(--muted)", fontWeight: 700, letterSpacing: 0, marginLeft: 2 }}>/{plan.billingCycle.toLowerCase()}</span>
+        <span style={{ fontSize: "11px", color: "var(--muted)", fontWeight: 800, letterSpacing: "0.1em", marginLeft: 6, textTransform: 'uppercase' }}>/{plan.billingCycle.charAt(0)}</span>
       </div>
 
-      <p style={{ fontSize: "14px", color: "var(--muted)", marginBottom: 28, lineHeight: 1.5, fontWeight: 500 }}>
-        {plan.description || "Active infrastructure tier serving production endpoints."}
+      <p style={{ fontSize: "13px", color: "var(--muted)", marginBottom: 32, lineHeight: 1.7, fontWeight: 500, opacity: 0.8, position: 'relative', zIndex: 2 }}>
+        {plan.description || "Production-ready infrastructure tier optimized for scale."}
       </p>
 
-      <div style={{ display: "grid", gap: 10, marginTop: 'auto' }}>
-        <div style={{ fontSize: "9px", fontWeight: 900, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>NODE_PROTOCOLS</div>
-        {features.map((feature, idx) => (
-          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 14, height: 14, borderRadius: "50%", background: "rgba(99, 102, 241, 0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "grid", gap: 12, marginTop: 'auto', position: 'relative', zIndex: 2 }}>
+        <div style={{ fontSize: "8px", fontWeight: 900, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
+        {features.slice(0, 4).map((feature, idx) => (
+          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 4 }}>
+            <div style={{ width: 14, height: 14, borderRadius: "50%", background: 'rgba(99, 102, 241, 0.1)', display: "flex", alignItems: "center", justifyContent: "center", border: '1px solid rgba(99, 102, 241, 0.1)' }}>
               <Icon name="check" size={8} color="#6366f1" />
             </div>
-            <span style={{ fontSize: '11px', color: "var(--theme-text)", opacity: 0.8, fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim()}</span>
+            <span style={{ fontSize: '11px', color: "var(--theme-text)", opacity: 0.7, fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim().toUpperCase()}</span>
           </div>
         ))}
       </div>
-
-      {/* Surface Light FX */}
-      <div style={{ 
-        position: 'absolute', inset: 0, 
-        background: `linear-gradient(135deg, rgba(255,255,255,${hovered ? 0.04 : 0}), transparent)`, 
-        pointerEvents: 'none',
-        transition: 'opacity 0.4s'
-      }} />
     </div>
   );
 }

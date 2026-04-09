@@ -179,43 +179,39 @@ const isWelcomeMode = searchParams.get('welcome') === 'true';
 
       {/* Unified Pricing Section Header */}
       <section style={{
-        padding: '80px 24px 40px',
-        maxWidth: '1400px',
+        padding: '140px 24px 60px',
+        maxWidth: '1200px',
         margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center'
       }}>
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: '#3b82f6', marginBottom: '16px' }}>
-            Subscription Plans
+          <div className="ui-eyebrow" style={{ marginBottom: '20px', color: '#6b7280' }}>
+            PROTOCOL TIERS
           </div>
           <h1 style={{
             fontFamily: 'var(--ff-h)',
-            fontSize: 'clamp(28px, 4vw, 44px)',
-            lineHeight: 1.1,
-            letterSpacing: '-1.5px',
-            color: 'var(--ink)',
+            fontSize: 'clamp(32px, 5vw, 48px)',
+            lineHeight: 1.02,
+            letterSpacing: '-0.055em',
+            color: 'var(--text)',
             fontWeight: 800,
-            maxWidth: '900px',
-            marginBottom: '16px',
+            maxWidth: '800px',
+            marginBottom: '24px',
             transition: 'color 0.3s ease'
           }}>
-            Simple, transparent <span style={{
-              background: 'linear-gradient(135deg, #0ea5e9, #6366f1)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>pricing</span>
+            Strategic <span className="ui-gradient-text">Infrastructure</span>
           </h1>
-          <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.6, maxWidth: '500px', margin: '0 auto', fontWeight: 400, transition: 'color 0.3s ease' }}>
-            All plans include the full API suite, multi-tenant JWT auth, and automated dev consoles.
+          <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.8, maxWidth: '420px', margin: '0 auto', fontWeight: 500, opacity: 0.78, transition: 'color 0.3s ease' }}>
+            Enterprise-grade node orchestration and high-performance edge computing nodes, refined for mission-critical scale.
           </p>
 
           {isWelcomeMode && (
             <div style={{
               marginTop: '32px',
               padding: '24px 32px',
-              background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(99, 102, 241, 0.1))',
+                background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.04), rgba(99, 102, 241, 0.06))',
               border: '1px solid var(--border2)',
               borderRadius: '24px',
               maxWidth: '600px',
@@ -236,7 +232,7 @@ const isWelcomeMode = searchParams.get('welcome') === 'true';
             aria-label="Billing frequency toggle"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '32px', fontSize: '14px', color: 'var(--muted)', transition: 'color 0.3s ease' }}
           >
-            <span style={{ fontWeight: 600 }}>Monthly</span>
+                <span style={{ fontWeight: 600, color: 'var(--muted)' }}>Monthly</span>
             <button
               type="button"
               aria-pressed={billingInterval === BILLING_INTERVALS.ANNUAL}
@@ -265,7 +261,7 @@ const isWelcomeMode = searchParams.get('welcome') === 'true';
                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
               }} />
             </button>
-            <span style={{ fontWeight: 600, color: billingInterval === BILLING_INTERVALS.ANNUAL ? 'var(--ink)' : 'var(--muted)', transition: 'color 0.3s ease' }}>
+              <span style={{ fontWeight: 600, color: billingInterval === BILLING_INTERVALS.ANNUAL ? 'var(--text)' : 'var(--muted)', transition: 'color 0.3s ease' }}>
               Annual <span style={{
                 display: 'inline-block',
                 background: 'rgba(59,130,246,0.1)',

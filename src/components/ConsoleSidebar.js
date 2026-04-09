@@ -65,6 +65,8 @@ const ConsoleSidebar = ({
         navigate(`/dashboard?tab=${id}`);
     };
 
+
+
     return (
         <aside style={{
             width: sidebarOpen ? 236 : 80,

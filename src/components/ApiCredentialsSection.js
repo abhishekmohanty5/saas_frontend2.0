@@ -1,302 +1,177 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/ApiCredentialsSection.css';
-import { Lock, Unlock, Eye, EyeOff, Copy, Check, ShieldCheck } from 'lucide-react';
+import { 
+  Key, 
+  Lock, 
+  Copy, 
+  Check, 
+  ShieldCheck, 
+  Tag, 
+  RefreshCw,
+  Plus,
+  AlertTriangle,
+  LockKeyhole,
+  Info
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { dashboardAPI } from '../services/api';
 
-const ApiCredentialsSection = ({ clientId: initialClientId, clientSecret: initialClientSecret }) => {
+const ApiCredentialsSection = ({ clientId: initialClientId }) => {
   const [credentials, setCredentials] = useState({
-    clientId: initialClientId || 'NOT_PROVISIONED',
-    clientSecret: initialClientSecret || 'NOT_PROVISIONED',
+    clientId: initialClientId || 'loading...',
+    clientSecret: '',
+    createdAt: 'Joined Oct 2025'
   });
 
-  // Update when props change
-  React.useEffect(() => {
-    setCredentials({
-      clientId: initialClientId || 'NOT_PROVISIONED',
-      clientSecret: initialClientSecret || 'NOT_PROVISIONED',
-    });
-  }, [initialClientId, initialClientSecret]);
+  const [hasCopied, setHasCopied] = useState({ id: false, secret: false });
+  const [isRolling, setIsRolling] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
+  const [showOneTimeModal, setShowOneTimeModal] = useState(false);
+  const [showDangerConfirm, setShowDangerConfirm] = useState(false);
+  const [modalType, setModalType] = useState('reveal');
 
-  const [revealed, setRevealed] = useState({
-    clientId: false,
-    clientSecret: false,
-  });
+  useEffect(() => {
+    fetchInitialData();
+  }, [initialClientId]);
 
-  const [locked, setLocked] = useState({
-    clientId: false,
-    clientSecret: false,
-  });
-
-  const [copied, setCopied] = useState({
-    clientId: false,
-    clientSecret: false,
-  });
-
-  const [newApiKey, setNewApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState([]);
-  const [showAddKey, setShowAddKey] = useState(false);
-
-  const toggleReveal = (field) => {
-    if (!locked[field]) {
-      setRevealed(prev => ({
-        ...prev,
-        [field]: !prev[field]
-      }));
+  const fetchInitialData = async () => {
+    try {
+        const response = await dashboardAPI.getOverview();
+        const data = response.data.data;
+        setCredentials(prev => ({
+            ...prev,
+            clientId: data.clientId,
+            createdAt: data.createdAt || 'Joined Oct 2025'
+        }));
+    } catch (error) {
+        console.error("Error fetching credentials:", error);
     }
   };
 
-  const toggleLock = (field) => {
-    setLocked(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
+  const copyToClipboard = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setHasCopied(prev => ({ ...prev, [field]: true }));
+    setTimeout(() => setHasCopied(prev => ({ ...prev, [field]: false })), 2000);
   };
 
-  const copyToClipboard = (value, field) => {
-    navigator.clipboard.writeText(value);
-    setCopied(prev => ({
-      ...prev,
-      [field]: true
-    }));
-    setTimeout(() => {
-      setCopied(prev => ({
-        ...prev,
-        [field]: false
-      }));
-    }, 2000);
-  };
-
-  const addApiKey = () => {
-    if (newApiKey.trim()) {
-      setApiKeys(prev => [...prev, {
-        id: Date.now(),
-        name: newApiKey,
-        key: `key_${Math.random().toString(36).substr(2, 9)}`,
-        created: new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        }),
-        locked: false,
-        revealed: false
-      }]);
-      setNewApiKey('');
-      setShowAddKey(false);
+  const handleRegenerate = async () => {
+    setIsRolling(true);
+    try {
+        const response = await dashboardAPI.regenerateSecret();
+        const data = response.data.data;
+        setCredentials(prev => ({ ...prev, clientSecret: data.clientSecret }));
+        setModalType('generate');
+        setShowDangerConfirm(false);
+        setShowOneTimeModal(true);
+    } catch (error) {
+        alert("Failed to regenerate secret.");
+    } finally {
+        setIsRolling(false);
     }
   };
 
-  const deleteApiKey = (id) => {
-    setApiKeys(prev => prev.filter(key => key.id !== id));
-  };
-
-  const toggleApiKeyReveal = (id) => {
-    setApiKeys(prev => prev.map(key =>
-      key.id === id ? { ...key, revealed: !key.revealed && !key.locked } : key
-    ));
-  };
-
-  const toggleApiKeyLock = (id) => {
-    setApiKeys(prev => prev.map(key =>
-      key.id === id ? { ...key, locked: !key.locked } : key
-    ));
-  };
-
-  const copyApiKey = (value, id) => {
-    navigator.clipboard.writeText(value);
-    setApiKeys(prev => prev.map(key =>
-      key.id === id ? { ...key, copied: true } : key
-    ));
-    setTimeout(() => {
-      setApiKeys(prev => prev.map(key =>
-        key.id === id ? { ...key, copied: false } : key
-      ));
-    }, 2000);
+  const handleRevealCurrent = async () => {
+    setIsRevealing(true);
+    try {
+        const response = await dashboardAPI.getApiKeys();
+        const data = response.data.data;
+        setCredentials(prev => ({ ...prev, clientSecret: data.clientSecret }));
+        setModalType('reveal');
+        setShowOneTimeModal(true);
+    } catch (error) {
+        alert("Failed to reveal secret.");
+    } finally {
+        setIsRevealing(false);
+    }
   };
 
   return (
-    <div className="api-credentials-container">
-      {/* Main Credentials Section */}
-      <div className="creds-section">
-        <div className="section-title">
-          <span className="title-label">API Credentials</span>
-          <span className="title-description">Secure keys to authenticate your application</span>
-        </div>
-
-        {/* Client ID Credential */}
-        <div className="credential-card">
-          <div className="credential-label">CLIENT ID</div>
-          <div className="credential-input-container">
-            <input
-              type={revealed.clientId ? "text" : "password"}
-              value={credentials.clientId}
-              readOnly
-              className="credential-input"
-            />
-            <div className="credential-actions">
-              <button
-                className={`lock-btn ${locked.clientId ? 'locked' : ''}`}
-                onClick={() => toggleLock('clientId')}
-                title={locked.clientId ? "Unlock" : "Lock"}
-              >
-                {locked.clientId ? <Lock size={16} /> : <Unlock size={16} />}
-              </button>
-              {!locked.clientId && (
-                <button
-                  className="reveal-btn"
-                  onClick={() => toggleReveal('clientId')}
-                >
-                  {revealed.clientId ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              )}
-              <button
-                className={`copy-btn ${copied.clientId ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(credentials.clientId, 'clientId')}
-              >
-                {copied.clientId ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Client Secret Credential */}
-        <div className="credential-card">
-          <div className="credential-label">CLIENT SECRET</div>
-          <div className="credential-input-container">
-            <input
-              type={revealed.clientSecret ? "text" : "password"}
-              value={credentials.clientSecret}
-              readOnly
-              className="credential-input"
-            />
-            <div className="credential-actions">
-              <button
-                className={`lock-btn ${locked.clientSecret ? 'locked' : ''}`}
-                onClick={() => toggleLock('clientSecret')}
-                title={locked.clientSecret ? "Unlock" : "Lock"}
-              >
-                {locked.clientSecret ? <Lock size={16} /> : <Unlock size={16} />}
-              </button>
-              {!locked.clientSecret && (
-                <button
-                  className="reveal-btn"
-                  onClick={() => toggleReveal('clientSecret')}
-                >
-                  {revealed.clientSecret ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              )}
-              <button
-                className={`copy-btn ${copied.clientSecret ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(credentials.clientSecret, 'clientSecret')}
-              >
-                {copied.clientSecret ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="v2-credentials-page">
+      <div className="v2-header">
+         <div className="v2-status">Live Environment</div>
+         <h1>API Credentials</h1>
+         <p>Manage your keys and secure your backend communication.</p>
       </div>
 
-      {/* API Keys Section */}
-      <div className="api-keys-section">
-        <div className="api-keys-header">
-          <div>
-            <div className="section-title">
-              <span className="title-label">API Keys</span>
-              <span className="title-description">Generate and manage additional API keys</span>
+      <div className="v2-card identity-section">
+         <div className="v2-id-row">
+            <div className="v2-id-info">
+               <span className="v2-id-label">PROJECT CLIENT ID</span>
+               <code>{credentials.clientId}</code>
             </div>
-          </div>
-          <button
-            className="add-key-btn"
-            onClick={() => setShowAddKey(!showAddKey)}
-          >
-            {showAddKey ? '✕ Cancel' : '+ Add API Key'}
-          </button>
-        </div>
-
-        {/* Add New Key Form */}
-        {showAddKey && (
-          <div className="add-key-form">
-            <div className="form-group">
-              <label>Key Name</label>
-              <input
-                type="text"
-                placeholder="e.g., Production API Key"
-                value={newApiKey}
-                onChange={(e) => setNewApiKey(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addApiKey()}
-                className="form-input"
-              />
-            </div>
-            <button className="submit-btn" onClick={addApiKey}>
-              Generate Key
+            <button className="v2-id-copy" onClick={() => copyToClipboard(credentials.clientId, 'id')}>
+               {hasCopied.id ? <Check size={16} /> : <Copy size={16} />}
             </button>
+         </div>
+      </div>
+
+      <div className="v2-card secret-section">
+         <div className="v2-secret-header">
+            <h3>Secret Management</h3>
+            <button className="v2-main-btn" onClick={() => setShowDangerConfirm(true)}>
+               Generate New Key
+            </button>
+         </div>
+
+         <div className="v2-secret-body">
+            <div className="v2-lock">
+               <Lock size={32} />
+            </div>
+            <p>Your secret key is encrypted and hidden.</p>
+            <div className="v2-secret-links">
+               <button onClick={handleRevealCurrent}>{isRevealing ? 'Revealing...' : 'Reveal Current Key'}</button>
+               <span className="v2-sep">|</span>
+               <button className="v2-danger-link" onClick={() => setShowDangerConfirm(true)}>Regenerate</button>
+            </div>
+         </div>
+      </div>
+
+      <AnimatePresence>
+        {showDangerConfirm && (
+          <div className="v2-modal-overlay" onClick={() => setShowDangerConfirm(false)}>
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }} 
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.9 }}
+               className="v2-modal" 
+               onClick={e => e.stopPropagation()}
+             >
+                <AlertTriangle size={32} color="red" />
+                <h3>Regenerate production key?</h3>
+                <p>This will immediately invalidate your current key. Existing integrations will stop working.</p>
+                <div className="v2-modal-btns">
+                   <button className="v2-cancel-btn" onClick={() => setShowDangerConfirm(false)}>Cancel</button>
+                   <button className="v2-action-btn-red" onClick={handleRegenerate}>
+                      {isRolling ? 'Generating...' : 'Yes, Regenerate'}
+                   </button>
+                </div>
+             </motion.div>
           </div>
         )}
 
-        {/* API Keys List */}
-        <div className="api-keys-list">
-          {apiKeys.length === 0 ? (
-            <div className="empty-state">
-              <ShieldCheck size={32} className="empty-icon" />
-              <p>No API keys yet. Create one to get started.</p>
-            </div>
-          ) : (
-            apiKeys.map(key => (
-              <div key={key.id} className="api-key-card">
-                <div className="key-header">
-                  <div className="key-info">
-                    <h4>{key.name}</h4>
-                    <span className="key-created">Created {key.created}</span>
-                  </div>
-                  <button
-                    className="delete-key-btn"
-                    onClick={() => deleteApiKey(key.id)}
-                  >
-                    ✕
-                  </button>
+        {showOneTimeModal && (
+          <div className="v2-modal-overlay">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               className="v2-modal reveal-modal"
+             >
+                <h2>{modalType === 'generate' ? 'New Key Created' : 'Key Revealed'}</h2>
+                <div className="v2-warn">
+                   <Info size={16} />
+                   Copy this key now. It will not be shown again.
                 </div>
-                <div className="key-value-container">
-                  <input
-                    type={key.revealed ? "text" : "password"}
-                    value={key.key}
-                    readOnly
-                    className="key-value-input"
-                  />
-                  <div className="key-actions">
-                    <button
-                      className={`lock-btn ${key.locked ? 'locked' : ''}`}
-                      onClick={() => toggleApiKeyLock(key.id)}
-                    >
-                      {key.locked ? <Lock size={16} /> : <Unlock size={16} />}
-                    </button>
-                    {!key.locked && (
-                      <button
-                        className="reveal-btn"
-                        onClick={() => toggleApiKeyReveal(key.id)}
-                      >
-                        {key.revealed ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    )}
-                    <button
-                      className={`copy-btn ${key.copied ? 'copied' : ''}`}
-                      onClick={() => copyApiKey(key.key, key.id)}
-                    >
-                      {key.copied ? <><Check size={14} className="mr-1" /> COPIED</> : <><Copy size={14} className="mr-1" /> COPY</>}
-                    </button>
-                  </div>
+                <div className="v2-reveal-box">
+                   <code>{credentials.clientSecret}</code>
+                   <button className="v2-copy-main" onClick={() => copyToClipboard(credentials.clientSecret, 'secret')}>
+                      {hasCopied.secret ? 'Copied!' : 'Copy Key'}
+                   </button>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Security Notice */}
-      <div className="security-notice">
-        <ShieldCheck className="notice-icon" size={24} />
-        <p>
-          Keep your API credentials secure. Never share your secret key or expose it in client-side code.
-          Use environment variables for production.
-        </p>
-      </div>
+                <button className="v2-close-btn" onClick={() => setShowOneTimeModal(false)}>Close Securely</button>
+             </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

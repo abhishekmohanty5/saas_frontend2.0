@@ -30,8 +30,17 @@ const PlanCard = memo(({
   subscribing,
   showMostPopularBadge = true,
 }) => {
+  const [coord, setCoord] = React.useState({ x: 50, y: 50 });
+  const [hovered, setHovered] = React.useState(false);
   const featured = !!plan?.featured;
   const isFree = roundPrice(plan?.price) === 0;
+
+  const handleMouseMove = (e) => {
+    const card = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - card.left) / card.width) * 100;
+    const y = ((e.clientY - card.top) / card.height) * 100;
+    setCoord({ x, y });
+  };
 
   const displayPrice = useMemo(() => {
     if (isFree) return 0;
@@ -46,11 +55,14 @@ const PlanCard = memo(({
       id={plan?.id ? `plan-${plan.id}` : undefined}
       className={`pricing-card-3d ${featured ? 'featured' : ''}`}
       aria-label={`${plan?.name} pricing plan`}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setCoord({ x: 50, y: 50 }); }}
       style={{
         background: 'var(--surface)',
         border: '1px solid var(--border)',
         borderRadius: '32px',
-        padding: '24px',
+        padding: '32px',
         transition: 'all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1)',
         position: 'relative',
         transformStyle: 'preserve-3d',
@@ -58,36 +70,27 @@ const PlanCard = memo(({
         flexDirection: 'column',
         height: '100%',
         opacity: plan?.active === false ? 0.6 : 1,
-        willChange: 'transform, box-shadow'
+        willChange: 'transform, box-shadow',
+        transform: hovered 
+          ? `perspective(1000px) rotateX(${(coord.y - 50) / -5}deg) rotateY(${(coord.x - 50) / 5}deg) translateY(-8px)` 
+          : 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)',
+        boxShadow: hovered 
+          ? '0 30px 60px -15px rgba(0,0,0,0.3), 0 0 0 1px var(--border2)' 
+          : '0 10px 40px -10px rgba(0,0,0,0.1), inset 0 0 0 1px var(--border)'
       }}
     >
+      <div 
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(circle at ${coord.x}% ${coord.y}%, rgba(255,255,255,0.06) 0%, transparent 50%)`,
+          opacity: hovered ? 1 : 0,
+          transition: 'opacity 0.4s',
+          pointerEvents: 'none',
+          borderRadius: 'inherit'
+        }}
+      />
       <style>{`
-        .pricing-card-3d {
-          box-shadow: 
-            0 10px 40px -10px rgba(0, 0, 0, 0.1), 
-            inset 0 0 0 1px var(--border);
-          overflow: hidden;
-        }
-        .pricing-card-3d::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(14, 165, 233, 0.06), transparent 40%);
-          opacity: 0;
-          transition: opacity 0.5s;
-          pointer-events: none;
-        }
-        .pricing-card-3d:hover::after {
-          opacity: 1;
-        }
-        .pricing-card-3d:hover {
-          transform: translateY(-8px) rotateX(3deg) rotateY(-2deg);
-          background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 300px), var(--surface) !important;
-          border-color: var(--accent2) !important;
-          box-shadow: 
-            0 35px 70px -15px rgba(0, 0, 0, 0.2), 
-            inset 0 0 0 1px var(--border2);
-        }
         .pricing-card-3d:hover .pop-up {
             transform: translateZ(30px);
         }
@@ -98,35 +101,31 @@ const PlanCard = memo(({
         .glassy-cta {
           position: relative;
           overflow: hidden;
-          background: var(--surface2);
+          background: #111827;
           backdrop-filter: blur(12px);
-          border: 1px solid var(--border2);
-          color: var(--ink);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          border: 1px solid rgba(17, 24, 39, 0.9);
+          color: #fff;
+          box-shadow: 0 8px 24px rgba(17, 24, 39, 0.12);
           transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
         .glassy-cta:hover {
-          background: var(--ink);
-          color: var(--bg) !important;
-          border-color: var(--ink);
-          box-shadow: 0 0 30px rgba(14, 165, 233, 0.2);
+          background: #0b1220;
+          color: #fff !important;
+          border-color: #0b1220;
+          box-shadow: 0 12px 30px rgba(17, 24, 39, 0.18);
           transform: translateY(-2px);
-        }
-        
-        .glassy-cta:active {
-          transform: scale(0.98);
         }
       `}</style>
       
       {/* Header Row: Title & Badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', transformStyle: 'preserve-3d' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px', transformStyle: 'preserve-3d', position: 'relative', zIndex: 2 }}>
         <div
           className="pop-up"
           style={{
-            fontFamily: 'var(--ff-sans)',
-            fontSize: '28px',
-            fontWeight: 800,
+            fontFamily: 'var(--ff-h)',
+            fontSize: '24px',
+            fontWeight: 900,
             background: plan?.name?.toLowerCase() === 'pro' 
               ? 'linear-gradient(135deg, #38bdf8, #6366f1)' 
               : plan?.name?.toLowerCase() === 'enterprise'
@@ -134,7 +133,7 @@ const PlanCard = memo(({
                 : 'var(--ink)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '-1.2px',
+            letterSpacing: '-1.5px',
             display: 'inline-block',
             transition: 'transform 0.5s ease',
           }}
@@ -258,19 +257,19 @@ const PlanCard = memo(({
         onClick={() => onAction?.(plan)}
         disabled={isDisabled}
         className="pop-up-far glassy-cta"
-        style={{
-          width: '100%',
-          padding: '16px',
-          borderRadius: '14px',
-          fontSize: '13px',
-          fontWeight: 800,
-          fontFamily: 'var(--ff-sans)',
-          cursor: isDisabled ? 'not-allowed' : 'pointer',
-          marginBottom: '28px',
-          color: 'var(--ink)',
-          textTransform: 'uppercase',
-          letterSpacing: '1.5px',
-          outline: 'none',
+          style={{
+            width: '100%',
+            padding: '16px',
+            borderRadius: '14px',
+            fontSize: '13px',
+            fontWeight: 800,
+            fontFamily: 'var(--ff-sans)',
+            cursor: isDisabled ? 'not-allowed' : 'pointer',
+            marginBottom: '28px',
+            color: '#fff',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
+            outline: 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -27,12 +27,12 @@ const FeatureGrid = () => {
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                                 <Zap className="w-6 h-6 text-white" />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900">
+                            <h3 className="text-2xl font-bold text-gray-700">
                                 AI-First Lifecycle Management
                             </h3>
                         </div>
 
-                        <p className="text-gray-600 mb-8">
+                        <p className="text-gray-500 mb-8">
                             Automate your entire subscription lifecycle with intelligent billing cycles,
                             prorated adjustments, and seamless plan transitions.
                         </p>
@@ -53,7 +53,7 @@ const FeatureGrid = () => {
                             <div className="mt-6 pt-4 border-t border-gray-200">
                                 <div className="flex items-center gap-2">
                                     <Bot className="w-4 h-4 text-purple-500" />
-                                    <span className="text-xs text-gray-600">AI automatically handles prorations and upgrades</span>
+                                    <span className="text-xs text-gray-500">AI automatically handles prorations and upgrades</span>
                                 </div>
                             </div>
                         </div>
@@ -79,12 +79,12 @@ const FeatureGrid = () => {
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                                 <MessageSquare className="w-6 h-6 text-white" />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900">
+                            <h3 className="text-2xl font-bold text-gray-700">
                                 Natural Language Analytics
                             </h3>
                         </div>
 
-                        <p className="text-gray-600 mb-8">
+                        <p className="text-gray-500 mb-8">
                             Ask questions in plain English and get instant insights about your subscription metrics,
                             churn patterns, and revenue trends.
                         </p>
@@ -96,7 +96,7 @@ const FeatureGrid = () => {
                                 <div className="w-8 h-8 rounded-full bg-gray-300 flex-shrink-0" />
                                 <div className="flex-1">
                                     <div className="bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm">
-                                        <p className="text-sm text-gray-800">
+                                        <p className="text-sm text-gray-700">
                                             Why did my churn increase by 5%?
                                         </p>
                                     </div>
@@ -110,7 +110,7 @@ const FeatureGrid = () => {
                                 </div>
                                 <div className="flex-1">
                                     <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl rounded-tl-sm p-4 border border-purple-100">
-                                        <p className="text-sm text-gray-800 mb-3">
+                                        <p className="text-sm text-gray-700 mb-3">
                                             Analysis shows 3 key factors:
                                         </p>
                                         <ul className="text-sm text-gray-700 space-y-2">
@@ -143,7 +143,7 @@ const BillingCycleRow = ({ status, plan, amount, date }) => (
     <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
         <div className="flex items-center gap-3">
             <div className={`w-2 h-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-yellow-500'}`} />
-            <span className="text-sm font-medium text-gray-900">{plan}</span>
+            <span className="text-sm font-medium text-gray-700">{plan}</span>
         </div>
         <div className="flex items-center gap-4">
             <span className="text-sm font-semibold text-purple-600">{amount}</span>

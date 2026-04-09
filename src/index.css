@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* ═══════════════════════════════════════════════════════════
    SUBSPHERE DESIGN SYSTEM
    Color Palette: Cream, Sand, Gold, Ink
@@ -12,11 +16,11 @@
   /* Colors - SubSphere Light Theme */
   --bg: #f8fafc;
   --surface: #ffffff;
-  --surface2: #f1f5f9;
-  --border: #e2e8f0;
-  --border2: #cbd5e1;
-  --text: #0f172a;
-  --muted: #334155;
+  --surface2: #f3f4f6;
+  --border: #e5e7eb;
+  --border2: #d1d5db;
+  --text: #1f2937;
+  --muted: #5b677a;
   --accent: #4f46e5;
   --accent2: #0ea5e9;
   --green: #10b981;
@@ -24,20 +28,20 @@
   --yellow: #f59e0b;
   --purple: #8b5cf6;
   --ink: #0f172a;
-  --sand: #f1f5f9;
-  --stone: #1e293b;
+  --sand: #f3f4f6;
+  --stone: #334155;
 
   /* Legacy Colors - (Keeping for compatibility with existing components) */
   --white: #FFFFFF;
-  --cream: #F8FAFC;
-  --sand: #F1F5F9;
+  --cream: #FFFFFF;
+  --sand: #F3F4F6;
   --stone: #334155;
   --ink: #020617;
   --ink2: #0F172A;
   --ink3: #1E293B;
-  --gold: #2563EB;
-  --gold2: #3B82F6;
-  --gold-dim: rgba(37, 99, 235, 0.1);
+  --gold: #111827;
+  --gold2: #1f2937;
+  --gold-dim: rgba(17, 24, 39, 0.08);
   --emerald2: #10B981;
 
   /* Theme Switcher Variables for Light Page */
@@ -45,28 +49,28 @@
   --switcher-active-text: #ffffff;
 
   /* Glass and Component Variables */
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow-inner: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(226, 232, 240, 0.92);
+  --glass-shadow-inner: inset 0 0 0 1px rgba(255, 255, 255, 0.82);
   
-  --shard-bg: rgba(255, 255, 255, 0.3);
-  --shard-border: rgba(255, 255, 255, 0.5);
+  --shard-bg: rgba(255, 255, 255, 0.76);
+  --shard-border: rgba(226, 232, 240, 0.78);
   
-  --badge-bg: rgba(255, 255, 255, 0.8);
-  --badge-border: rgba(0, 0, 0, 0.05);
+  --badge-bg: rgba(255, 255, 255, 0.9);
+  --badge-border: rgba(15, 23, 42, 0.08);
 
   --btn-primary-text: #ffffff;
   --btn-secondary-text: #020617;
 
   /* Custom Testimonial Cards */
-  --testimonial-bg: #FCFbf9; /* Creamy off-white */
+  --testimonial-bg: #FFFFFF;
 
   /* Footer Theme Variables */
-  --footer-bg: #F8FAFC;
-  --footer-border: rgba(0,0,0,0.06);
-  --footer-text-main: #020617;
-  --footer-text-muted: #64748B;
-  --footer-glow: rgba(59, 130, 246, 0.05);
+  --footer-bg: #ffffff;
+  --footer-border: rgba(15, 23, 42, 0.08);
+  --footer-text-main: #102033;
+  --footer-text-muted: #526074;
+  --footer-glow: rgba(15, 23, 42, 0.05);
 
   /* Typography */
   --ff-h: 'Inter', system-ui, sans-serif;
@@ -75,9 +79,9 @@
   --ff-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Theme variables for easy toggling */
-  --theme-background-transparent: rgba(250, 250, 248, 0.7);
-  --theme-border: rgba(36, 32, 27, 0.08);
-  --theme-text: #020617;
+  --theme-background-transparent: rgba(255, 255, 255, 0.88);
+  --theme-border: rgba(15, 23, 42, 0.08);
+  --theme-text: #1f2937;
 
   /* Spacing */
   --r: 10px;
@@ -167,6 +171,46 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--ff-sans);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  color: var(--text);
+}
+
+p,
+li,
+small,
+span,
+label,
+button,
+input,
+textarea,
+select {
+  font-family: var(--ff-sans);
+}
+
+.ui-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ui-gradient-text {
+  background: linear-gradient(135deg, #111827 0%, #6b7280 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 code {

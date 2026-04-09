@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Home, 
@@ -17,6 +17,7 @@ import { useTheme } from '../utils/ThemeContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated, user, logout } = useAuth();
     const { theme } = useTheme(); 
     const [isScrolled, setIsScrolled] = useState(false);
@@ -25,6 +26,27 @@ const Navbar = () => {
     const dashboardRoute = user?.role === 'ROLE_SUPER_ADMIN' ? '/super-admin' : '/dashboard';
     const dashboardLabel = user?.role === 'ROLE_SUPER_ADMIN' ? 'Admin Console' : 'Developer Console';
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const prefersDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDarkMode = theme === 'dark' || (theme === 'system' && prefersDarkMode);
+    const navBackground = isDarkMode
+        ? (isScrolled
+            ? 'linear-gradient(135deg, rgba(13, 17, 26, 0.92) 0%, rgba(7, 10, 18, 0.78) 50%, rgba(15, 23, 42, 0.9) 100%)'
+            : 'linear-gradient(135deg, rgba(16, 20, 30, 0.72) 0%, rgba(11, 14, 22, 0.54) 50%, rgba(16, 20, 30, 0.68) 100%)')
+        : (isScrolled
+            ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.78) 52%, rgba(248, 250, 252, 0.82) 100%)'
+            : 'linear-gradient(135deg, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.62) 52%, rgba(248, 250, 252, 0.66) 100%)');
+    const navBorder = isDarkMode
+        ? '1px solid rgba(255, 255, 255, 0.08)'
+        : '1px solid rgba(15, 23, 42, 0.06)';
+    const navShadow = isDarkMode
+        ? (isScrolled
+            ? '0 24px 60px -18px rgba(0, 0, 0, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.06)'
+            : '0 16px 42px -18px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.04)')
+        : (isScrolled
+            ? '0 24px 54px -18px rgba(15, 23, 42, 0.12), 0 10px 30px -20px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.78)'
+            : '0 16px 42px -20px rgba(15, 23, 42, 0.08), 0 10px 26px -22px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.76)');
+    const navMixBlend = isDarkMode ? 'screen' : 'normal';
+    const navOverlayOpacity = isScrolled ? 1 : 0.84;
 
     const handleNav = (id) => {
         if (user?.role === 'ROLE_SUPER_ADMIN') {
@@ -66,28 +88,62 @@ const Navbar = () => {
     return (
         <div style={{
             position: 'fixed',
-            top: isScrolled ? '16px' : '24px',
+            top: isScrolled ? '14px' : '22px',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 200,
-            width: '90%',
-            maxWidth: '1200px',
-            transition: 'top 0.3s ease'
+            width: isScrolled ? 'min(90vw, 1120px)' : 'min(94vw, 1200px)',
+            transition: 'top 0.35s ease, width 0.35s ease, transform 0.35s ease'
         }}>
-            <nav style={{
+            <nav className={`navbar-shell ${isScrolled ? 'is-scrolled' : ''}`} style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: isScrolled ? '10px 20px' : '12px 24px',
+                padding: isScrolled ? '10px 18px' : '14px 22px',
                 borderRadius: '9999px',
-                background: isScrolled ? 'var(--nav-glass-bg, rgba(255,255,255,0.08))' : 'var(--nav-glass-bg-idle, rgba(255,255,255,0.03))',
-                backdropFilter: 'saturate(180%) blur(20px)',
-                WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-                border: isScrolled ? '1px solid var(--nav-glass-border, rgba(255,255,255,0.1))' : '1px solid transparent',
-                boxShadow: isScrolled ? '0 10px 40px -10px rgba(0,0,0,0.2)' : 'none',
-                transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)'
+                background: navBackground,
+                backdropFilter: isScrolled ? 'saturate(190%) blur(34px)' : 'saturate(180%) blur(26px)',
+                WebkitBackdropFilter: isScrolled ? 'saturate(190%) blur(34px)' : 'saturate(180%) blur(26px)',
+                border: navBorder,
+                boxShadow: navShadow,
+                transform: isScrolled ? 'translateZ(0) scale(0.988)' : 'translateZ(0) scale(1)',
+                transition: 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+                overflow: 'hidden',
+                position: 'relative',
+                isolation: 'isolate'
             }}>
                 <style>{`
+                    .navbar-shell::before {
+                        content: '';
+                        position: absolute;
+                        inset: 0;
+                        background:
+                            ${isDarkMode
+                                ? `radial-gradient(circle at 12% 20%, rgba(255, 255, 255, 0.45), transparent 28%),
+                                   radial-gradient(circle at 88% 0%, rgba(59, 130, 246, 0.22), transparent 22%),
+                                   linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.02) 42%, rgba(255, 255, 255, 0.16) 100%)`
+                                : `radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.94), transparent 26%),
+                                   radial-gradient(circle at 84% 4%, rgba(255, 255, 255, 0.28), transparent 24%),
+                                   radial-gradient(circle at 65% 100%, rgba(255, 255, 255, 0.16), transparent 30%),
+                                   linear-gradient(120deg, rgba(255, 255, 255, 0.36), rgba(248, 250, 252, 0.14) 40%, rgba(255, 255, 255, 0.3) 100%)`};
+                        opacity: ${navOverlayOpacity};
+                        pointer-events: none;
+                        z-index: 0;
+                        mix-blend-mode: ${navMixBlend};
+                    }
+                    .navbar-shell::after {
+                        content: '';
+                        position: absolute;
+                        inset: 0;
+                        border-radius: inherit;
+                        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+                        pointer-events: none;
+                        z-index: 0;
+                    }
+                    .navbar-shell > * {
+                        position: relative;
+                        z-index: 1;
+                    }
                     @media (max-width: 860px) {
                         .nav-center { display: none !important; }
                         .nav-right-desktop { display: none !important; }
@@ -111,7 +167,16 @@ const Navbar = () => {
                         letterSpacing: '-1.2px',
                         textDecoration: 'none'
                     }}>
-                        <span style={{ fontSize: '17.5px', fontWeight: 800, letterSpacing: '-0.3px' }}>Aegis <span style={{ color: '#3b82f6' }}>I</span>nfra</span>
+                        <span style={{ 
+                            fontSize: '17.5px', 
+                            fontWeight: 800, 
+                            letterSpacing: '-0.3px',
+                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}>
+                            Aegis <span style={{ color: '#3b82f6', marginLeft: '4px' }}>I</span>nfra
+                        </span>
                     </Link>
                 </div>
 
@@ -148,8 +213,10 @@ const Navbar = () => {
                                         gap: '8px',
                                         padding: '4px 12px 4px 4px',
                                         borderRadius: '100px',
-                                        background: isProfileOpen ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.03)',
-                                        border: '1px solid rgba(0,0,0,0.05)',
+                                        background: isDarkMode
+                                            ? (isProfileOpen ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.03)')
+                                            : (isProfileOpen ? 'rgba(59,130,246,0.10)' : 'rgba(235,245,255,0.72)'),
+                                        border: isDarkMode ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(145,192,230,0.28)',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
                                         color: 'var(--theme-text)'
@@ -310,32 +377,34 @@ const Navbar = () => {
                                 </AnimatePresence>
                             </div>
 
-                            <button
-                                onClick={() => navigate(dashboardRoute)}
-                                style={{
-                                    fontSize: '14px',
-                                    fontWeight: 600,
-                                    padding: '8px 24px',
-                                    borderRadius: '100px',
-                                    cursor: 'pointer',
-                                    border: '1px solid var(--theme-border)',
-                                    background: 'transparent',
-                                    backdropFilter: 'blur(10px)',
-                                    color: 'var(--theme-text)',
-                                    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-                                    fontFamily: 'var(--ff-sans)'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.target.style.background = 'rgba(128,128,128,0.1)';
-                                    e.target.style.transform = 'translateY(-1px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.background = 'transparent';
-                                    e.target.style.transform = 'translateY(0)';
-                                }}
-                            >
-                                {dashboardLabel} {'>'}
-                            </button>
+                            {!location.pathname.startsWith('/dashboard') && !location.pathname.startsWith('/super-admin') && (
+                                <button
+                                    onClick={() => navigate(dashboardRoute)}
+                                    style={{
+                                        fontSize: '14px',
+                                        fontWeight: 600,
+                                        padding: '8px 24px',
+                                        borderRadius: '100px',
+                                        cursor: 'pointer',
+                                        border: '1px solid var(--theme-border)',
+                                        background: 'transparent',
+                                        backdropFilter: 'blur(10px)',
+                                        color: 'var(--theme-text)',
+                                        transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+                                        fontFamily: 'var(--ff-sans)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'rgba(128,128,128,0.1)';
+                                        e.target.style.transform = 'translateY(-1px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'transparent';
+                                        e.target.style.transform = 'translateY(0)';
+                                    }}
+                                >
+                                    {dashboardLabel} {'>'}
+                                </button>
+                            )}
                         </>
                     ) : (
                         <>
@@ -415,15 +484,20 @@ const Navbar = () => {
                                 left: 0,
                                 right: 0,
                                 marginTop: '12px',
-                                background: 'var(--nav-glass-bg, rgba(255,255,255,0.9))',
-                                backdropFilter: 'blur(20px)',
-                                border: '1px solid var(--nav-glass-border, rgba(255,255,255,0.1))',
+                                background: isDarkMode
+                                    ? 'linear-gradient(135deg, rgba(11, 15, 23, 0.92), rgba(4, 7, 15, 0.84))'
+                                    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.90), rgba(235, 245, 255, 0.78) 45%, rgba(226, 248, 255, 0.68) 100%)',
+                                backdropFilter: 'saturate(180%) blur(30px)',
+                                WebkitBackdropFilter: 'saturate(180%) blur(30px)',
+                                border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(145,192,230,0.34)',
                                 borderRadius: '24px',
                                 padding: '24px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 gap: '16px',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                                boxShadow: isDarkMode
+                                    ? '0 30px 60px -18px rgba(0,0,0,0.65)'
+                                    : '0 24px 48px -20px rgba(59,130,246,0.16), 0 10px 24px -20px rgba(15, 23, 42, 0.12)',
                                 zIndex: 300
                             }}
                         >

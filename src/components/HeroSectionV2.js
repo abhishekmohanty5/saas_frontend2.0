@@ -52,7 +52,7 @@ const HeroSectionV2 = () => {
                             }}
                         />
                     </div>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed" style={{ color: 'rgba(226, 232, 240, 0.8)', opacity: 0.75, lineHeight: 1.6 }}>
+                    <p className="text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed" style={{ color: 'rgba(226, 232, 240, 0.8)', opacity: 0.75, lineHeight: 1.6 }}>
                         The plug-and-play engine for complex billing logic, prorated adjustments,
                         and automated dunning management.
                     </p>
@@ -155,8 +155,8 @@ const ResultCard = ({ icon, title, value, subtitle }) => (
         }}
     >
         <div className="flex justify-center mb-3">{icon}</div>
-        <div className="text-sm text-gray-600 mb-1">{title}</div>
-        <div className="text-3xl font-bold text-gray-900 mb-1">{value}</div>
+        <div className="text-sm text-gray-500 mb-1">{title}</div>
+        <div className="text-3xl font-bold text-gray-700 mb-1">{value}</div>
         <div className="text-xs text-gray-500">{subtitle}</div>
     </motion.div>
 );

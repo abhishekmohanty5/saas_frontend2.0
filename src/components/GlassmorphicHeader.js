@@ -29,28 +29,28 @@ const GlassmorphicHeader = () => {
                     <nav className="hidden md:flex items-center gap-8">
                         <a
                             href="#platform"
-                            className="text-gray-700 hover:text-gray-900 transition-colors font-medium"
+                            className="text-gray-700 hover:text-gray-700 transition-colors font-medium"
                             style={{ outline: 'none', border: 'none' }}
                         >
                             Platform
                         </a>
                         <a
                             href="#features"
-                            className="text-gray-700 hover:text-gray-900 transition-colors font-medium"
+                            className="text-gray-700 hover:text-gray-700 transition-colors font-medium"
                             style={{ outline: 'none', border: 'none' }}
                         >
                             Features
                         </a>
                         <a
                             href="#api-docs"
-                            className="text-gray-700 hover:text-gray-900 transition-colors font-medium"
+                            className="text-gray-700 hover:text-gray-700 transition-colors font-medium"
                             style={{ outline: 'none', border: 'none' }}
                         >
                             API Docs
                         </a>
                         <a
                             href="#pricing"
-                            className="text-gray-700 hover:text-gray-900 transition-colors font-medium"
+                            className="text-gray-700 hover:text-gray-700 transition-colors font-medium"
                             style={{ outline: 'none', border: 'none' }}
                         >
                             Pricing

@@ -322,12 +322,11 @@ const EngineShowcase = () => {
                         fontFamily: 'var(--ff-serif)', fontSize: 'clamp(36px, 4.5vw, 60px)',
                         fontWeight: 700, lineHeight: 1.05, color: 'var(--ink)', marginBottom: '24px', letterSpacing: '-2px'
                     }}>
-                        Built for <br /><span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>Infinite Scale.</span>
+                        Deploy auth +{' '}<span style={{ color: 'var(--gold)', fontStyle: 'italic' }}>subscriptions</span><br />in under 2 minutes.
                     </h2>
 
                     <p style={{ fontSize: '16px', lineHeight: 1.7, color: 'var(--stone)', maxWidth: '400px', marginBottom: '40px' }}>
-                        Real-time data visualization of the <strong style={{ color: 'var(--ink)' }}>SubSphere engine</strong>.
-                        Our AI doesn't just process code—it maps every journey through billions of data nodes in <strong style={{ color: 'var(--ink)' }}>milliseconds</strong>.
+                        Not a UI kit. A <strong style={{ color: 'var(--ink)' }}>full backend engine</strong> — auth, subscriptions, AI analytics, and automated billing lifecycle — ready to integrate in minutes.
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '50px' }}>

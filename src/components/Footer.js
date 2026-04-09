@@ -54,7 +54,9 @@ const Footer = () => {
                             alignItems: 'center',
                             marginBottom: '10px'
                         }}>
-                            Aegis <span style={{ color: '#3b82f6', marginLeft: '4px' }}>I</span>nfra
+                            <span style={{ whiteSpace: 'nowrap' }}>
+                                Aegis <span style={{ color: '#3b82f6', marginLeft: '4px' }}>I</span>nfra
+                            </span>
                         </div>
                         
                         <p style={{

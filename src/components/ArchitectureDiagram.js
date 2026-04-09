@@ -12,10 +12,10 @@ const ArchitectureDiagram = () => {
                     viewport={{ once: true }}
                     className="text-center mb-16"
                 >
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <h2 className="text-4xl md:text-5xl font-bold text-gray-700 mb-4">
                         Seamless Integration Architecture
                     </h2>
-                    <p className="text-xl text-gray-600">
+                    <p className="text-xl text-gray-500">
                         SubSphere sits at the heart of your subscription infrastructure
                     </p>
                 </motion.div>
@@ -35,8 +35,8 @@ const ArchitectureDiagram = () => {
                                 <Server className="w-10 h-10 text-white" />
                             </div>
                             <div className="text-center">
-                                <div className="font-bold text-gray-900 text-lg">SubSphere</div>
-                                <div className="text-xs text-gray-600">Core Engine</div>
+                                <div className="font-bold text-gray-700 text-lg">SubSphere</div>
+                                <div className="text-xs text-gray-500">Core Engine</div>
                             </div>
                         </div>
                     </motion.div>
@@ -126,8 +126,8 @@ const ConnectedNode = ({ icon, title, description, delay, position }) => (
         <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center mx-auto mb-4 text-subsphere-purple">
             {icon}
         </div>
-        <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
-        <p className="text-sm text-gray-600">{description}</p>
+        <h3 className="font-bold text-gray-700 mb-1">{title}</h3>
+        <p className="text-sm text-gray-500">{description}</p>
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-subsphere-purple">
             <span>API Connected</span>
             <ArrowRight className="w-3 h-3" />

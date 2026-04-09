@@ -38,8 +38,8 @@ const DataAnalysisSection = () => {
                             <TrendingDown className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900">Plan Downgrade Scenario</h3>
-                            <p className="text-sm text-gray-600">Enterprise → Professional (Mid-cycle)</p>
+                            <h3 className="text-xl font-bold text-gray-700">Plan Downgrade Scenario</h3>
+                            <p className="text-sm text-gray-500">Enterprise Ã¢â€ â€™ Professional (Mid-cycle)</p>
                         </div>
                     </div>
 
@@ -75,21 +75,21 @@ const DataAnalysisSection = () => {
                         <div className="glass-card bg-gradient-to-br from-green-50 to-emerald-50 p-6 border-2 border-green-200">
                             <div className="flex items-center gap-3 mb-4">
                                 <Calculator className="w-6 h-6 text-green-600" />
-                                <span className="text-sm font-bold text-gray-900">AI-Calculated Fair Value</span>
+                                <span className="text-sm font-bold text-gray-700">AI-Calculated Fair Value</span>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-700">Credit from unused Enterprise</span>
-                                    <span className="font-semibold text-gray-900">$249.50</span>
+                                    <span className="font-semibold text-gray-700">$249.50</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-700">Charge for Professional (prorated)</span>
-                                    <span className="font-semibold text-gray-900">-$99.50</span>
+                                    <span className="font-semibold text-gray-700">-$99.50</span>
                                 </div>
                                 <div className="h-px bg-gray-300" />
                                 <div className="flex items-center justify-between">
-                                    <span className="font-bold text-gray-900">Account Credit</span>
+                                    <span className="font-bold text-gray-700">Account Credit</span>
                                     <div className="flex items-center gap-2">
                                         <DollarSign className="w-5 h-5 text-green-600" />
                                         <span className="text-2xl font-bold text-green-600">$150.00</span>
@@ -98,8 +98,8 @@ const DataAnalysisSection = () => {
                             </div>
 
                             <div className="mt-4 pt-4 border-t border-green-200">
-                                <p className="text-xs text-gray-600 text-center">
-                                    ✓ Automatically applied to next billing cycle
+                                <p className="text-xs text-gray-500 text-center">
+                                    Ã¢Å“â€œ Automatically applied to next billing cycle
                                 </p>
                             </div>
                         </div>
@@ -113,8 +113,8 @@ const DataAnalysisSection = () => {
 // Calculation Item Component
 const CalcItem = ({ label, value }) => (
     <div>
-        <div className="text-xs text-gray-600 mb-1">{label}</div>
-        <div className="text-lg font-bold text-gray-900">{value}</div>
+        <div className="text-xs text-gray-500 mb-1">{label}</div>
+        <div className="text-lg font-bold text-gray-700">{value}</div>
     </div>
 );
 

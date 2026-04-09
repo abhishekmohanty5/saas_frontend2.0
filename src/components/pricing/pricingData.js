@@ -93,7 +93,7 @@ export const getDefaultFeaturesForPlan = (planName) => {
  */
 export const DEFAULT_PLANS = [
   {
-    id: 'starter-default',
+    id: 2,
     name: 'Starter',
     price: 499,
     durationInDays: 30,
@@ -102,7 +102,7 @@ export const DEFAULT_PLANS = [
     features: getDefaultFeaturesForPlan('starter'),
   },
   {
-    id: 'pro-default',
+    id: 3,
     name: 'Pro',
     price: 1499,
     durationInDays: 30,
@@ -112,7 +112,7 @@ export const DEFAULT_PLANS = [
     features: getDefaultFeaturesForPlan('pro'),
   },
   {
-    id: 'enterprise-default',
+    id: 4,
     name: 'Enterprise',
     price: 3999,
     durationInDays: 30,

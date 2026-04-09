@@ -90,8 +90,8 @@ const LoginPage = () => {
                 if (user?.role === 'ROLE_SUPER_ADMIN') {
                     navigate('/super-admin');
                 } else if (user?.role === 'ROLE_TENANT_ADMIN') {
-                    // Redirect to pricing with a welcome flag to show the trial onboarding
-                    navigate('/pricing?welcome=true');
+                    // Redirect directly to dashboard as requested
+                    navigate('/dashboard');
                 } else {
                     navigate('/my-subscriptions');
                 }

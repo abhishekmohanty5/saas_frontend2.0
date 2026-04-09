@@ -16,6 +16,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 
+
+
 import './App.css';
 
 function App() {
@@ -72,6 +74,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
 
               {/* ── Fallback ── */}
               <Route path="*" element={<LandingPage />} />
