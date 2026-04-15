@@ -29,6 +29,25 @@ const ApiCredentialsSection = ({ clientId: initialClientId }) => {
   const [showOneTimeModal, setShowOneTimeModal] = useState(false);
   const [showDangerConfirm, setShowDangerConfirm] = useState(false);
   const [modalType, setModalType] = useState('reveal');
+  const [keyHistory, setKeyHistory] = useState([]);
+
+  useEffect(() => {
+    if (credentials.clientId && credentials.clientId !== 'loading...') {
+      const stored = localStorage.getItem(`api_keys_${credentials.clientId}`);
+      if (stored) {
+        setKeyHistory(JSON.parse(stored));
+      } else {
+        const initial = [{
+          id: Date.now().toString(),
+          prefix: 'sk_live_••••••••••••••••••••',
+          created: 'Upon Registration',
+          status: 'ACTIVE'
+        }];
+        setKeyHistory(initial);
+        localStorage.setItem(`api_keys_${credentials.clientId}`, JSON.stringify(initial));
+      }
+    }
+  }, [credentials.clientId]);
 
   useEffect(() => {
     fetchInitialData();
@@ -60,6 +79,21 @@ const ApiCredentialsSection = ({ clientId: initialClientId }) => {
         const response = await dashboardAPI.regenerateSecret();
         const data = response.data.data;
         setCredentials(prev => ({ ...prev, clientSecret: data.clientSecret }));
+        
+        // Frontend managed key history
+        const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const newHistory = keyHistory.map(k => ({ ...k, status: 'REVOKED' }));
+        newHistory.unshift({
+            id: Date.now().toString(),
+            prefix: 'sk_live_••••••••••••••••••••',
+            created: nowStr,
+            status: 'ACTIVE'
+        });
+        setKeyHistory(newHistory);
+        if (credentials.clientId && credentials.clientId !== 'loading...') {
+            localStorage.setItem(`api_keys_${credentials.clientId}`, JSON.stringify(newHistory));
+        }
+
         setModalType('generate');
         setShowDangerConfirm(false);
         setShowOneTimeModal(true);
@@ -131,28 +165,29 @@ const ApiCredentialsSection = ({ clientId: initialClientId }) => {
                   </tr>
                </thead>
                <tbody>
-                  <tr style={{ borderBottom: '1px solid var(--theme-border)', fontSize: 14 }}>
-                     <td style={{ padding: '20px 24px', fontFamily: 'var(--ff-mono)', color: 'var(--ink)', fontWeight: 500, letterSpacing: '0.5px' }}>
-                        sk_live_••••••••••••••••••••
-                     </td>
-                     <td style={{ padding: '20px 24px', color: 'var(--muted)', fontSize: 13 }}>
-                        {credentials.createdAt}
-                     </td>
-                     <td style={{ padding: '20px 24px' }}>
-                        <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '6px 12px', borderRadius: '6px', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' }}>ACTIVE</span>
-                     </td>
-                  </tr>
-                  <tr style={{ fontSize: 14 }}>
-                     <td style={{ padding: '20px 24px', fontFamily: 'var(--ff-mono)', color: 'var(--muted)', fontWeight: 500, letterSpacing: '0.5px' }}>
-                        sk_live_••••••••••••••••••••
-                     </td>
-                     <td style={{ padding: '20px 24px', color: 'var(--muted)', fontSize: 13 }}>
-                        Previous Key
-                     </td>
-                     <td style={{ padding: '20px 24px' }}>
-                        <span style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--muted)', padding: '6px 12px', borderRadius: '6px', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' }}>REVOKED</span>
-                     </td>
-                  </tr>
+                  {keyHistory.map((keyItem, index) => (
+                    <tr key={keyItem.id} style={{ borderBottom: index < keyHistory.length - 1 ? '1px solid var(--theme-border)' : 'none', fontSize: 14 }}>
+                       <td style={{ padding: '20px 24px', fontFamily: 'var(--ff-mono)', color: keyItem.status === 'ACTIVE' ? 'var(--ink)' : 'var(--muted)', fontWeight: 500, letterSpacing: '0.5px' }}>
+                          {keyItem.prefix}
+                       </td>
+                       <td style={{ padding: '20px 24px', color: 'var(--muted)', fontSize: 13 }}>
+                          {keyItem.created === 'Upon Registration' ? credentials.createdAt : keyItem.created}
+                       </td>
+                       <td style={{ padding: '20px 24px' }}>
+                          <span style={{ 
+                              background: keyItem.status === 'ACTIVE' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.1)', 
+                              color: keyItem.status === 'ACTIVE' ? '#10b981' : 'var(--muted)', 
+                              padding: '6px 12px', 
+                              borderRadius: '6px', 
+                              fontSize: 10, 
+                              fontWeight: 800, 
+                              letterSpacing: '0.05em' 
+                          }}>
+                              {keyItem.status}
+                          </span>
+                       </td>
+                    </tr>
+                  ))}
                </tbody>
             </table>
          </div>

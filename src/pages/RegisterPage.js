@@ -381,6 +381,10 @@ const styles = {
     submitBtn: {
         width: '100%',
         height: '56px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textDecoration: 'none',
         background: 'var(--ink)',
         color: 'var(--bg)',
         borderRadius: '32px',
