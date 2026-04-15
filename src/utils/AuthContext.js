@@ -49,13 +49,13 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: message || 'Invalid response from server' };
       }
 
-      const { token, email: userEmail, role, name } = data;
+      const { token, email: userEmail, role, name, fullName, firstName } = data;
 
       localStorage.setItem('token', token);
 
       const userData = {
         email: userEmail,
-        name: name || userEmail.split('@')[0],
+        name: name || fullName || firstName || userEmail.split('@')[0],
         role: role.startsWith('ROLE_') ? role : `ROLE_${role}`
       };
 

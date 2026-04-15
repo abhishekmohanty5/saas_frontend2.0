@@ -1212,51 +1212,67 @@ export default function Dashboard() {
                         setShowAiModal(true);
                       }}
                       style={{
-                        background: "rgba(99, 102, 241, 0.05)",
-                        color: "#6366f1",
-                        borderRadius: 12,
-                        border: "1px solid rgba(99, 102, 241, 0.15)",
+                        background: "var(--surface)",
+                        color: "var(--ink)",
+                        borderRadius: 8,
+                        border: "1px solid var(--theme-border)",
                         padding: "8px 16px",
-                        fontWeight: 800,
-                        fontSize: 12,
+                        fontWeight: 600,
+                        fontSize: 13,
                         cursor: "pointer",
-                        transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                        transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                       }}
-                      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      onMouseOver={(e) => { 
+                        e.currentTarget.style.background = 'var(--glass-bg)'; 
+                        e.currentTarget.style.borderColor = 'rgba(0,0,0,0.15)'; 
+                        e.currentTarget.style.transform = 'translateY(-1px)'; 
+                        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.04)';
+                      }}
+                      onMouseOut={(e) => { 
+                        e.currentTarget.style.background = 'var(--surface)'; 
+                        e.currentTarget.style.borderColor = 'var(--theme-border)'; 
+                        e.currentTarget.style.transform = 'translateY(0)'; 
+                        e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+                      }}
                     >
-                      <Icon name="zap" size={13} color="#6366f1" />
-                      AI Insights
+                      Ask AI
                     </button>
 
                     <button
                       onClick={() => { setFormStep(1); setShowPlanModal(true); }}
                       style={{
-                        background: "#0a0a0a",
+                        background: "#111",
                         color: "#FFF",
-                        borderRadius: 12,
-                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: 8,
+                        border: "1px solid #111",
                         padding: "8px 16px",
-                        fontWeight: 800,
-                        fontSize: 12,
+                        fontWeight: 600,
+                        fontSize: 13,
                         cursor: "pointer",
-                        boxShadow: "0 10px 30px var(--theme-border)",
-                        transition: 'all 0.3s cubic-bezier(0.19, 1, 0.22, 1)',
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                        transition: 'all 0.2s',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
+                        justifyContent: 'center',
+                        gap: 6
                       }}
-                      onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.2)'; e.currentTarget.style.background = '#000'; }}
-                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px var(--theme-border)'; e.currentTarget.style.background = '#0a0a0a'; }}
+                      onMouseOver={(e) => { 
+                        e.currentTarget.style.transform = 'translateY(-1px)'; 
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'; 
+                        e.currentTarget.style.background = '#000'; 
+                      }}
+                      onMouseOut={(e) => { 
+                        e.currentTarget.style.transform = 'translateY(0)'; 
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'; 
+                        e.currentTarget.style.background = '#111'; 
+                      }}
                     >
-                      + Create New Plan
+                      <Icon name="plus" size={14} /> Create Plan
                     </button>
                   </div>
                 </div>
@@ -1342,32 +1358,37 @@ export default function Dashboard() {
                     }}>
                       <button
                         onClick={() => { setShowAiModal(false); setAiSuggestedResult(null); }}
-                        style={{ position: 'absolute', top: 24, right: 24, background: 'var(--ink)', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ position: 'absolute', top: 20, right: 20, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--muted)', width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.2s', zIndex: 10 }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ink)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
                       >
-                        <Icon name="close" size={18} />
+                        <Icon name="close" size={20} />
                       </button>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(99, 102, 241, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Icon name="zap" size={24} color="#6366f1" />
-                        </div>
-                        <div>
-                          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--ink)', margin: 0 }}>AI Market Intelligence</h2>
-                          <p style={{ color: 'var(--muted)', fontSize: 13, margin: 0 }}>Smart infrastructure pricing strategies.</p>
-                        </div>
+                      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+                        <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--ink)', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>AI Market Intelligence</h2>
+                        <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0, fontWeight: 400 }}>Smart infrastructure pricing strategies.</p>
                       </div>
 
                       {!aiSuggestedResult && !aiLoading && (
                         <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: 'var(--muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Describe Your Business</label>
+                          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px' }}>Business Context</label>
                           <textarea
                             value={aiDescription}
                             onChange={(e) => setAiDescription(e.target.value)}
                             placeholder="e.g. A cloud-native storage platform for creative agencies looking for high availability..."
                             style={{
-                              width: '100%', height: 120, padding: '16px', borderRadius: 16, border: '1px solid var(--border)',
-                              fontSize: 14, outline: 'none', resize: 'none', marginBottom: 20, color: 'var(--ink)',
-                              lineHeight: 1.5
+                              width: '100%', height: 140, padding: '16px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)',
+                              fontSize: 15, outline: 'none', resize: 'none', marginBottom: 24, color: 'var(--ink)', background: 'var(--surface)',
+                              lineHeight: 1.6, transition: 'border-color 0.2s, box-shadow 0.2s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = '#111';
+                              e.currentTarget.style.boxShadow = '0 0 0 1px #111';
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.08)';
+                              e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.02)';
                             }}
                           />
                           <button
@@ -1385,15 +1406,23 @@ export default function Dashboard() {
                               }
                             }}
                             style={{
-                              width: '100%', background: '#6366f1', color: 'var(--surface)', borderRadius: 14, border: 'none',
-                              padding: '16px', fontWeight: 700, fontSize: 15, cursor: 'pointer',
-                              boxShadow: '0 25px 60px -12px var(--theme-border)',
-                              transition: 'all 0.2s'
+                              width: '100%', background: '#111', color: '#fff', borderRadius: 12, border: 'none',
+                              padding: '16px', fontWeight: 600, fontSize: 16, cursor: 'pointer',
+                              boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)', transition: 'transform 0.2s, box-shadow 0.2s',
+                              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8
                             }}
-                            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 12px 20px -4px rgba(0,0,0,0.15)';
+                              e.currentTarget.style.background = '#000';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(0,0,0,0.1)';
+                              e.currentTarget.style.background = '#111';
+                            }}
                           >
-                            Generate AI Strategies
+                            Generate Strategies <Icon name="arrow-right" size={16} />
                           </button>
                         </div>
                       )}
@@ -1472,7 +1501,7 @@ export default function Dashboard() {
                           {[1, 2].map(s => (
                             <div key={s} style={{ 
                               flex: 1, height: 3, borderRadius: 2, 
-                              background: formStep >= s ? '#6366f1' : 'rgba(148, 163, 184, 0.1)',
+                              background: formStep >= s ? 'var(--ink)' : 'rgba(148, 163, 184, 0.1)',
                               transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                             }} />
                           ))}
@@ -1496,7 +1525,7 @@ export default function Dashboard() {
                                   type="text" placeholder="e.g. Professional Node"
                                   value={newPlan.name} onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
                                   style={{ width: '100%', padding: '16px 20px', borderRadius: 16, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 15, color: 'var(--text)', background: 'rgba(0,0,0,0.02)', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', fontWeight: 500 }}
-                                  onFocus={(e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.05)'; }}
+                                  onFocus={(e) => { e.target.style.borderColor = 'var(--ink)'; e.target.style.boxShadow = '0 0 0 4px rgba(0,0,0,0.05)'; }}
                                   onBlur={(e) => { e.target.style.borderColor = 'var(--theme-border)'; e.target.style.boxShadow = 'none'; }}
                                 />
                               </div>
@@ -1563,10 +1592,10 @@ export default function Dashboard() {
                                   setFormStep(formStep + 1);
                                 }}
                                 style={{
-                                  flex: 1, background: '#0a0a0a', color: 'white', borderRadius: 14, border: 'none', padding: '12px', fontWeight: 700, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
+                                  flex: 1, background: 'var(--ink)', color: '#fff', borderRadius: 14, border: 'none', padding: '16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)'
                                 }}
-                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
-                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#0a0a0a'; }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 20px -4px rgba(0,0,0,0.15)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(0,0,0,0.1)'; }}
                               >
                                 Continue &rarr;
                               </button>
@@ -1575,10 +1604,10 @@ export default function Dashboard() {
                                 disabled={isSubmittingPlan}
                                 onClick={() => handleCreatePlan(newPlan)}
                                 style={{
-                                  flex: 1, background: '#0a0a0a', color: 'white', borderRadius: 14, border: 'none', padding: '12px', fontWeight: 800, fontSize: 13, cursor: 'pointer', transition: 'all 0.3s', opacity: isSubmittingPlan ? 0.7 : 1, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', letterSpacing: '0.05em'
+                                  flex: 1, background: 'var(--ink)', color: '#fff', borderRadius: 14, border: 'none', padding: '16px', fontWeight: 600, fontSize: 15, cursor: 'pointer', transition: 'all 0.2s', opacity: isSubmittingPlan ? 0.7 : 1, boxShadow: '0 8px 16px -4px rgba(0,0,0,0.1)', letterSpacing: '0.05em'
                                 }}
-                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.background = '#000'; }}
-                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.background = '#0a0a0a'; }}
+                                onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 20px -4px rgba(0,0,0,0.15)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 16px -4px rgba(0,0,0,0.1)'; }}
                               >
                                 {isSubmittingPlan ? 'Synchronizing...' : (editingPlanId ? 'Update Protocol' : 'Deploy Protocol')}
                               </button>
@@ -1623,101 +1652,96 @@ export default function Dashboard() {
                 </div>
 
                 <div className="table-container" style={{ 
-                  background: isDark ? "rgba(10, 10, 15, 0.4)" : "rgba(255, 255, 255, 0.8)", 
+                  background: isDark ? "rgba(10, 10, 15, 0.4)" : "var(--surface)", 
                   backdropFilter: "blur(12px)", 
-                  borderRadius: 24, 
-                  border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)"}`, 
+                  borderRadius: 20, 
+                  border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.06)"}`, 
                   overflow: "hidden", 
-                  boxShadow: isDark ? "0 10px 40px rgba(0,0,0,0.4)" : "0 10px 30px rgba(99, 102, 241, 0.03)" 
+                  boxShadow: isDark ? "0 10px 40px rgba(0,0,0,0.4)" : "0 8px 30px rgba(0, 0, 0, 0.03)" 
                 }}>
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr style={{ 
-                        textAlign: "left", fontSize: 11, fontWeight: 800, 
-                        color: isDark ? "#64748b" : "#94a3b8", 
-                        textTransform: "uppercase", letterSpacing: "0.15em", 
+                        textAlign: "left", fontSize: 10, fontWeight: 700, 
+                        color: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.4)", 
+                        textTransform: "uppercase", letterSpacing: "0.2em", 
                         borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.05)"}`,
-                        background: isDark ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.01)" 
                       }}>
-                        <th style={{ padding: "18px 32px" }}>Subscriber</th>
-                        <th style={{ padding: "18px 32px" }}>Current Plan</th>
-                        <th style={{ padding: "18px 32px" }}>Status</th>
-                        <th style={{ padding: "18px 32px" }}>Joined Date</th>
-                        <th style={{ padding: "18px 32px" }}>Actions</th>
+                        <th style={{ padding: "20px 32px" }}>Subscriber</th>
+                        <th style={{ padding: "20px 32px" }}>Current Plan</th>
+                        <th style={{ padding: "20px 32px" }}>Status</th>
+                        <th style={{ padding: "20px 32px" }}>Joined Date</th>
+                        <th style={{ padding: "20px 32px", textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {subscribers.length > 0 ? subscribers.map((sub, i) => (
                         <tr key={i} style={{ 
-                          borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(0,0,0,0.02)"}`, 
+                          borderBottom: `1px solid ${isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(0,0,0,0.03)"}`, 
                           fontSize: 13,
                           transition: 'background 0.2s'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.02)" : "rgba(99, 102, 241, 0.02)"}
+                        onMouseEnter={(e) => e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.02)" : "rgba(0, 0, 0, 0.01)"}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                         >
                           <td style={{ padding: "18px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                               <div style={{ 
                                 width: 32, height: 32, borderRadius: "50%", 
-                                background: isDark ? "rgba(99, 102, 241, 0.15)" : "linear-gradient(135deg, #e0e7ff, #c7d2fe)", 
-                                color: isDark ? "#818cf8" : "#4f46e5", 
+                                background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0,0,0,0.04)", 
+                                color: "var(--ink)", 
                                 display: "flex", alignItems: "center", justifyContent: "center", 
-                                fontWeight: 800, fontSize: 11,
-                                border: isDark ? "1px solid rgba(99, 102, 241, 0.2)" : "none"
+                                fontWeight: 700, fontSize: 12,
+                                border: `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0,0,0,0.05)"}`
                               }}>
                                 {(sub.userName || sub.email || 'U')[0].toUpperCase()}
                               </div>
                               <div>
-                                <div style={{ fontWeight: 700, color: isDark ? "white" : "#1e293b" }}>{sub.userName || 'Unknown User'}</div>
-                                <div style={{ fontSize: 12, color: "#64748b", fontFamily: 'var(--ff-mono)' }}>{sub.email}</div>
+                                <div style={{ fontWeight: 600, color: "var(--ink)", letterSpacing: '-0.2px' }}>{sub.userName || 'Unknown User'}</div>
+                                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{sub.email}</div>
                               </div>
                             </div>
                           </td>
                           <td style={{ padding: "18px 32px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366f1", boxShadow: isDark ? '0 0 8px #6366f1' : 'none' }} />
-                              <span style={{ fontWeight: 600, color: isDark ? "#cbd5e1" : "#1e293b" }}>{sub.planName || 'Standard'}</span>
+                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--ink)", opacity: 0.8 }} />
+                              <span style={{ fontWeight: 500, color: "var(--ink)" }}>{sub.planName || 'Standard'}</span>
                             </div>
                           </td>
                           <td style={{ padding: "18px 32px" }}>
                             <span style={{
                               fontSize: 10,
-                              fontWeight: 800,
+                              fontWeight: 700,
                               textTransform: "uppercase",
                               padding: "4px 10px",
-                              borderRadius: "20px",
+                              borderRadius: "6px",
                               background: sub.status === 'ACTIVE' ? "rgba(16, 185, 129, 0.1)" : "rgba(244, 63, 94, 0.1)",
                               color: sub.status === 'ACTIVE' ? "#10b981" : "#f43f5e",
-                              border: `1px solid ${sub.status === 'ACTIVE' ? "#10b98144" : "#f43f5e44"}`
+                              letterSpacing: '0.05em'
                             }}>
                               {sub.status || 'ACTIVE'}
                             </span>
                           </td>
-                          <td style={{ padding: "18px 32px", color: isDark ? "#64748b" : "#94a3b8", fontWeight: 500, fontSize: 12 }}>
-                            {sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString() : new Date().toLocaleDateString()}
+                          <td style={{ padding: "18px 32px", color: "var(--muted)", fontWeight: 500, fontSize: 13 }}>
+                            {sub.joinedAt ? new Date(sub.joinedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                           </td>
-                          <td style={{ padding: "18px 32px" }}>
-                            <button style={{ background: "none", border: "none", color: "#6366f1", fontWeight: 700, cursor: "pointer", fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>View Profile</button>
+                          <td style={{ padding: "18px 32px", textAlign: 'right' }}>
+                            <button style={{ background: "none", border: "none", color: "var(--ink)", fontWeight: 600, cursor: "pointer", fontSize: 13, transition: 'opacity 0.2s', opacity: 0.6 }} onMouseEnter={(e) => e.target.style.opacity = 1} onMouseLeave={(e) => e.target.style.opacity = 0.6}>View User</button>
                           </td>
                         </tr>
                       )) : (
                         <tr>
-                          <td colSpan="5" style={{ padding: "80px 0", textAlign: "center" }}>
-                            <div style={{ opacity: 0.5, marginBottom: 16 }}>
-                              <Icon name="users" size={48} color={isDark ? "#1e293b" : "#94a3b8"} />
+                          <td colSpan="5" style={{ padding: "100px 0", textAlign: "center" }}>
+                            <div style={{ color: "var(--muted)", opacity: 0.4, marginBottom: 16, display: 'flex', justifyContent: 'center' }}>
+                              <Icon name="users" size={32} />
                             </div>
-                            <p style={{ color: isDark ? "#64748b" : "#94a3b8", fontWeight: 600, fontSize: 13 }}>No subscribers detected in current segment.</p>
+                            <p style={{ color: "var(--ink)", fontWeight: 500, fontSize: 14 }}>No subscribers yet</p>
+                            <p style={{ color: "var(--muted)", fontSize: 13, marginTop: 4 }}>When users subscribe to your plans, they will appear here.</p>
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
-                  {subscribers.length === 0 && (
-                     <div style={{ padding: '60px 0', textAlign: 'center', background: isDark ? "rgba(0,0,0,0.1)" : 'var(--glass-bg)' }}>
-                        <p style={{ color: "#64748b", fontWeight: 600, fontSize: 13 }}>END_OF_LIST</p>
-                     </div>
-                  )}
                 </div>
                 <PaginationControl current={subPage} total={subTotalPages} onPageChange={setSubPage} />
               </div>
@@ -1769,98 +1793,78 @@ export default function Dashboard() {
                       <div style={{ width: 24, height: 1, background: '#3b82f6' }} />
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Aegis Modules</span>
                     </div>
-                    <h1 style={{ fontSize: 20, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.02em", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>System Services</h1>
+                    <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--ink)", letterSpacing: "-0.5px", lineHeight: 1.2, fontFamily: "var(--ff-h)" }}>System Services</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                      <p style={{ color: "var(--muted)", fontSize: 14, fontWeight: 500, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--text)' }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
+                      <p style={{ color: "var(--muted)", fontSize: 14, fontWeight: 400, margin: 0 }}>Active infrastructure modules provisioned for the <strong style={{ color: 'var(--ink)', fontWeight: 600 }}>{dashboard?.currentPlan || 'FREE'}</strong> tier.</p>
                     </div>
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
                     {[
-                      { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: '#10b981', icon: 'shield' },
-                      { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: '#3b82f6', icon: 'zap' },
-                      { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? '#10b981' : '#64748b'), icon: 'layers' },
-                      { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#6366f1' : '#64748b'), icon: 'activity' },
-                      { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? '#a855f7' : '#64748b'), icon: 'cpu' }
+                      { name: 'Identity Engine', status: 'Healthy', version: 'v2.4.1', stats: '99.9% Uptime', requiredPlan: 'Any', color: 'var(--ink)', icon: 'shield' },
+                      { name: 'API Gateway', status: 'Healthy', version: 'v3.0.5', stats: '20ms Latency', requiredPlan: 'Any', color: 'var(--ink)', icon: 'zap' },
+                      { name: 'Subscription Mesh', status: (dashboard?.currentPlan !== 'Free Trial' ? 'Healthy' : 'Locked'), version: 'v1.1.0', stats: (dashboard?.currentPlan !== 'Free Trial' ? 'Active Sync' : 'Requires Upgrade'), requiredPlan: 'Starter+', color: (dashboard?.currentPlan !== 'Free Trial' ? 'var(--ink)' : 'var(--muted)'), icon: 'layers' },
+                      { name: 'Edge Analytics', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v2.0.0', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Processing' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'var(--ink)' : 'var(--muted)'), icon: 'activity' },
+                      { name: 'AI Prediction Core', status: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Healthy' : 'Locked'), version: 'v1.0.claude', stats: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'Standing By' : 'Requires Growth Plan'), requiredPlan: 'Growth+', color: (['Growth', 'Enterprise'].includes(dashboard?.currentPlan) ? 'var(--ink)' : 'var(--muted)'), icon: 'cpu' }
                     ].map((service, i) => (
                       <div key={i} style={{
-                        background: service.status === 'Locked' ? 'var(--theme-bg-tertiary)' : 'var(--glass-bg)',
-                        backdropFilter: "blur(20px)",
-                        borderRadius: 24,
+                        background: service.status === 'Locked' ? 'transparent' : 'var(--surface)',
+                        borderRadius: 20,
                         padding: 32,
-                        border: service.status === 'Locked' ? '1px solid var(--theme-border)' : `1px solid ${service.color}20`,
-                        boxShadow: service.status === 'Locked' ? 'none' : `0 10px 40px -10px ${service.color}15`,
-                        transition: 'all 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
+                        border: service.status === 'Locked' ? '1px dashed var(--theme-border)' : '1px solid var(--theme-border)',
+                        boxShadow: service.status === 'Locked' ? 'none' : '0 4px 12px rgba(0,0,0,0.02)',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
                         position: 'relative',
-                        overflow: 'hidden',
                         cursor: service.status === 'Locked' ? 'not-allowed' : 'pointer',
-                        filter: service.status === 'Locked' ? 'grayscale(100%) opacity(0.6)' : 'none'
+                        opacity: service.status === 'Locked' ? 0.6 : 1
                       }}
                         onMouseEnter={(e) => {
                           if (service.status !== 'Locked') {
-                            e.currentTarget.style.transform = 'translateY(-6px) scale(1.02)';
-                            e.currentTarget.style.borderColor = `${service.color}60`;
-                            e.currentTarget.style.boxShadow = `0 20px 50px -15px ${service.color}33`;
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.borderColor = 'var(--ink)';
+                            e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.06)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (service.status !== 'Locked') {
-                            e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                            e.currentTarget.style.borderColor = `${service.color}20`;
-                            e.currentTarget.style.boxShadow = `0 10px 40px -10px ${service.color}15`;
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.borderColor = 'var(--theme-border)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.02)';
                           }
                         }}>
 
-                        {/* Top Glowing Accent */}
-                        {service.status !== 'Locked' && (
-                          <div style={{ 
-                            position: 'absolute', 
-                            top: 0, 
-                            left: '10%', 
-                            right: '10%', 
-                            height: 3, 
-                            borderRadius: '0 0 4px 4px',
-                            background: `linear-gradient(90deg, transparent, ${service.color}, transparent)`,
-                            boxShadow: `0 0 15px ${service.color}88`,
-                            opacity: 0.8
-                          }} />
-                        )}
-
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: 'center' }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24, alignItems: 'flex-start' }}>
                           <div style={{
-                            width: 44, height: 44, borderRadius: 12,
+                            width: 40, height: 40, borderRadius: 10,
                             background: 'var(--theme-bg-secondary)',
                             border: '1px solid var(--theme-border)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: service.status === 'Locked' ? 'var(--muted)' : service.color,
-                            boxShadow: service.status !== 'Locked' ? `0 8px 16px ${service.color}10` : 'none'
+                            color: service.status === 'Locked' ? 'var(--muted)' : service.color
                           }}>
-                            <Icon name={service.icon} size={20} color={service.status === 'Locked' ? 'var(--muted)' : service.color} />
+                            <Icon name={service.icon} size={18} />
                           </div>
 
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                            <span style={{ fontSize: 10, fontWeight: 800, color: "var(--muted)", fontFamily: 'var(--ff-mono)', letterSpacing: '0.05em' }}>{service.version}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "var(--muted)", fontFamily: 'var(--ff-mono)', letterSpacing: '0.05em' }}>{service.version}</span>
                             <div style={{
-                              display: 'flex', alignItems: 'center', gap: 8,
-                              background: 'var(--theme-bg-tertiary)', border: '1px solid var(--theme-border)', padding: '4px 10px', borderRadius: 20
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              background: 'transparent', padding: 0
                             }}>
                               {service.status !== 'Locked' ? (
-                                <div style={{
-                                  width: 6, height: 6, borderRadius: '50%',
-                                  background: `radial-gradient(circle at 30% 30%, white 0%, ${service.color} 80%)`,
-                                  boxShadow: `0 0 10px ${service.color}, 0 0 15px ${service.color}66`
-                                }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink)' }} />
                               ) : (
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748b' }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--muted)' }} />
                               )}
-                              <span style={{ fontSize: 10, fontWeight: 900, color: "var(--text)", letterSpacing: '0.1em' }}>{service.status.toUpperCase()}</span>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: service.status === 'Locked' ? 'var(--muted)' : 'var(--ink)', letterSpacing: '0.05em' }}>{service.status.toUpperCase()}</span>
                             </div>
                           </div>
                         </div>
 
-                        <h3 style={{ fontSize: 18, fontWeight: 800, color: "var(--text)", margin: "0 0 6px 0", letterSpacing: '-0.02em', fontFamily: 'var(--ff-h)' }}>{service.name}</h3>
-                        <p style={{ fontSize: 13, color: "var(--muted)", margin: 0, fontWeight: 500, lineHeight: 1.5 }}>{service.stats}</p>
+                        <div>
+                          <h3 style={{ fontSize: 16, fontWeight: 600, color: service.status === 'Locked' ? 'var(--muted)' : 'var(--ink)', margin: "0 0 4px 0", letterSpacing: '-0.2px', fontFamily: 'var(--ff-h)' }}>{service.name}</h3>
+                          <p style={{ fontSize: 13, color: "var(--muted)", margin: 0, fontWeight: 400, lineHeight: 1.5 }}>{service.stats}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -2021,124 +2025,106 @@ function StatCard({ label, value, icon, iconColor, subValue = "System Data Linke
 
 function PlanCard({ plan, onDelete, onEdit }) {
   const [hovered, setHovered] = useState(false);
-  const [coord, setCoord] = useState({ x: 0, y: 0 });
   const features = plan.features ? plan.features.split(/[,\n]/).filter(f => f.trim()) : [];
-
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - card.left) / card.width;
-    const y = (e.clientY - card.top) / card.height;
-    setCoord({ x, y });
-  };
 
   return (
     <div 
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setCoord({ x: 0.5, y: 0.5 }); }}
-      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setHovered(false)}
       style={{
         background: "var(--surface)",
-        backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%)",
-        borderRadius: "28px",
+        borderRadius: "16px",
         padding: "32px",
         display: "flex",
         flexDirection: "column",
         boxShadow: hovered 
-          ? "0 40px 100px -20px rgba(0,0,0,0.3), 0 0 0 1px rgba(99, 102, 241, 0.1)"
-          : "0 10px 40px -15px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.02)",
-        transition: "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+          ? "0 12px 32px -4px rgba(0,0,0,0.06), 0 4px 12px -2px rgba(0,0,0,0.04)"
+          : "0 2px 8px -2px rgba(0,0,0,0.03), 0 1px 4px -1px rgba(0,0,0,0.02)",
+        transition: "all 0.3s ease",
         position: 'relative',
-        border: '1px solid var(--theme-border)',
+        border: hovered ? '1px solid rgba(0,0,0,0.15)' : '1px solid var(--theme-border)',
         cursor: 'default',
         transform: hovered 
-          ? `perspective(1000px) rotateX(${(coord.y - 0.5) * -8}deg) rotateY(${(coord.x - 0.5) * 8}deg) translateY(-8px)` 
-          : "perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)",
+          ? "translateY(-4px)" 
+          : "translateY(0)",
         overflow: 'hidden',
         height: '100%',
         zIndex: hovered ? 10 : 1
       }}>
 
-      {/* Glossy Overlay */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: `radial-gradient(circle at ${coord.x * 100}% ${coord.y * 100}%, rgba(255,255,255,0.08) 0%, transparent 60%)`,
-        opacity: hovered ? 1 : 0,
-        transition: 'opacity 0.4s',
-        pointerEvents: 'none'
-      }} />
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24, position: 'relative', zIndex: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
-          <div style={{ fontSize: "9px", fontWeight: 900, color: "var(--muted)", textTransform: 'uppercase', letterSpacing: "0.2em", marginBottom: 6, opacity: 0.6 }}>ENGINE_NODE</div>
-          <h4 style={{ fontSize: "20px", fontWeight: 900, color: "var(--theme-text)", margin: 0, letterSpacing: "-0.03em", fontFamily: 'var(--ff-h)' }}>{plan.name}</h4>
-          <div style={{ display: 'flex', marginTop: 12 }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, color: "var(--muted)", textTransform: 'uppercase', letterSpacing: "1px", marginBottom: 4 }}>Access Tier</div>
+          <h4 style={{ fontSize: "22px", fontWeight: 700, color: "var(--ink)", margin: 0, letterSpacing: "-0.5px", fontFamily: 'var(--ff-h)' }}>{plan.name}</h4>
+          <div style={{ display: 'flex', marginTop: 10 }}>
             <span style={{
-              fontSize: "8px",
-              fontWeight: 900,
+              fontSize: "11px",
+              fontWeight: 600,
               textTransform: 'uppercase',
-              letterSpacing: '0.15em',
-              background: plan.active ? 'rgba(16, 185, 129, 0.08)' : 'rgba(244, 63, 94, 0.08)',
+              letterSpacing: '0.05em',
               color: plan.active ? '#10b981' : '#f43f5e',
-              padding: '4px 12px',
-              borderRadius: '100px',
-              border: `1px solid ${plan.active ? '#10b98122' : '#f43f5e22'}`
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}>
-              {plan.active ? 'ONLINE' : 'OFFLINE'}
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: plan.active ? '#10b981' : '#f43f5e' }} />
+              {plan.active ? 'ACTIVE' : 'INACTIVE'}
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 6, position: 'relative', zIndex: 10 }}>
           <button
-            onClick={() => onEdit?.(plan)}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit?.(plan); }}
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid var(--theme-border)',
-              width: "36px", height: "36px", borderRadius: "12px",
+              background: 'transparent',
+              border: 'none',
+              width: "32px", height: "32px", borderRadius: "8px",
               cursor: 'pointer', color: 'var(--muted)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+              transition: 'all 0.2s',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#6366f1'; e.currentTarget.style.color = '#6366f1'; e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+            onMouseOver={(e) => { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.background = 'var(--glass-bg)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'transparent'; }}
           >
-            <Icon name="edit" size={14} />
+            <Icon name="edit" size={16} />
           </button>
           <button
-            onClick={() => onDelete?.(plan.id)}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(plan.id); }}
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid var(--theme-border)',
-              width: "36px", height: "36px", borderRadius: "12px",
+              background: 'transparent',
+              border: 'none',
+              width: "32px", height: "32px", borderRadius: "8px",
               cursor: 'pointer', color: 'var(--muted)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+              transition: 'all 0.2s',
             }}
-            onMouseOver={(e) => { e.currentTarget.style.borderColor = '#f43f5e'; e.currentTarget.style.color = '#f43f5e'; e.currentTarget.style.background = 'rgba(244, 63, 94, 0.1)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--theme-border)'; e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+            onMouseOver={(e) => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = '#fef2f2'; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'transparent'; }}
           >
-            <Icon name="trash" size={14} />
+            <Icon name="trash" size={16} />
           </button>
         </div>
       </div>
 
-      <div style={{ fontSize: "36px", fontWeight: 950, color: "var(--theme-text)", marginBottom: 12, letterSpacing: "-2px", display: 'flex', alignItems: 'baseline', position: 'relative', zIndex: 2 }}>
+      <div style={{ fontSize: "36px", fontWeight: 700, color: "var(--ink)", marginBottom: 12, letterSpacing: "-1.5px", display: 'flex', alignItems: 'baseline' }}>
         {plan.price === 0 ? "Free" : `₹${plan.price}`}
-        <span style={{ fontSize: "11px", color: "var(--muted)", fontWeight: 800, letterSpacing: "0.1em", marginLeft: 6, textTransform: 'uppercase' }}>/{plan.billingCycle.charAt(0)}</span>
+        <span style={{ fontSize: "14px", color: "var(--muted)", fontWeight: 500, letterSpacing: "normal", marginLeft: 4 }}>/{plan.billingCycle.charAt(0).toLowerCase() === 'm' ? 'mo' : plan.billingCycle.toLowerCase()}</span>
       </div>
 
-      <p style={{ fontSize: "13px", color: "var(--muted)", marginBottom: 32, lineHeight: 1.7, fontWeight: 500, opacity: 0.8, position: 'relative', zIndex: 2 }}>
+      <p style={{ fontSize: "14px", color: "var(--muted)", marginBottom: 32, lineHeight: 1.6, fontWeight: 400 }}>
         {plan.description || "Production-ready infrastructure tier optimized for scale."}
       </p>
 
-      <div style={{ display: "grid", gap: 12, marginTop: 'auto', position: 'relative', zIndex: 2 }}>
-        <div style={{ fontSize: "8px", fontWeight: 900, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 4 }}>CORE_PROTOCOLS</div>
+      <div style={{ display: "grid", gap: 12, marginTop: 'auto', paddingTop: 20, borderTop: '1px solid var(--theme-border)' }}>
+        <div style={{ fontSize: "11px", fontWeight: 600, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Features</div>
         {features.slice(0, 4).map((feature, idx) => (
-          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 4 }}>
-            <div style={{ width: 14, height: 14, borderRadius: "50%", background: 'rgba(99, 102, 241, 0.1)', display: "flex", alignItems: "center", justifyContent: "center", border: '1px solid rgba(99, 102, 241, 0.1)' }}>
-              <Icon name="check" size={8} color="#6366f1" />
+          <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="check" size={14} color="var(--ink)" />
             </div>
-            <span style={{ fontSize: '11px', color: "var(--theme-text)", opacity: 0.7, fontWeight: 600, fontFamily: 'var(--ff-mono)' }}>{feature.trim().toUpperCase()}</span>
+            <span style={{ fontSize: '13px', color: "var(--ink)", fontWeight: 500 }}>{feature.trim()}</span>
           </div>
         ))}
       </div>

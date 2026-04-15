@@ -108,7 +108,7 @@ const Navbar = () => {
                 boxShadow: navShadow,
                 transform: isScrolled ? 'translateZ(0) scale(0.988)' : 'translateZ(0) scale(1)',
                 transition: 'all 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
-                overflow: 'hidden',
+                overflow: 'visible',
                 position: 'relative',
                 isolation: 'isolate'
             }}>
@@ -117,6 +117,7 @@ const Navbar = () => {
                         content: '';
                         position: absolute;
                         inset: 0;
+                        border-radius: inherit;
                         background:
                             ${isDarkMode
                                 ? `radial-gradient(circle at 12% 20%, rgba(255, 255, 255, 0.45), transparent 28%),
@@ -214,29 +215,29 @@ const Navbar = () => {
                                         padding: '4px 12px 4px 4px',
                                         borderRadius: '100px',
                                         background: isDarkMode
-                                            ? (isProfileOpen ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.03)')
-                                            : (isProfileOpen ? 'rgba(59,130,246,0.10)' : 'rgba(235,245,255,0.72)'),
-                                        border: isDarkMode ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(145,192,230,0.28)',
+                                            ? (isProfileOpen ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)')
+                                            : (isProfileOpen ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.02)'),
+                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.08)',
                                         cursor: 'pointer',
                                         transition: 'all 0.2s',
-                                        color: 'var(--theme-text)'
+                                        color: 'var(--ink)'
                                     }}
                                 >
                                     <div style={{
                                         width: '32px',
                                         height: '32px',
                                         borderRadius: '50%',
-                                        background: 'rgba(16, 185, 129, 0.1)',
-                                        border: '1px solid rgba(16, 185, 129, 0.4)',
+                                        background: isDarkMode ? 'rgba(255,255,255,0.1)' : 'var(--ink)',
+                                        border: isDarkMode ? '1px solid rgba(255,255,255,0.2)' : '1px solid var(--theme-border)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: '#10b981',
-                                        boxShadow: '0 0 12px rgba(16, 185, 129, 0.3)'
+                                        color: isDarkMode ? '#fff' : '#fff',
+                                        boxShadow: isDarkMode ? 'none' : '0 2px 6px rgba(0,0,0,0.1)'
                                     }}>
-                                        <User size={18} />
+                                        <User size={16} />
                                     </div>
-                                    <ChevronDown size={14} style={{ transform: isProfileOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease', opacity: 0.5 }} />
+                                    <ChevronDown size={14} style={{ transform: isProfileOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s ease', opacity: 0.8, color: 'var(--ink)' }} />
                                 </button>
 
                                 {/* Dropdown Menu - Ultimate 3D Zoom-Pop Opening */}
@@ -308,7 +309,7 @@ const Navbar = () => {
                                                     fontFamily: 'var(--ff-sans)', 
                                                     letterSpacing: '-0.5px' 
                                                 }}>
-                                                    {user?.name || user?.email?.split('@')[0]}
+                                                    {user?.name ? user.name.split(' ')[0] : user?.email?.split('@')[0]}
                                                 </div>
                                                 <div style={{ 
                                                     fontSize: '11px', 
@@ -348,28 +349,27 @@ const Navbar = () => {
                                                     onClick={handleLogout}
                                                     style={{ 
                                                         ...dropdownItemStyle, 
-                                                        borderRadius: '16px',
-                                                        color: '#fff',
-                                                        background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                                                        border: 'none',
+                                                        borderRadius: '12px',
+                                                        color: isDarkMode ? 'var(--ink)' : '#fff',
+                                                        background: isDarkMode ? '#fff' : 'var(--ink)',
+                                                        border: '1px solid var(--theme-border)',
                                                         marginTop: '12px',
-                                                        padding: '14px',
-                                                        boxShadow: '0 10px 20px -5px rgba(239, 68, 68, 0.4)',
-                                                        justifyContent: 'center'
+                                                        padding: '12px 14px',
+                                                        justifyContent: 'center',
+                                                        transition: 'all 0.2s ease',
+                                                        boxShadow: '0 2px 8px -2px rgba(0,0,0,0.05)',
                                                     }}
                                                     onMouseEnter={(e) => {
-                                                        e.currentTarget.style.transform = 'scale(1.03) translateY(-2px)';
-                                                        e.currentTarget.style.boxShadow = '0 15px 30px -8px rgba(239, 68, 68, 0.5)';
-                                                        e.currentTarget.style.filter = 'brightness(1.1)';
+                                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                                        e.currentTarget.style.boxShadow = '0 6px 16px -2px rgba(0,0,0,0.1)';
                                                     }}
                                                     onMouseLeave={(e) => {
-                                                        e.currentTarget.style.transform = 'scale(1) translateY(0)';
-                                                        e.currentTarget.style.boxShadow = '0 10px 20px -5px rgba(239, 68, 68, 0.4)';
-                                                        e.currentTarget.style.filter = 'none';
+                                                        e.currentTarget.style.transform = 'translateY(0)';
+                                                        e.currentTarget.style.boxShadow = '0 2px 8px -2px rgba(0,0,0,0.05)';
                                                     }}
                                                 >
-                                                    <LogOut size={18} /> 
-                                                    <span style={{ fontWeight: 900, letterSpacing: '1px' }}>LOG OUT</span>
+                                                    <LogOut size={16} /> 
+                                                    <span style={{ fontWeight: 700, letterSpacing: '0.5px' }}>Log Out</span>
                                                 </button>
                                             </div>
                                         </motion.div>
@@ -386,19 +386,19 @@ const Navbar = () => {
                                         padding: '8px 24px',
                                         borderRadius: '100px',
                                         cursor: 'pointer',
-                                        border: '1px solid var(--theme-border)',
-                                        background: 'transparent',
+                                        border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid var(--theme-border)',
+                                        background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
                                         backdropFilter: 'blur(10px)',
-                                        color: 'var(--theme-text)',
+                                        color: isDarkMode ? '#ffffff' : 'var(--theme-text)',
                                         transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
                                         fontFamily: 'var(--ff-sans)'
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.target.style.background = 'rgba(128,128,128,0.1)';
+                                        e.target.style.background = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(128,128,128,0.1)';
                                         e.target.style.transform = 'translateY(-1px)';
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.target.style.background = 'transparent';
+                                        e.target.style.background = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'transparent';
                                         e.target.style.transform = 'translateY(0)';
                                     }}
                                 >
@@ -532,9 +532,9 @@ const Navbar = () => {
                                         onClick={handleLogout}
                                         style={{ 
                                             padding: '12px', 
-                                            background: '#ef4444', 
-                                            color: '#fff', 
-                                            border: 'none', 
+                                            background: isDarkMode ? '#fff' : 'var(--ink)', 
+                                            color: isDarkMode ? 'var(--ink)' : '#fff', 
+                                            border: '1px solid var(--theme-border)', 
                                             borderRadius: '12px', 
                                             fontWeight: 700 
                                         }}
@@ -575,6 +575,10 @@ const dropdownItemStyle = {
 };
 
 const NavLink = ({ children, onClick, icon }) => {
+    const { theme } = useTheme();
+    const prefersDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDarkMode = theme === 'dark' || (theme === 'system' && prefersDarkMode);
+    
     const [isHovered, setIsHovered] = useState(false);
     return (
         <button
@@ -584,12 +588,12 @@ const NavLink = ({ children, onClick, icon }) => {
             style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: isHovered ? 'var(--theme-text)' : 'var(--muted)',
+                color: isHovered ? (isDarkMode ? '#ffffff' : 'var(--ink)') : (isDarkMode ? 'rgba(255,255,255,0.7)' : 'var(--text)'),
                 padding: '8px 16px',
                 borderRadius: '9999px',
                 cursor: 'pointer',
                 border: 'none',
-                background: isHovered ? 'var(--theme-border)' : 'transparent',
+                background: isHovered ? (isDarkMode ? 'rgba(255,255,255,0.1)' : 'var(--theme-border)') : 'transparent',
                 transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
                 fontFamily: 'var(--ff-sans)',
@@ -598,7 +602,7 @@ const NavLink = ({ children, onClick, icon }) => {
                 gap: '8px'
             }}
         >
-            {icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}
+            {icon && <span style={{ display: 'flex', alignItems: 'center', opacity: isHovered ? 1 : 0.7 }}>{icon}</span>}
             {children}
         </button>
     );

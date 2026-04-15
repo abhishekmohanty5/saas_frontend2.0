@@ -105,24 +105,56 @@ const ApiCredentialsSection = ({ clientId: initialClientId }) => {
          </div>
       </div>
 
-      <div className="v2-card secret-section">
-         <div className="v2-secret-header">
-            <h3>Secret Management</h3>
-            <button className="v2-main-btn" onClick={() => setShowDangerConfirm(true)}>
-               Generate New Key
+      <div className="v2-card secret-section" style={{ padding: 32, borderRadius: 24, border: '1px solid var(--theme-border)', background: 'var(--surface)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+         <div className="v2-secret-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.5px' }}>Secret Keys</h3>
+            <button 
+               onClick={() => setShowDangerConfirm(true)}
+               style={{
+                  background: 'var(--ink)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', 
+                  fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+               }}
+               onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.15)'; }}
+               onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}
+            >
+               + Generate New Key
             </button>
          </div>
 
-         <div className="v2-secret-body">
-            <div className="v2-lock">
-               <Lock size={32} />
-            </div>
-            <p>Your secret key is encrypted and hidden.</p>
-            <div className="v2-secret-links">
-               <button onClick={handleRevealCurrent}>{isRevealing ? 'Revealing...' : 'Reveal Current Key'}</button>
-               <span className="v2-sep">|</span>
-               <button className="v2-danger-link" onClick={() => setShowDangerConfirm(true)}>Regenerate</button>
-            </div>
+         <div style={{ border: '1px solid var(--theme-border)', borderRadius: '12px', overflow: 'hidden' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+               <thead>
+                  <tr style={{ background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid var(--theme-border)', fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                     <th style={{ padding: '16px 24px', fontWeight: 600 }}>Secret Key</th>
+                     <th style={{ padding: '16px 24px', fontWeight: 600 }}>Created</th>
+                     <th style={{ padding: '16px 24px', fontWeight: 600 }}>Status</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr style={{ borderBottom: '1px solid var(--theme-border)', fontSize: 14 }}>
+                     <td style={{ padding: '20px 24px', fontFamily: 'var(--ff-mono)', color: 'var(--ink)', fontWeight: 500, letterSpacing: '0.5px' }}>
+                        sk_live_••••••••••••••••••••
+                     </td>
+                     <td style={{ padding: '20px 24px', color: 'var(--muted)', fontSize: 13 }}>
+                        {credentials.createdAt}
+                     </td>
+                     <td style={{ padding: '20px 24px' }}>
+                        <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '6px 12px', borderRadius: '6px', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' }}>ACTIVE</span>
+                     </td>
+                  </tr>
+                  <tr style={{ fontSize: 14 }}>
+                     <td style={{ padding: '20px 24px', fontFamily: 'var(--ff-mono)', color: 'var(--muted)', fontWeight: 500, letterSpacing: '0.5px' }}>
+                        sk_live_••••••••••••••••••••
+                     </td>
+                     <td style={{ padding: '20px 24px', color: 'var(--muted)', fontSize: 13 }}>
+                        Previous Key
+                     </td>
+                     <td style={{ padding: '20px 24px' }}>
+                        <span style={{ background: 'rgba(148, 163, 184, 0.1)', color: 'var(--muted)', padding: '6px 12px', borderRadius: '6px', fontSize: 10, fontWeight: 800, letterSpacing: '0.05em' }}>REVOKED</span>
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
          </div>
       </div>
 
